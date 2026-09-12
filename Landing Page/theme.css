@@ -1,0 +1,28 @@
+/* Restrained dark-gray signal layer */
+:root { --accent: #414141; }
+.eyebrow span,
+.live-dot { background: var(--accent); }
+.button-light span { color: var(--accent); }
+.report-footer button span { color: #a6a6a6; }
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.honeypot { display: none; }
+
+/* Preserve the original Privacy Gate typography across the editorial layout. */
+.editorial-hero h1,
+.reference h2,
+.principle-band h2,
+.editorial-access h2 {
+  font-family: Manrope, Arial, sans-serif !important;
+  font-weight: 600 !important;
+  letter-spacing: -.075em !important;
+}
