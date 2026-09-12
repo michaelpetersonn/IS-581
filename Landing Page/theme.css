@@ -1,34 +1,63 @@
 /* Restrained dark-gray signal layer */
-:root { --accent: #414141; }
+:root { --accent: #b42318; }
 .eyebrow span,
 .live-dot { background: var(--accent); }
 .button-light span { color: var(--accent); }
-.nav-cta {
+.nav-cta,
+.button-accent,
+.signup-form button {
+  font-family: Manrope, Arial, sans-serif;
+  font-weight: 800;
+  letter-spacing: -.02em;
+}
+.nav-cta,
+.button-accent {
   background: #fff;
   color: #101010;
   border-color: #fff;
+}
+.nav-cta {
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 800;
   padding: 14px 18px;
+}
+.signup-form button {
+  background: #101010;
+  color: #fff;
+  border-color: #101010;
 }
 .hero-cta { margin-top: 8px; }
 .button-cta {
   font-size: 18px;
-  font-weight: 500;
+  font-weight: 800;
   padding: 22px 28px;
-  gap: 36px;
 }
 .cta-note {
   margin: 16px 0 0;
   color: #d0d0d0;
   font: 13px/1.5 "DM Mono", monospace;
 }
-.signup-form { max-width: 760px; }
-.signup-form input { font-size: 16px; padding: 20px 0; }
+.signup-form {
+  display: block;
+  max-width: 560px;
+  border-bottom: 0;
+}
+.signup-form input:not(.honeypot) {
+  display: block;
+  width: 100%;
+  font-size: 16px;
+  padding: 20px 0;
+  border-bottom: 2px solid #101010;
+}
+.honeypot { display: none !important; }
 .signup-form button {
-  font-size: 15px;
+  display: flex;
+  width: 100%;
+  margin-top: 22px;
+  justify-content: center;
+  font-size: 16px;
   font-weight: 500;
-  padding: 20px 24px;
+  padding: 22px 24px;
 }
 .report-footer button span { color: #a6a6a6; }
 .sr-only {
@@ -81,6 +110,13 @@
   letter-spacing: -.07em;
 }
 .editorial-hero .hero-layout { margin-top: 5.5vw; }
+.demo-wrap { justify-self: end; width: 100%; max-width: 540px; }
+.demo-caption {
+  margin: 14px 0 0;
+  color: #b8b8b8;
+  font: 12px/1.4 "DM Mono", monospace;
+  letter-spacing: 0.04em;
+}
 .product-preview.mac-demo {
   max-width: 540px;
   padding: 0;
@@ -164,42 +200,86 @@
 }
 .mac-page {
   position: relative;
-  min-height: 390px;
+  min-height: 430px;
   background: #f5f5f7;
   overflow: hidden;
 }
-.apple-bar {
+.fb-bar {
   display: flex;
   align-items: center;
-  gap: 18px;
-  height: 40px;
-  padding: 0 18px;
-  background: rgba(22, 22, 23, 0.86);
+  gap: 12px;
+  height: 42px;
+  padding: 0 12px;
+  background: #1877f2;
   color: #fff;
   font-size: 11px;
 }
-.apple-bar strong { font-size: 16px; font-weight: 400; }
-.apple-bar span { color: #d2d2d7; }
-.apple-stage {
-  padding: 42px 24px 28px;
+.fb-bar strong {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #fff;
+  color: #1877f2;
+  font-size: 16px;
+  font-weight: 800;
+}
+.fb-bar em {
+  flex: 1;
+  padding: 6px 10px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.2);
+  color: #e7f3ff;
+  font-style: normal;
+  font-size: 10px;
+}
+.fb-bar span { color: #e7f3ff; }
+.fb-stage {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 16px;
+  align-items: start;
+  padding: 28px 16px 70px;
+  background: #f0f2f5;
+}
+.fb-stage > p {
+  margin: 18px 0 0;
+  max-width: 200px;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.25;
+}
+.fb-card {
+  padding: 14px 12px 12px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+.fb-card b {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+}
+.fb-card span {
+  display: block;
+  margin: 4px 0 10px;
+  color: #65676b;
+  font-size: 10px;
+}
+.fb-card i {
+  display: block;
+  padding: 8px 0;
+  border-radius: 6px;
+  background: #42b72a;
+  color: #fff;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 700;
   text-align: center;
 }
-.apple-stage p:first-child {
-  margin: 0;
-  font-size: 34px;
-  font-weight: 700;
-  letter-spacing: -0.04em;
-}
-.apple-stage p:nth-child(2) {
-  margin: 8px 0 16px;
-  color: #6e6e73;
-  font-size: 15px;
-}
-.apple-stage span {
-  color: #0066cc;
-  font-size: 13px;
-}
-.apple-cookie {
+.fb-cookie {
   position: absolute;
   left: 12px;
   right: 12px;
@@ -209,27 +289,28 @@
   justify-content: space-between;
   gap: 10px;
   padding: 10px 12px;
-  border-radius: 10px;
+  border-radius: 8px;
   background: #fff;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  color: #6e6e73;
+  color: #65676b;
   font-size: 10px;
   line-height: 1.35;
 }
-.apple-cookie b {
+.fb-cookie b {
   flex: none;
   padding: 6px 8px;
-  border-radius: 980px;
-  background: #0071e3;
+  border-radius: 6px;
+  background: #1877f2;
   color: #fff;
   font-size: 9px;
   font-weight: 600;
 }
+.ext-head b { color: var(--accent); border-color: var(--accent); }
 .ext-pop {
   position: absolute;
-  top: 52px;
+  top: 48px;
   right: 12px;
-  width: 268px;
+  width: 280px;
   padding: 14px 14px 12px;
   background: #fff;
   color: #101010;
@@ -294,12 +375,30 @@
   font-size: 10px;
 }
 .mac-demo li span { color: #777; }
-.ext-action {
-  margin: 12px 0 0;
-  font-size: 9px;
-  font-weight: 500;
+.ext-pop > .ext-kicker:last-of-type {
+  margin-top: 12px;
 }
-.ext-action span { float: right; }
+.ext-acts {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+  margin-top: 8px;
+}
+.ext-acts span {
+  display: grid;
+  place-items: center;
+  min-height: 28px;
+  border: 1px solid #1d1d1f;
+  background: #1d1d1f;
+  color: #fff;
+  font-size: 8px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+.ext-acts span:last-child {
+  background: var(--accent);
+  border-color: var(--accent);
+}
 footer .brand { font-size: 20px; }
 footer .brand-mark { min-width: 34px; height: 34px; font-size: 15px; }
 .editorial-hero {
@@ -374,8 +473,12 @@ footer .brand-mark { min-width: 34px; height: 34px; font-size: 15px; }
   .brand { font-size: 18px; }
   .brand-mark { min-width: 32px; height: 32px; font-size: 14px; }
   .hero-brand { margin-bottom: 14px; }
+  .demo-wrap,
   .product-preview.mac-demo { max-width: 100%; }
-  .apple-bar span:nth-child(n+5) { display: none; }
+  .demo-wrap { margin-top: 55px; }
+  .fb-bar span { display: none; }
+  .fb-stage { grid-template-columns: 1fr; padding-bottom: 78px; }
+  .fb-stage > p { margin-top: 0; }
   .ext-pop { width: min(268px, calc(100% - 24px)); }
   .method { padding: 75px 20px; }
   .method-grid { grid-template-columns: 1fr; }
