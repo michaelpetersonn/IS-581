@@ -460,14 +460,6 @@ footer .brand-mark { min-width: 34px; height: 34px; font-size: 15px; }
   background: linear-gradient(180deg, #1c1c1c 0%, #2a2a2a 100%);
   color: #fff;
 }
-.tone-bridge {
-  height: 120px;
-  background: linear-gradient(180deg, #2a2a2a 0%, #2a2a2a 22%, #e8e8e8 100%);
-}
-.tone-bridge-down {
-  height: 104px;
-  background: linear-gradient(180deg, #f3f3f3 0%, #f3f3f3 18%, #101010 100%);
-}
 .reference {
   padding-bottom: 48px;
   background: #e8e8e8;
@@ -561,6 +553,4 @@ footer .brand-mark { min-width: 34px; height: 34px; font-size: 15px; }
   .reference-grid h3 { font-size: 30px; margin: 22px 0 12px; }
   .access,
   .editorial-access { padding-top: 36px; padding-bottom: 56px; }
-  .tone-bridge { height: 80px; }
-  .tone-bridge-down { height: 72px; }
 }
