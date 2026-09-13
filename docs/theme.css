@@ -450,6 +450,9 @@
   background: var(--accent);
   border-color: var(--accent);
 }
+footer {
+  background: #101010;
+}
 footer .brand { font-size: 20px; }
 footer .brand-mark { min-width: 34px; height: 34px; font-size: 15px; }
 .editorial-hero {
