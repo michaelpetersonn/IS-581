@@ -26,3 +26,28 @@
       });
   });
 })();
+
+(function () {
+  var scroller = document.querySelector(".page-scroll");
+  if (!scroller) return;
+
+  function scrollToHash(hash) {
+    if (!hash || hash === "#") return;
+    var target = document.querySelector(hash);
+    if (!target) return;
+    target.scrollIntoView({ block: "start" });
+  }
+
+  document.addEventListener("click", function (event) {
+    var link = event.target.closest('a[href^="#"]');
+    if (!link) return;
+    var hash = link.getAttribute("href");
+    if (!hash || hash === "#") return;
+    if (!document.querySelector(hash)) return;
+    event.preventDefault();
+    history.pushState(null, "", hash);
+    scrollToHash(hash);
+  });
+
+  scrollToHash(location.hash);
+})();
