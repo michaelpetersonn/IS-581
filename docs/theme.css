@@ -114,15 +114,22 @@ body {
   font-weight: 800;
 }
 .brand-digit { font-weight: 800; }
+.header-kicker {
+  margin: 0;
+  color: #a6a6a6;
+  white-space: nowrap;
+}
+@media (max-width: 760px) {
+  .header-kicker {
+    letter-spacing: .12em;
+    font-size: 10px;
+  }
+}
 .hero-brand {
   margin: 0;
   text-align: left;
   font: 800 clamp(52px, 7.2vw, 84px)/.88 Manrope, Arial, sans-serif;
   letter-spacing: -.07em;
-}
-.editorial-hero .kicker {
-  margin-top: 14px;
-  text-align: left;
 }
 .editorial-hero .hero-layout { margin-top: 3.5vw; }
 .demo-wrap { justify-self: end; width: 100%; max-width: 580px; }
