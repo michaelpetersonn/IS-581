@@ -463,9 +463,6 @@ footer .brand-mark { min-width: 34px; height: 34px; font-size: 15px; }
   background: linear-gradient(180deg, #1c1c1c 0%, #2a2a2a 100%);
   color: #fff;
 }
-.method .kicker {
-  margin-bottom: 18px;
-}
 .reference {
   padding-bottom: 48px;
   background: #e8e8e8;
