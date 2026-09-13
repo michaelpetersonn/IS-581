@@ -103,16 +103,17 @@
   font-weight: 800;
 }
 .brand-digit { font-weight: 800; }
-.editorial-hero .kicker {
-  text-align: left;
-}
 .hero-brand {
-  margin: 22px 0 0;
+  margin: 0;
   text-align: left;
   font: 800 clamp(52px, 7.2vw, 84px)/.88 Manrope, Arial, sans-serif;
   letter-spacing: -.07em;
 }
-.editorial-hero .hero-layout { margin-top: 4vw; }
+.editorial-hero .kicker {
+  margin-top: 14px;
+  text-align: left;
+}
+.editorial-hero .hero-layout { margin-top: 3.5vw; }
 .demo-wrap { justify-self: end; width: 100%; max-width: 580px; }
 .product-preview.mac-demo {
   max-width: 580px;
@@ -554,7 +555,7 @@ footer .brand-mark { min-width: 34px; height: 34px; font-size: 15px; }
   .site-header { height: 80px; }
   .brand { font-size: 18px; }
   .brand-mark { min-width: 32px; height: 32px; font-size: 14px; }
-  .hero-brand { margin: 16px 0 0; }
+  .hero-brand { margin: 0; }
   .demo-wrap,
   .product-preview.mac-demo { max-width: 100%; }
   .demo-wrap { margin-top: 55px; }
