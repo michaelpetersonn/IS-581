@@ -91,9 +91,21 @@
   height: 88px;
   z-index: 100;
   background: #101010;
+  background-color: #101010;
+  /* Avoid white overscroll / compositor flash behind the fixed bar */
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+html {
+  background: #101010;
+  color-scheme: dark;
+  overscroll-behavior-y: none;
 }
 body {
   padding-top: 88px;
+  background: #101010;
+  overscroll-behavior-y: none;
 }
 .brand {
   gap: 12px;
