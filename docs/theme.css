@@ -83,7 +83,18 @@
   letter-spacing: -.075em !important;
 }
 
-.site-header { height: 88px; }
+.site-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 88px;
+  z-index: 100;
+  background: #101010;
+}
+body {
+  padding-top: 88px;
+}
 .brand {
   gap: 12px;
   font-size: 22px;
@@ -553,6 +564,7 @@ footer .brand-mark { min-width: 34px; height: 34px; font-size: 15px; }
 
 @media (max-width: 760px) {
   .site-header { height: 80px; }
+  body { padding-top: 80px; }
   .brand { font-size: 18px; }
   .brand-mark { min-width: 32px; height: 32px; font-size: 14px; }
   .hero-brand { margin: 0; }
