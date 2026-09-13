@@ -417,20 +417,12 @@
 footer .brand { font-size: 20px; }
 footer .brand-mark { min-width: 34px; height: 34px; font-size: 15px; }
 .editorial-hero {
-  background: linear-gradient(180deg, #101010 0%, #161616 78%, #1c1c1c 100%);
+  background: #101010;
 }
 .method {
   padding: 100px 8vw;
-  background: linear-gradient(180deg, #1c1c1c 0%, #2a2a2a 100%);
+  background: #1c1c1c;
   color: #fff;
-}
-.tone-bridge {
-  height: 88px;
-  background: linear-gradient(180deg, #2a2a2a 0%, #6d6d6d 48%, #cfcfcf 78%, #e8e8e8 100%);
-}
-.tone-bridge-down {
-  height: 72px;
-  background: linear-gradient(180deg, #f3f3f3 0%, #8a8a8a 46%, #101010 100%);
 }
 .reference {
   padding-bottom: 48px;
@@ -506,6 +498,4 @@ footer .brand-mark { min-width: 34px; height: 34px; font-size: 15px; }
   .reference { padding-bottom: 36px; }
   .access,
   .editorial-access { padding-top: 36px; padding-bottom: 56px; }
-  .tone-bridge { height: 64px; }
-  .tone-bridge-down { height: 56px; }
 }
