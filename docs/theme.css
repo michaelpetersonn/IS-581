@@ -104,11 +104,11 @@
 }
 .brand-digit { font-weight: 800; }
 .editorial-hero .kicker {
-  text-align: center;
+  text-align: left;
 }
 .hero-brand {
   margin: 22px 0 0;
-  text-align: center;
+  text-align: left;
   font: 800 clamp(52px, 7.2vw, 84px)/.88 Manrope, Arial, sans-serif;
   letter-spacing: -.07em;
 }
