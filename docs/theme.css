@@ -77,7 +77,11 @@
 .reference h2,
 .principle-band h2,
 .method h2,
-.editorial-access h2 {
+.editorial-access h2,
+.ext-hero h1,
+.ext-features h2,
+.ext-install h2,
+.ext-vision h2 {
   font-family: Manrope, Arial, sans-serif !important;
   font-weight: 600 !important;
   letter-spacing: -.075em !important;
@@ -660,15 +664,10 @@ footer .brand-mark { min-width: 34px; height: 34px; font-size: 15px; }
 .ext-hero .hero-brand {
   margin: 36px 0 18px;
   font-size: clamp(42px, 6vw, 72px);
-  font-weight: 700;
-  letter-spacing: -0.06em;
 }
 .ext-hero h1 {
   margin: 0;
-  font-family: Georgia, "Times New Roman", serif;
-  font-weight: 700;
   font-size: clamp(42px, 6.5vw, 88px);
-  letter-spacing: -0.06em;
   line-height: 1.02;
 }
 .ext-lead {
@@ -688,7 +687,10 @@ footer .brand-mark { min-width: 34px; height: 34px; font-size: 15px; }
   border: 1px solid #fff;
   background: transparent;
   color: #fff;
-  font: 12px "DM Mono", monospace;
+  font-family: Manrope, Arial, sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: -0.02em;
   text-decoration: none;
   padding: 17px 19px;
   display: inline-flex;
@@ -793,10 +795,7 @@ footer .brand-mark { min-width: 34px; height: 34px; font-size: 15px; }
 .ext-features { padding: 96px 8vw; background: #fff; }
 .ext-features h2 {
   margin: 20px 0 48px;
-  font-family: Georgia, "Times New Roman", serif;
   font-size: clamp(40px, 5vw, 72px);
-  font-weight: 700;
-  letter-spacing: -0.06em;
   line-height: 1.05;
 }
 .ext-feature-grid {
@@ -837,10 +836,7 @@ footer .brand-mark { min-width: 34px; height: 34px; font-size: 15px; }
 }
 .ext-install h2 {
   margin: 20px 0 36px;
-  font-family: Georgia, "Times New Roman", serif;
   font-size: clamp(40px, 5vw, 72px);
-  font-weight: 700;
-  letter-spacing: -0.06em;
   line-height: 1.05;
 }
 .ext-steps {
@@ -866,10 +862,7 @@ footer .brand-mark { min-width: 34px; height: 34px; font-size: 15px; }
 .ext-vision { padding: 96px 8vw; background: #e8e8e8; }
 .ext-vision h2 {
   margin: 20px 0 24px;
-  font-family: Georgia, "Times New Roman", serif;
   font-size: clamp(36px, 4.5vw, 64px);
-  font-weight: 700;
-  letter-spacing: -0.06em;
   line-height: 1.05;
 }
 .ext-vision p {
