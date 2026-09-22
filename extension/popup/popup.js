@@ -1,11 +1,20 @@
 const statusEl = document.getElementById("status");
 const metaEl = document.getElementById("meta");
-const alertBoxEl = document.getElementById("alert-box");
 const alternativesEl = document.getElementById("alternatives");
 const findingsEl = document.getElementById("findings");
 const guidanceEl = document.getElementById("guidance");
+const actLabelEl = document.getElementById("act-label");
 const actionsEl = document.getElementById("actions");
 const policyInput = document.getElementById("policy-url");
+
+/** Shorter labels aligned with the docs extension mockup. */
+const DISPLAY_LABELS = {
+  collected: "What data is collected",
+  used: "How the data is used",
+  shared: "Who the data is shared with",
+  advertising: "Mentions sale / sharing",
+  choices: "Access, opt-out, or deletion choices"
+};
 
 document.getElementById("refresh-btn").addEventListener("click", () => {
   runAnalyze({ force: true });
@@ -23,7 +32,7 @@ document.getElementById("analyze-url-btn").addEventListener("click", () => {
 document.getElementById("clear-cache-btn").addEventListener("click", async () => {
   await chrome.runtime.sendMessage({ type: "CLEAR_CACHE" });
   statusEl.textContent = "Cache cleared. Refresh to re-analyze.";
-  statusEl.className = "status";
+  statusEl.className = "ext-kicker status";
   alternativesEl.classList.add("hidden");
 });
 
@@ -52,21 +61,21 @@ async function runAnalyze(opts) {
 
 function showLoading() {
   statusEl.textContent = "Finding and reading the privacy policy…";
-  statusEl.className = "status loading";
+  statusEl.className = "ext-kicker status loading";
   metaEl.classList.add("hidden");
-  alertBoxEl.classList.add("hidden");
   alternativesEl.classList.add("hidden");
   findingsEl.classList.add("hidden");
   guidanceEl.classList.add("hidden");
+  actLabelEl.classList.add("hidden");
   actionsEl.classList.add("hidden");
 }
 
 function showError(message, detail) {
   statusEl.textContent = message;
-  statusEl.className = "status error";
-  alertBoxEl.classList.add("hidden");
+  statusEl.className = "ext-kicker status error";
   findingsEl.classList.add("hidden");
   guidanceEl.classList.add("hidden");
+  actLabelEl.classList.add("hidden");
   actionsEl.classList.add("hidden");
 
   if (detail?.domain) {
@@ -124,32 +133,24 @@ function renderAlternatives(candidates) {
 }
 
 function renderResult(result) {
-  statusEl.className = "status";
+  statusEl.className = "ext-kicker status";
   statusEl.textContent = result.fromCache
-    ? "Cached rules match for this site (session). Not a full legal review."
-    : "Rules matched language in this policy. Citations are excerpts — not legal advice.";
+    ? "Cached rules match for this site (session)"
+    : "Rules matched language in this policy";
 
   alternativesEl.classList.add("hidden");
   alternativesEl.innerHTML = "";
-
-  metaEl.classList.remove("hidden");
-  const policyHref = isHttpUrl(result.policyUrl) ? escapeAttr(result.policyUrl) : "#";
-  metaEl.innerHTML = `
-    <div><strong>${escapeHtml(result.domain)}</strong></div>
-    <div>Policy: <a href="${policyHref}" target="_blank" rel="noopener noreferrer">${escapeHtml(shortUrl(result.policyUrl))}</a></div>
-  `;
 
   const alertCount =
     typeof result.alertCount === "number"
       ? result.alertCount
       : Object.values(result.findings || {}).filter((f) => f?.found).length;
 
-  alertBoxEl.classList.remove("hidden");
-  const label = alertCount === 1 ? "1 alert on this policy" : `${alertCount} alerts on this policy`;
-  alertBoxEl.innerHTML = `
-    <h2>Alerts</h2>
-    <p class="count">${escapeHtml(label)}</p>
-    <p class="hint">Categories with matching policy language.</p>
+  metaEl.classList.remove("hidden");
+  const alertLabel = alertCount === 1 ? "1 alert" : `${alertCount} alerts`;
+  metaEl.innerHTML = `
+    <strong title="${escapeAttr(result.policyUrl || "")}">${escapeHtml(result.domain)}</strong>
+    <span class="alerts">${escapeHtml(alertLabel)}</span>
   `;
 
   findingsEl.classList.remove("hidden");
@@ -159,69 +160,98 @@ function renderResult(result) {
   for (const id of order) {
     const item = result.findings?.[id];
     if (!item) continue;
-    const card = document.createElement("article");
-    card.className = "card";
-    const badge = item.found
-      ? '<span class="badge found">Found</span>'
-      : '<span class="badge miss">Unclear</span>';
-    card.innerHTML = `<h2>${escapeHtml(item.label)} ${badge}</h2>`;
-    if (item.found) {
-      card.innerHTML += `<p class="expl">${escapeHtml(item.explanation)}</p>`;
-      card.innerHTML += `<p class="excerpt">“${escapeHtml(item.excerpt)}”</p>`;
-    } else {
-      card.innerHTML += `<p class="missing">${escapeHtml(item.explanation)}</p>`;
+
+    const li = document.createElement("li");
+    const label = DISPLAY_LABELS[id] || item.label;
+    const badgeClass = item.found ? "found" : "miss";
+    const badgeText = item.found ? "Found" : "Unclear";
+
+    let body = `
+      <div class="row-main">
+        <span class="badge ${badgeClass}">${badgeText}</span>
+        <span class="label">${escapeHtml(label)}</span>
+      </div>
+    `;
+
+    if (item.found && item.excerpt) {
+      body += `<p class="excerpt" title="${escapeAttr(item.explanation || "")}">“${escapeHtml(item.excerpt)}”</p>`;
     }
-    findingsEl.appendChild(card);
+
+    li.innerHTML = body;
+    findingsEl.appendChild(li);
   }
 
-  guidanceEl.classList.remove("hidden");
-  guidanceEl.innerHTML = `<h2>What you should do</h2><p>${escapeHtml(result.guidance)}</p>`;
+  if (result.guidance) {
+    guidanceEl.classList.remove("hidden");
+    guidanceEl.innerHTML = `<p>${escapeHtml(result.guidance)}</p>`;
+  } else {
+    guidanceEl.classList.add("hidden");
+    guidanceEl.innerHTML = "";
+  }
 
+  actLabelEl.classList.remove("hidden");
   actionsEl.classList.remove("hidden");
   actionsEl.innerHTML = "";
   const acts = result.actions || {};
 
-  if (acts.policyUrl) {
-    const openPolicy = linkBtn(acts.policyUrl, "Open privacy policy", false);
-    if (openPolicy) actionsEl.appendChild(openPolicy);
-  }
-  if (acts.optOutUrl) {
-    const openOptOut = linkBtn(acts.optOutUrl, "Open privacy choices / opt-out", false);
-    if (openOptOut) actionsEl.appendChild(openOptOut);
+  const openPolicy = linkBtn(acts.policyUrl, "Open policy");
+  if (openPolicy) {
+    actionsEl.appendChild(openPolicy);
   } else {
-    const missing = document.createElement("span");
-    missing.style.cssText = "font-size:11px;color:#666;align-self:center";
-    missing.textContent = "No opt-out link found on this page.";
+    actionsEl.appendChild(disabledAct("Open policy"));
+  }
+
+  if (acts.optOutUrl && isHttpUrl(acts.optOutUrl)) {
+    const openOptOut = linkBtn(acts.optOutUrl, "Opt out");
+    if (openOptOut) actionsEl.appendChild(openOptOut);
+    else actionsEl.appendChild(disabledAct("Opt out"));
+  } else {
+    const missing = disabledAct("Opt out");
+    missing.title = "No opt-out link found on this page.";
     actionsEl.appendChild(missing);
   }
+
   if (acts.contactEmail) {
     const btn = document.createElement("button");
     btn.type = "button";
-    btn.className = "secondary";
-    btn.textContent = `Copy ${acts.contactEmail}`;
-    btn.style.cssText =
-      "border:1px solid #101010;background:#fff;color:#101010;padding:8px 10px;font-size:12px;font-weight:600";
+    btn.textContent = "Copy email";
+    btn.title = acts.contactEmail;
     btn.addEventListener("click", async () => {
       try {
         await navigator.clipboard.writeText(acts.contactEmail);
         btn.textContent = "Copied";
+        setTimeout(() => {
+          btn.textContent = "Copy email";
+        }, 1500);
       } catch {
         btn.textContent = "Copy failed";
       }
     });
     actionsEl.appendChild(btn);
+  } else {
+    const missing = disabledAct("Copy email");
+    missing.title = "No contact email found.";
+    actionsEl.appendChild(missing);
   }
 }
 
-function linkBtn(href, label, secondary) {
+function linkBtn(href, label) {
   const a = document.createElement("a");
   if (!isHttpUrl(href)) return null;
   a.href = href;
   a.target = "_blank";
   a.rel = "noopener noreferrer";
   a.textContent = label;
-  if (secondary) a.classList.add("secondary");
   return a;
+}
+
+function disabledAct(label) {
+  const span = document.createElement("button");
+  span.type = "button";
+  span.textContent = label;
+  span.disabled = true;
+  span.className = "is-disabled";
+  return span;
 }
 
 /** Only allow navigable http(s) action links (blocks javascript:/data:). */

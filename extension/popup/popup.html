@@ -7,48 +7,45 @@
     <link rel="stylesheet" href="popup.css" />
   </head>
   <body>
-    <header class="top">
-      <div class="brand">
-        <span class="mark" aria-hidden="true">c3</span>
-        <span class="name">c3nsor</span>
-      </div>
-      <button type="button" class="ghost" id="refresh-btn" title="Re-analyze">Refresh</button>
-    </header>
+    <div class="popup-card">
+      <header class="ext-pop-top">
+        <span class="brand-mark" aria-hidden="true">c3</span>
+        <span class="brand-name">c3nsor</span>
+        <button type="button" class="ghost-icon" id="refresh-btn" title="Re-analyze">
+          Refresh
+        </button>
+      </header>
 
-    <p class="disclaimer">
-      Rules-based checkpoint — not AI, not legal advice. Analysis stays on your device.
-    </p>
+      <p id="status" class="ext-kicker status" aria-live="polite">Loading…</p>
 
-    <section id="status" class="status" aria-live="polite">Loading…</section>
+      <div id="meta" class="ext-head hidden"></div>
 
-    <section id="meta" class="meta hidden"></section>
+      <div id="alternatives" class="alternatives hidden"></div>
 
-    <section id="alert-box" class="alert-box hidden" aria-live="polite"></section>
+      <ul id="findings" class="findings hidden"></ul>
 
-    <section id="alternatives" class="alternatives hidden"></section>
+      <section id="guidance" class="guidance hidden"></section>
 
-    <section id="findings" class="findings hidden"></section>
+      <p id="act-label" class="ext-kicker act-label hidden">Act</p>
+      <div id="actions" class="ext-acts hidden"></div>
 
-    <section id="guidance" class="guidance hidden"></section>
+      <section id="manual" class="manual">
+        <label for="policy-url">Policy URL (if not found)</label>
+        <div class="row">
+          <input
+            id="policy-url"
+            type="url"
+            placeholder="https://example.com/privacy"
+            autocomplete="off"
+          />
+          <button type="button" id="analyze-url-btn">Analyze</button>
+        </div>
+      </section>
 
-    <section id="actions" class="actions hidden"></section>
-
-    <section id="manual" class="manual">
-      <label for="policy-url">Policy URL (if not found)</label>
-      <div class="row">
-        <input
-          id="policy-url"
-          type="url"
-          placeholder="https://example.com/privacy"
-          autocomplete="off"
-        />
-        <button type="button" id="analyze-url-btn">Analyze</button>
-      </div>
-    </section>
-
-    <footer class="foot">
-      <button type="button" class="linkish" id="clear-cache-btn">Clear cache</button>
-    </footer>
+      <footer class="foot">
+        <button type="button" class="linkish" id="clear-cache-btn">Clear cache</button>
+      </footer>
+    </div>
 
     <script type="module" src="popup.js"></script>
   </body>
