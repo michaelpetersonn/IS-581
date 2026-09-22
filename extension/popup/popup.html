@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>c3nsor</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header class="top">
+      <div class="brand">
+        <span class="mark" aria-hidden="true">c3</span>
+        <span class="name">c3nsor</span>
+      </div>
+      <button type="button" class="ghost" id="refresh-btn" title="Re-analyze">Refresh</button>
+    </header>
+
+    <p class="disclaimer">
+      Rules-based checkpoint — not legal advice. Analysis stays on your device.
+    </p>
+
+    <section id="status" class="status" aria-live="polite">Loading…</section>
+
+    <section id="meta" class="meta hidden"></section>
+
+    <section id="findings" class="findings hidden"></section>
+
+    <section id="guidance" class="guidance hidden"></section>
+
+    <section id="actions" class="actions hidden"></section>
+
+    <section id="manual" class="manual">
+      <label for="policy-url">Policy URL (if not found)</label>
+      <div class="row">
+        <input
+          id="policy-url"
+          type="url"
+          placeholder="https://example.com/privacy"
+          autocomplete="off"
+        />
+        <button type="button" id="analyze-url-btn">Analyze</button>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <button type="button" class="linkish" id="clear-cache-btn">Clear cache</button>
+    </footer>
+
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

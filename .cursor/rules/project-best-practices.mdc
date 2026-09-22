@@ -1,0 +1,60 @@
+---
+description: Security, quality, DRY, and verification standards for this project
+alwaysApply: true
+---
+
+# Project best practices
+
+## Scope and changes
+
+- Match existing patterns, naming, and file layout in the repo you touch.
+- Keep diffs focused on the task; avoid drive-by refactors or unrelated edits.
+
+## Security
+
+- Never commit secrets, API keys, or credentials; use environment variables and existing project conventions for configuration.
+- Validate and normalize input on the server; never rely on client-side checks alone for security.
+- Enforce authorization on every path that reads or mutates sensitive data; assume callers are untrusted.
+- Use parameterized queries or the project ORM as intended; avoid string-concatenated SQL.
+- Use least-privilege tokens and scopes; avoid long-lived credentials in application code.
+- Do not log passwords, tokens, or unnecessary PII; redact or omit sensitive fields in logs and errors exposed to clients.
+- Be mindful of XSS (escape or sanitize when rendering user-controlled content) and follow the stack’s session/CSRF patterns where they apply.
+
+## Elegant code
+
+- Prefer clear names and explicit types at module boundaries (APIs, public functions).
+- Use early returns and shallow nesting; surface meaningful errors with enough context to debug.
+- Prefer small, composable units over large files; reuse project utilities and abstractions.
+
+## Avoid duplication
+
+- Search for existing helpers, hooks, services, or shared modules before adding new ones.
+- When the same logic appears more than once—or one abstraction would clarify intent—extract it in line with how the codebase already organizes shared code.
+
+## Verification after major changes
+
+From the **root of the package you changed**, run **`npm run ci`** after substantive edits when that script exists in `package.json`. It should cover lint, typecheck, format, tests, and audit where configured.
+
+Treat failures as blocking until fixed or explicitly justified to the team.
+
+## Dependencies
+
+- Prefer minimal, well-maintained dependencies; avoid adding packages without clear need.
+- When `npm run ci` includes audit, address reported issues according to project policy (upgrade, patch, or documented exception).
+
+## Tests
+
+- Write **unit tests** for all new functionality (or extend an existing test suite where it fits).
+- When fixing a bug, add a **regression test** that fails without the fix and passes with it so the issue cannot return unnoticed.
+- Add or update automated tests when behavior changes in ways tests should catch.
+- Do not weaken or skip tests solely to make CI pass.
+
+## Speed
+
+- Optimize for runtime performance: fast queries, quick loading, efficient async processing, and deferred loading where it improves perceived speed.
+- Avoid blocking the UI or serializing work that can run in parallel; prefer pagination, caching, and lazy loading over fetching or computing more than needed upfront.
+
+## Documentation
+
+- When a change affects setup, configuration, scripts, or how contributors work with the project, update the **README** as appropriate so it stays accurate.
+- When a change affects system design, modules, data flow, integrations, or structural patterns, update **ARCHITECTURE.md** as appropriate (when the repo includes one).
