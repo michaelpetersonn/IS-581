@@ -6,16 +6,17 @@ Rules-based privacy checkpoint: find the current site’s privacy policy, show f
 
 1. Detects the active tab’s domain.
 2. Scans the page for privacy-policy links (and common paths like `/privacy`).
-3. Downloads and cleans the policy text locally.
-4. Matches five categories with keyword/rules templates:
+3. Downloads and cleans the policy text locally (size/time limited).
+4. Rejects pages that do **not** look like a privacy policy (e.g. marketing pages or cookie-banner demos).
+5. Matches five categories with keyword/rules templates:
    - What data is collected
    - How the data is used
    - Who the data is shared with
-   - Targeted advertising / sale or sharing
+   - Mentions sale/sharing (including “we do not sell”)
    - Access, opt-out, or deletion choices
-5. Shows a plain-English explanation and a **verbatim excerpt** for each hit (or “Not clearly specified”).
-6. Shows an **Alerts** count (how many categories matched) in the popup and on the toolbar badge.
-7. Suggests what you should do and links to the policy / opt-out page when found; can copy a real privacy contact email (placeholder addresses like `you@domain.com` are ignored).
+6. Shows a plain-English explanation and a **verbatim excerpt** for each hit (or “Not clearly specified”).
+7. Shows an **Alerts** count (how many categories matched) in the popup and on the toolbar badge.
+8. Suggests what you should do and links to the policy / opt-out page when found; can copy a real privacy contact email (placeholder addresses like `you@domain.com` are ignored).
 
 ## Load unpacked (Chrome)
 
@@ -44,11 +45,13 @@ See [`STORE.md`](STORE.md) for the publish checklist, permission justifications,
 | `storage` | Session cache of analysis results (domain + structured findings only, ~30 minutes). |
 | Host access (`http(s)://*/*`) | Fetch the privacy policy document you (or the page) already pointed to. |
 
-c3nsor does **not** log a history of sites you visit to any server. Session cache stays in the browser and can be cleared from the popup.
+c3nsor does **not** log a history of sites you visit to any server. Session cache stays in the browser (`chrome.storage.session`) and can be cleared from the popup. Fetches use `credentials: "omit"` (no cookies sent).
 
 ## How analysis works
 
 Explanations come from **predefined templates** plus regex/keyword matches over policy sentences. This is intentionally limited and can miss nuanced language. It is **not** legal advice and **not** an AI summary.
+
+**Known limits:** JS-heavy privacy hubs (e.g. Meta/Instagram privacy center) often ship an empty HTML shell — the extension cannot run their page JavaScript, so analysis may fail until a printable/static policy URL is pasted.
 
 ## Project layout
 
@@ -68,6 +71,7 @@ extension/
 - Manifest V3, ES modules in the service worker.
 - Policy download is capped (~1.5 MB) and timed out (~12s).
 - Refresh forces a new analysis; otherwise the session cache is reused per domain.
+- Discover runs only when you open/analyze via the popup (not on every navigation).
 
 ## Verify locally (optional)
 

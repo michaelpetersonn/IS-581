@@ -23,7 +23,9 @@ Or manually zip the contents of `extension/` **excluding** `scripts/`, `node_mod
    - **Small promo tile** 440×280 (optional but nice).
    - **Store description** — short + detailed; say **rules-based, local, not AI, not legal advice**.
    - **Privacy practices form** — host permissions are broad (`http(s)://*/*`) so explain clearly: *only to fetch the privacy-policy URL the user (or page) pointed to; processed locally; no server logging of browsing history.*
-   - **Privacy policy URL** — required for many permission types. Use your hosted page, e.g. `https://YOUR-SITE/privacy-policy.html`, stating: no account, no remote analysis, session cache only.
+   - **Privacy policy URL** — required for many permission types. Use the hosted page:
+  `https://michael-peterson.com/IS-581/privacy-policy.html`
+  (states: no account, no remote analysis, session cache only).
 
 4. **Permission justification (paste-ready)**
 
@@ -43,7 +45,7 @@ Or manually zip the contents of `extension/` **excluding** `scripts/`, `node_mod
 
 ## After approval
 
-- Put the public Chrome Web Store URL on [`Landing Page/extension.html`](../Landing%20Page/extension.html) (replace the “coming soon” note).
+- Put the public Chrome Web Store URL on [`docs/extension.html`](../docs/extension.html) (replace the “coming soon” note).
 - Bump `manifest.json` `version` for every new upload.
 
 ## Honest scope for the listing

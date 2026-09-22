@@ -13,7 +13,7 @@ Open the homepage (or a normal product page), click the c3nsor icon, wait for an
 | [wikipedia.org](https://www.wikipedia.org/) / Wikimedia | Straightforward policy language | https://foundation.wikimedia.org/wiki/Policy:Privacy_policy |
 | [nytimes.com](https://www.nytimes.com/) (optional) | Rich findings / ads language | https://www.nytimes.com/privacy/privacy-policy |
 
-**Avoid as first click:** SPA-heavy docs (e.g. some GitHub docs pages), login walls, and pages that only show a cookie banner with no policy link.
+**Avoid as first click:** SPA-heavy privacy hubs (Meta/Instagram privacy center often returns an empty JS shell), login walls, and pages that only show a cookie banner with no real policy link. Marketing sites without a policy should fail discovery (paste a policy URL if you have one).
 
 ## Rehearsal script (~2 minutes)
 

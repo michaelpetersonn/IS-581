@@ -133,9 +133,10 @@ function renderResult(result) {
   alternativesEl.innerHTML = "";
 
   metaEl.classList.remove("hidden");
+  const policyHref = isHttpUrl(result.policyUrl) ? escapeAttr(result.policyUrl) : "#";
   metaEl.innerHTML = `
     <div><strong>${escapeHtml(result.domain)}</strong></div>
-    <div>Policy: <a href="${escapeAttr(result.policyUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(shortUrl(result.policyUrl))}</a></div>
+    <div>Policy: <a href="${policyHref}" target="_blank" rel="noopener noreferrer">${escapeHtml(shortUrl(result.policyUrl))}</a></div>
   `;
 
   const alertCount =
@@ -181,10 +182,12 @@ function renderResult(result) {
   const acts = result.actions || {};
 
   if (acts.policyUrl) {
-    actionsEl.appendChild(linkBtn(acts.policyUrl, "Open privacy policy", false));
+    const openPolicy = linkBtn(acts.policyUrl, "Open privacy policy", false);
+    if (openPolicy) actionsEl.appendChild(openPolicy);
   }
   if (acts.optOutUrl) {
-    actionsEl.appendChild(linkBtn(acts.optOutUrl, "Open privacy choices / opt-out", false));
+    const openOptOut = linkBtn(acts.optOutUrl, "Open privacy choices / opt-out", false);
+    if (openOptOut) actionsEl.appendChild(openOptOut);
   } else {
     const missing = document.createElement("span");
     missing.style.cssText = "font-size:11px;color:#666;align-self:center";
@@ -212,12 +215,23 @@ function renderResult(result) {
 
 function linkBtn(href, label, secondary) {
   const a = document.createElement("a");
+  if (!isHttpUrl(href)) return null;
   a.href = href;
   a.target = "_blank";
   a.rel = "noopener noreferrer";
   a.textContent = label;
   if (secondary) a.classList.add("secondary");
   return a;
+}
+
+/** Only allow navigable http(s) action links (blocks javascript:/data:). */
+function isHttpUrl(value) {
+  try {
+    const u = new URL(String(value || ""));
+    return u.protocol === "http:" || u.protocol === "https:";
+  } catch {
+    return false;
+  }
 }
 
 function shortUrl(url) {

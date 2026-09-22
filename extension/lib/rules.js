@@ -241,9 +241,14 @@ function extractActions(text, extras) {
   const links = extras.pageLinks || [];
   for (const link of links) {
     const hay = `${link.text || ""} ${link.href || ""}`;
-    if (ACTION_URL_PATTERNS.some((re) => re.test(hay))) {
-      actions.optOutUrl = link.href;
+    if (!ACTION_URL_PATTERNS.some((re) => re.test(hay))) continue;
+    try {
+      const u = new URL(link.href);
+      if (u.protocol !== "http:" && u.protocol !== "https:") continue;
+      actions.optOutUrl = u.href;
       break;
+    } catch {
+      /* skip bad href */
     }
   }
 
