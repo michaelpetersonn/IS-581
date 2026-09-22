@@ -21,9 +21,9 @@ export const CATEGORIES = [
   },
   {
     id: "advertising",
-    label: "Targeted advertising / sale or sharing",
+    label: "Mentions sale/sharing (including “we do not sell”)",
     explanation:
-      "This policy appears to mention advertising, targeted ads, or selling/sharing personal information."
+      "This policy appears to mention advertising, targeted ads, or selling/sharing personal information — including statements that the company does not sell data."
   },
   {
     id: "choices",

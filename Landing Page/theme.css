@@ -564,3 +564,301 @@ footer .brand-mark { min-width: 34px; height: 34px; font-size: 15px; }
   .tone-bridge { height: 80px; }
   .tone-bridge-down { height: 72px; }
 }
+
+/* —— Site nav (Home / Extension) —— */
+.site-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  margin-left: auto;
+  margin-right: 18px;
+}
+.site-nav a {
+  font-family: "DM Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: #bdbdbd;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+.site-nav a:hover,
+.site-nav a[aria-current="page"] {
+  color: #fff;
+}
+.site-header .nav-cta {
+  margin-left: 0;
+}
+
+/* —— Extension page —— */
+.ext-hero {
+  background: #101010;
+  color: #fff;
+  padding: 72px 8vw 64px;
+}
+.ext-hero .hero-brand {
+  margin: 36px 0 18px;
+  font-size: clamp(42px, 6vw, 72px);
+  font-weight: 700;
+  letter-spacing: -0.06em;
+}
+.ext-hero h1 {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 700;
+  font-size: clamp(42px, 6.5vw, 88px);
+  letter-spacing: -0.06em;
+  line-height: 1.02;
+}
+.ext-lead {
+  max-width: 540px;
+  margin: 28px 0 32px;
+  color: #cfcfcf;
+  font-size: 17px;
+  line-height: 1.65;
+}
+.ext-cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+.button-ghost {
+  border: 1px solid #fff;
+  background: transparent;
+  color: #fff;
+  font: 12px "DM Mono", monospace;
+  text-decoration: none;
+  padding: 17px 19px;
+  display: inline-flex;
+}
+.ext-store-note {
+  margin: 20px 0 0;
+  color: #8a8a8a;
+  font: 12px/1.5 "DM Mono", monospace;
+}
+.ext-preview-band {
+  background: #e8e8e8;
+  padding: 64px 8vw;
+  display: flex;
+  justify-content: center;
+}
+.ext-popup-mock {
+  width: min(380px, 100%);
+  padding: 18px 18px 16px;
+  background: #fff;
+  border: 1px solid #d8d8d8;
+  box-shadow: 12px 12px 0 #101010;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #1c1e21;
+}
+.ext-popup-mock .ext-pop-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  font-family: Manrope, Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+}
+.ext-popup-mock .ext-pop-top .brand-mark {
+  min-width: 26px;
+  height: 26px;
+  color: #fff;
+  background: #101010;
+  border-color: #101010;
+}
+.ext-popup-mock .ext-kicker {
+  margin: 0;
+  color: #65676b;
+  font-size: 11px;
+  font-weight: 600;
+}
+.ext-popup-mock .ext-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 0 12px;
+  border-bottom: 1px solid #e4e6eb;
+}
+.ext-popup-mock .ext-head strong {
+  font-size: 18px;
+}
+.ext-popup-mock .ext-head b {
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: #fde8e6;
+  color: #b42318;
+  font-size: 12px;
+  font-weight: 600;
+}
+.ext-popup-mock ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.ext-popup-mock li {
+  padding: 11px 0;
+  border-bottom: 1px solid #e4e6eb;
+  font-size: 13px;
+}
+.ext-popup-mock li span {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: #e8f5e9;
+  color: #1a7f37;
+  font-size: 10px;
+  font-weight: 600;
+}
+.ext-popup-mock li:nth-child(4) span {
+  background: #eee;
+  color: #666;
+}
+.ext-popup-mock > .ext-kicker:last-of-type {
+  margin-top: 14px;
+}
+.ext-popup-mock .ext-acts {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+.ext-popup-mock .ext-acts span {
+  display: grid;
+  place-items: center;
+  min-height: 36px;
+  background: #1d1d1f;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+}
+.ext-features {
+  padding: 96px 8vw;
+  background: #fff;
+}
+.ext-features h2 {
+  margin: 20px 0 48px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(40px, 5vw, 72px);
+  font-weight: 700;
+  letter-spacing: -0.06em;
+  line-height: 1.05;
+}
+.ext-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  border-top: 1px solid #101010;
+}
+.ext-feature-grid article {
+  padding: 32px 28px 32px 0;
+  border-bottom: 1px solid #d8d8d8;
+}
+.ext-feature-grid article:nth-child(even) {
+  padding-left: 28px;
+  border-left: 1px solid #d8d8d8;
+}
+.ext-feature-grid i {
+  color: #707070;
+  font: 11px "DM Mono", monospace;
+  font-style: normal;
+}
+.ext-feature-grid h3 {
+  margin: 20px 0 10px;
+  font-size: 22px;
+  letter-spacing: -0.04em;
+}
+.ext-feature-grid p {
+  margin: 0;
+  max-width: 360px;
+  color: #555;
+  font-size: 15px;
+  line-height: 1.55;
+}
+.ext-install {
+  padding: 96px 8vw;
+  background: #101010;
+  color: #fff;
+}
+.ext-install h2 {
+  margin: 20px 0 36px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(40px, 5vw, 72px);
+  font-weight: 700;
+  letter-spacing: -0.06em;
+  line-height: 1.05;
+}
+.ext-steps {
+  max-width: 560px;
+  margin: 0;
+  padding-left: 22px;
+  color: #cfcfcf;
+  font-size: 16px;
+  line-height: 1.7;
+}
+.ext-steps code {
+  font-family: "DM Mono", monospace;
+  font-size: 13px;
+  color: #fff;
+}
+.ext-install-note {
+  max-width: 520px;
+  margin: 28px 0 0;
+  color: #8a8a8a;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.ext-vision {
+  padding: 96px 8vw;
+  background: #e8e8e8;
+}
+.ext-vision h2 {
+  margin: 20px 0 24px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(36px, 4.5vw, 64px);
+  font-weight: 700;
+  letter-spacing: -0.06em;
+  line-height: 1.05;
+}
+.ext-vision p {
+  max-width: 560px;
+  margin: 0 0 28px;
+  color: #444;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+@media (max-width: 760px) {
+  .site-nav {
+    gap: 14px;
+    margin-right: 10px;
+  }
+  .site-nav a {
+    font-size: 10px;
+  }
+  .ext-hero,
+  .ext-preview-band,
+  .ext-features,
+  .ext-install,
+  .ext-vision {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  .ext-feature-grid {
+    grid-template-columns: 1fr;
+  }
+  .ext-feature-grid article,
+  .ext-feature-grid article:nth-child(even) {
+    padding: 24px 0;
+    border-left: 0;
+  }
+}

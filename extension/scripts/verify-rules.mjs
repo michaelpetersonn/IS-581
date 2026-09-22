@@ -22,7 +22,7 @@ const sampleHtml = `
 `;
 
 const text = htmlToPlainText(sampleHtml);
-const { findings, actions } = analyzePolicy(text, {
+const { findings, actions, alertCount } = analyzePolicy(text, {
   policyUrl: "https://example.com/privacy",
   pageLinks: [
     { href: "https://example.com/privacy-choices", text: "Your Privacy Choices" },
@@ -65,6 +65,34 @@ if (!actions.contactEmail) {
   console.log("OK contactEmail", actions.contactEmail);
 }
 
+if (typeof alertCount !== "number" || alertCount !== 5) {
+  console.error("EXPECTED alertCount 5, got", alertCount);
+  failed++;
+} else {
+  console.log("OK alertCount", alertCount);
+}
+
+// Placeholder email must be ignored
+const placeholderOnly = analyzePolicy(
+  "Contact us at you@domain.com for privacy questions. We collect personal information including email."
+);
+if (placeholderOnly.actions.contactEmail) {
+  console.error("EXPECTED no contactEmail for you@domain.com, got", placeholderOnly.actions.contactEmail);
+  failed++;
+} else {
+  console.log("OK rejected you@domain.com");
+}
+
+const mixed = analyzePolicy(
+  "Email you@domain.com or privacy@acme.com. We collect personal information including email."
+);
+if (mixed.actions.contactEmail !== "privacy@acme.com") {
+  console.error("EXPECTED privacy@acme.com, got", mixed.actions.contactEmail);
+  failed++;
+} else {
+  console.log("OK preferred privacy@acme.com over you@domain.com");
+}
+
 const guidance = buildGuidance(findings);
 if (!guidance || guidance.length < 20) {
   console.error("EXPECTED guidance");
@@ -82,6 +110,34 @@ for (const id of required) {
   }
 }
 console.log("OK not-specified path for thin text");
+
+// Prefer verb sentences over short headings
+const headingBias = analyzePolicy(
+  "Information We Collect. We collect personal information including your email address and IP address when you use our services."
+);
+if (!headingBias.findings.collected.found) {
+  console.error("EXPECTED collected hit");
+  failed++;
+} else if (/^Information We Collect\.?$/i.test(headingBias.findings.collected.excerpt.trim())) {
+  console.error("EXPECTED verb sentence, got heading:", headingBias.findings.collected.excerpt);
+  failed++;
+} else {
+  console.log("OK excerpt prefers verb sentence over heading");
+}
+
+// Skip markup leftovers
+const junk = analyzePolicy(
+  '{ "collect": true } <div class="x">nav</div> We may share your information with service providers and advertising partners.'
+);
+if (!junk.findings.shared.found) {
+  console.error("EXPECTED shared despite junk nearby");
+  failed++;
+} else if (/[{<]/.test(junk.findings.shared.excerpt)) {
+  console.error("EXPECTED clean excerpt, got", junk.findings.shared.excerpt);
+  failed++;
+} else {
+  console.log("OK skipped junk excerpt");
+}
 
 if (failed) {
   console.error(`\nFAILED: ${failed} checks`);

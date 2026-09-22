@@ -1,5 +1,7 @@
 const statusEl = document.getElementById("status");
 const metaEl = document.getElementById("meta");
+const alertBoxEl = document.getElementById("alert-box");
+const alternativesEl = document.getElementById("alternatives");
 const findingsEl = document.getElementById("findings");
 const guidanceEl = document.getElementById("guidance");
 const actionsEl = document.getElementById("actions");
@@ -22,6 +24,7 @@ document.getElementById("clear-cache-btn").addEventListener("click", async () =>
   await chrome.runtime.sendMessage({ type: "CLEAR_CACHE" });
   statusEl.textContent = "Cache cleared. Refresh to re-analyze.";
   statusEl.className = "status";
+  alternativesEl.classList.add("hidden");
 });
 
 runAnalyze({ force: false });
@@ -51,6 +54,8 @@ function showLoading() {
   statusEl.textContent = "Finding and reading the privacy policy…";
   statusEl.className = "status loading";
   metaEl.classList.add("hidden");
+  alertBoxEl.classList.add("hidden");
+  alternativesEl.classList.add("hidden");
   findingsEl.classList.add("hidden");
   guidanceEl.classList.add("hidden");
   actionsEl.classList.add("hidden");
@@ -59,6 +64,7 @@ function showLoading() {
 function showError(message, detail) {
   statusEl.textContent = message;
   statusEl.className = "status error";
+  alertBoxEl.classList.add("hidden");
   findingsEl.classList.add("hidden");
   guidanceEl.classList.add("hidden");
   actionsEl.classList.add("hidden");
@@ -70,25 +76,79 @@ function showError(message, detail) {
     metaEl.classList.add("hidden");
   }
 
-  if (detail?.candidates?.length) {
-    const top = detail.candidates
-      .slice(0, 3)
-      .map((c) => escapeHtml(c.href))
-      .join("<br>");
-    statusEl.innerHTML = `${escapeHtml(message)}<br><br><span style="color:#666;font-size:11px">Tried:<br>${top}</span>`;
+  renderAlternatives(detail?.candidates || []);
+}
+
+/**
+ * Surface top policy URL candidates as one-click retries when discovery/fetch fails.
+ * @param {{ href: string, text?: string }[]} candidates
+ */
+function renderAlternatives(candidates) {
+  const top = (candidates || []).slice(0, 3);
+  if (!top.length) {
+    alternativesEl.classList.add("hidden");
+    alternativesEl.innerHTML = "";
+    return;
   }
+
+  alternativesEl.classList.remove("hidden");
+  alternativesEl.innerHTML = "";
+
+  const heading = document.createElement("h2");
+  heading.textContent = "Try another policy URL";
+  alternativesEl.appendChild(heading);
+
+  const list = document.createElement("div");
+  list.className = "alt-list";
+
+  for (const c of top) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "alt-btn";
+    const label = c.text && !c.text.startsWith("/") ? `${c.text} — ${shortUrl(c.href)}` : shortUrl(c.href);
+    btn.textContent = label;
+    btn.title = c.href;
+    btn.addEventListener("click", () => {
+      policyInput.value = c.href;
+      runAnalyze({ force: true, policyUrl: c.href });
+    });
+    list.appendChild(btn);
+  }
+
+  alternativesEl.appendChild(list);
+
+  const hint = document.createElement("p");
+  hint.className = "alt-hint";
+  hint.textContent = "Or paste a full policy URL below and click Analyze.";
+  alternativesEl.appendChild(hint);
 }
 
 function renderResult(result) {
   statusEl.className = "status";
   statusEl.textContent = result.fromCache
-    ? "Showing cached analysis for this site (session)."
-    : "Analysis complete. Excerpts are taken from the policy text.";
+    ? "Cached rules match for this site (session). Not a full legal review."
+    : "Rules matched language in this policy. Citations are excerpts — not legal advice.";
+
+  alternativesEl.classList.add("hidden");
+  alternativesEl.innerHTML = "";
 
   metaEl.classList.remove("hidden");
   metaEl.innerHTML = `
     <div><strong>${escapeHtml(result.domain)}</strong></div>
     <div>Policy: <a href="${escapeAttr(result.policyUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(shortUrl(result.policyUrl))}</a></div>
+  `;
+
+  const alertCount =
+    typeof result.alertCount === "number"
+      ? result.alertCount
+      : Object.values(result.findings || {}).filter((f) => f?.found).length;
+
+  alertBoxEl.classList.remove("hidden");
+  const label = alertCount === 1 ? "1 alert on this policy" : `${alertCount} alerts on this policy`;
+  alertBoxEl.innerHTML = `
+    <h2>Alerts</h2>
+    <p class="count">${escapeHtml(label)}</p>
+    <p class="hint">Categories with matching policy language.</p>
   `;
 
   findingsEl.classList.remove("hidden");
@@ -121,9 +181,7 @@ function renderResult(result) {
   const acts = result.actions || {};
 
   if (acts.policyUrl) {
-    actionsEl.appendChild(
-      linkBtn(acts.policyUrl, "Open privacy policy", false)
-    );
+    actionsEl.appendChild(linkBtn(acts.policyUrl, "Open privacy policy", false));
   }
   if (acts.optOutUrl) {
     actionsEl.appendChild(linkBtn(acts.optOutUrl, "Open privacy choices / opt-out", false));

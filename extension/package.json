@@ -2,5 +2,9 @@
   "name": "c3nsor-extension",
   "private": true,
   "type": "module",
-  "version": "0.1.0"
+  "version": "0.1.0",
+  "scripts": {
+    "verify": "node scripts/verify-rules.mjs",
+    "pack": "rm -f c3nsor-extension.zip && zip -r c3nsor-extension.zip manifest.json background content lib popup icons README.md -x \"*.DS_Store\""
+  }
 }

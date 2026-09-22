@@ -14,7 +14,8 @@ Rules-based privacy checkpoint: find the current site’s privacy policy, show f
    - Targeted advertising / sale or sharing
    - Access, opt-out, or deletion choices
 5. Shows a plain-English explanation and a **verbatim excerpt** for each hit (or “Not clearly specified”).
-6. Suggests what you should do and links to the policy / opt-out page when found; can copy a privacy contact email.
+6. Shows an **Alerts** count (how many categories matched) in the popup and on the toolbar badge.
+7. Suggests what you should do and links to the policy / opt-out page when found; can copy a real privacy contact email (placeholder addresses like `you@domain.com` are ignored).
 
 ## Load unpacked (Chrome)
 
@@ -25,6 +26,14 @@ Rules-based privacy checkpoint: find the current site’s privacy policy, show f
 5. Open any `https://` site, click the c3nsor icon.
 
 If automatic discovery fails, paste a policy URL in the popup and click **Analyze**.
+
+## Class demo
+
+See [`DEMO.md`](DEMO.md) for known-good sites, paste-URL backups, and a short rehearsal script.
+
+## Chrome Web Store
+
+See [`STORE.md`](STORE.md) for the publish checklist, permission justifications, and packing steps (`npm run pack`).
 
 ## Permissions
 

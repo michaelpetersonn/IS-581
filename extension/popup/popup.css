@@ -79,6 +79,79 @@ body {
   color: var(--muted);
 }
 
+.alert-box {
+  margin-bottom: 12px;
+  padding: 12px;
+  border: 1px solid var(--ink);
+  background: #fff;
+}
+
+.alert-box h2 {
+  margin: 0 0 4px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.alert-box .count {
+  margin: 0 0 4px;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.alert-box .hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.alternatives {
+  margin-bottom: 12px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  background: #fff;
+}
+
+.alternatives h2 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.alternatives .alt-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.alternatives button.alt-btn {
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--ink);
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  word-break: break-all;
+}
+
+.alternatives button.alt-btn:hover {
+  background: #f0f0f0;
+}
+
+.alternatives .alt-hint {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+
 .meta strong {
   color: var(--ink);
   font-weight: 600;

@@ -23,6 +23,8 @@ async function handleMessage(message) {
 
   if (message.type === "CLEAR_CACHE") {
     await clearCache();
+    const tab = await getActiveTab();
+    if (tab?.id) await clearAlertBadge(tab.id);
     return { ok: true };
   }
 
@@ -53,6 +55,7 @@ async function analyzeActiveTab(opts) {
   }
 
   if (tabUrl.protocol !== "http:" && tabUrl.protocol !== "https:") {
+    await clearAlertBadge(tab.id);
     return {
       ok: false,
       error: "Open a normal website (http/https). Chrome system pages cannot be scanned."
@@ -64,6 +67,7 @@ async function analyzeActiveTab(opts) {
   if (!opts.force && !opts.policyUrlOverride) {
     const cached = await getCached(domain);
     if (cached) {
+      await setAlertBadge(tab.id, cached.alertCount ?? countAlerts(cached.findings));
       return { ok: true, fromCache: true, ...cached };
     }
   }
@@ -108,6 +112,7 @@ async function analyzeActiveTab(opts) {
   }
 
   if (!policyUrl) {
+    await clearAlertBadge(tab.id);
     return {
       ok: false,
       error:
@@ -120,6 +125,7 @@ async function analyzeActiveTab(opts) {
 
   const fetched = await fetchPolicyHtml(policyUrl);
   if (!fetched.ok) {
+    await clearAlertBadge(tab.id);
     return {
       ok: false,
       error: fetched.error,
@@ -132,12 +138,14 @@ async function analyzeActiveTab(opts) {
 
   const text = htmlToPlainText(fetched.html);
   if (!text || text.length < 80) {
+    await clearAlertBadge(tab.id);
     return {
       ok: false,
       error: "The policy page could not be read as text (empty or heavily scripted).",
       domain,
       pageUrl: tab.url,
-      policyUrl: fetched.finalUrl
+      policyUrl: fetched.finalUrl,
+      candidates: discovery.candidates
     };
   }
 
@@ -151,6 +159,7 @@ async function analyzeActiveTab(opts) {
   }
 
   const guidance = buildGuidance(analysis.findings);
+  const alertCount = analysis.alertCount ?? countAlerts(analysis.findings);
 
   const result = {
     domain,
@@ -159,11 +168,32 @@ async function analyzeActiveTab(opts) {
     findings: analysis.findings,
     actions: analysis.actions,
     guidance,
+    alertCount,
     analyzedAt: new Date().toISOString()
   };
 
   await setCached(domain, result);
+  await setAlertBadge(tab.id, alertCount);
   return { ok: true, fromCache: false, ...result };
+}
+
+function countAlerts(findings) {
+  if (!findings) return 0;
+  return Object.values(findings).filter((f) => f?.found).length;
+}
+
+async function setAlertBadge(tabId, count) {
+  const n = Number(count) || 0;
+  await chrome.action.setBadgeBackgroundColor({ color: "#101010", tabId });
+  await chrome.action.setBadgeTextColor({ color: "#ffffff", tabId }).catch(() => {});
+  await chrome.action.setBadgeText({
+    text: n > 0 ? String(n) : "",
+    tabId
+  });
+}
+
+async function clearAlertBadge(tabId) {
+  await chrome.action.setBadgeText({ text: "", tabId });
 }
 
 async function getActiveTab() {

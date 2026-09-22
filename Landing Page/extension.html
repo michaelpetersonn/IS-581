@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="c3nsor Chrome extension — a local privacy-policy checkpoint with citations. Rules-based, not AI."
+    />
+    <title>Extension — c3nsor</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="theme.css" />
+    <link rel="stylesheet" href="layout.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="index.html" aria-label="c3nsor home"
+        ><span class="brand-mark" aria-hidden="true">c3</span
+        ><span class="brand-name">c<span class="brand-digit">3</span>nsor</span></a
+      >
+      <nav class="site-nav" aria-label="Primary">
+        <a href="index.html">Home</a>
+        <a href="extension.html" aria-current="page">Extension</a>
+      </nav>
+      <a class="nav-cta" href="index.html#access">GET ACCESS</a>
+    </header>
+
+    <main id="top">
+      <section class="ext-hero">
+        <p class="kicker">Chrome extension · privacy policy checkpoint</p>
+        <p class="hero-brand">c<span class="brand-digit">3</span>nsor</p>
+        <h1>See what the policy<br />actually says.</h1>
+        <p class="ext-lead">
+          Open any site, click c3nsor, and get five plain-English findings with verbatim citations —
+          plus links to opt out or contact privacy. Analysis runs on your device with rules, not AI.
+        </p>
+        <div class="ext-cta-row">
+          <a class="button button-accent button-cta" href="#install">How to install</a>
+          <a class="button button-ghost" href="index.html#access">Join waitlist</a>
+        </div>
+        <p class="ext-store-note">
+          Chrome Web Store listing coming soon. Until then, load the unpacked build from the repo.
+        </p>
+      </section>
+
+      <section class="ext-preview-band" aria-label="Extension popup preview">
+        <aside class="ext-popup-mock" aria-hidden="false">
+          <div class="ext-pop-top">
+            <span class="brand-mark">c3</span>
+            <span>c3nsor</span>
+          </div>
+          <p class="ext-kicker">Rules matched language in this policy</p>
+          <div class="ext-head">
+            <strong>duckduckgo.com</strong>
+            <b>4 alerts</b>
+          </div>
+          <ul>
+            <li><span>Found</span> What data is collected — with a policy excerpt</li>
+            <li><span>Found</span> How the data is used</li>
+            <li><span>Found</span> Who the data is shared with</li>
+            <li><span>Unclear</span> Mentions sale / sharing</li>
+            <li><span>Found</span> Access, opt-out, or deletion choices</li>
+          </ul>
+          <p class="ext-kicker">Act</p>
+          <div class="ext-acts">
+            <span>Open policy</span>
+            <span>Opt out</span>
+            <span>Copy email</span>
+          </div>
+        </aside>
+      </section>
+
+      <section class="ext-features">
+        <p class="kicker">WHAT IT DOES TODAY</p>
+        <h2>Understand first.<br />Act with links.</h2>
+        <div class="ext-feature-grid">
+          <article>
+            <i>01</i>
+            <h3>Find the policy</h3>
+            <p>Scans the page for privacy links, or lets you paste a policy URL.</p>
+          </article>
+          <article>
+            <i>02</i>
+            <h3>Five checkpoints</h3>
+            <p>Collection, use, sharing, advertising/sale language, and your choices — each with a citation.</p>
+          </article>
+          <article>
+            <i>03</i>
+            <h3>Stays local</h3>
+            <p>No cloud analysis. No browsing history product. Session cache only, clear anytime.</p>
+          </article>
+          <article>
+            <i>04</i>
+            <h3>Honest limits</h3>
+            <p>Rules, not legal advice. Some JS-heavy privacy hubs (like Meta) may need a printable URL.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="ext-install" id="install">
+        <p class="kicker">INSTALL (DEVELOPER MODE)</p>
+        <h2>Load unpacked<br />in Chrome.</h2>
+        <ol class="ext-steps">
+          <li>Open <code>chrome://extensions</code> and turn on <strong>Developer mode</strong>.</li>
+          <li>Click <strong>Load unpacked</strong> and select the project’s <code>extension/</code> folder.</li>
+          <li>Pin c3nsor, open a normal https site, and click the icon.</li>
+        </ol>
+        <p class="ext-install-note">
+          Prefer DuckDuckGo, Mozilla, or Wikimedia for demos. Avoid SPA-only privacy centers as your first click.
+        </p>
+      </section>
+
+      <section class="ext-vision">
+        <p class="kicker">PRODUCT ROADMAP</p>
+        <h2>Landing is the vision.<br />This page is the MVP.</h2>
+        <p>
+          The homepage shows Prevent → Understand → Act (trackers, interrupts, blockers). The Chrome MVP ships
+          the <strong>Understand</strong> checkpoint with light Act links. Store release will describe only what
+          ships in the package — not the full vision yet.
+        </p>
+        <a class="button button-accent" href="index.html">Back to home</a>
+      </section>
+    </main>
+
+    <footer>
+      <a class="brand" href="index.html" aria-label="c3nsor home"
+        ><span class="brand-mark" aria-hidden="true">c3</span
+        ><span class="brand-name">c<span class="brand-digit">3</span>nsor</span></a
+      >
+      <span>© 2026 c3nsor</span>
+    </footer>
+  </body>
+</html>
