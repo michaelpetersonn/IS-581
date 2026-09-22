@@ -66,3 +66,49 @@ export function splitSentences(text) {
     .map((s) => s.trim())
     .filter((s) => s.length > 20);
 }
+
+/**
+ * Heuristic: is this cleaned text likely a privacy policy (not a marketing page / cookie banner)?
+ * @param {string} text
+ * @returns {boolean}
+ */
+export function looksLikePrivacyPolicy(text) {
+  const t = String(text || "").trim();
+  if (t.length < 400) return false;
+
+  // SPA shells / CSS dumps (e.g. Meta privacy center HTML)
+  if ((t.match(/--[a-z0-9-]+:|#\d{3,}|:root/gi) || []).length > 40) return false;
+  if (/__fb-light-mode|--fds-/i.test(t) && !/we collect personal/i.test(t)) return false;
+
+  const marketingHits = [
+    /\bget access\b/i,
+    /\bjoin the\b/i,
+    /\btake control\b/i,
+    /\bearly[- ]access\b/i,
+    /\bwaitlist\b/i,
+    /\bhow it works\b/i
+  ].filter((re) => re.test(t)).length;
+
+  // Avoid matching marketing copy like “privacy policy checkpoint”
+  const hasPolicyTitle = /privacy\s+policy(?!\s+checkpoint)/i.test(t) || /\blast updated\b/i.test(t);
+
+  const legal = [
+    /\bwe collect\b/i,
+    /personal\s+(information|data)/i,
+    /\bservice providers?\b/i,
+    /\bthird[- ]part(y|ies)\b/i,
+    /\b(opt[- ]out|request deletion|right to (access|delete|erasure))\b/i,
+    /\binformation we collect\b/i,
+    /\bhow we use\b/i,
+    /\bdata\s+protection\b/i
+  ];
+  let legalHits = 0;
+  for (const re of legal) {
+    if (re.test(t)) legalHits += 1;
+  }
+
+  if (hasPolicyTitle && legalHits >= 4) return true;
+  if (hasPolicyTitle && legalHits >= 3 && marketingHits <= 2) return true;
+  if (legalHits >= 5 && marketingHits <= 1) return true;
+  return false;
+}

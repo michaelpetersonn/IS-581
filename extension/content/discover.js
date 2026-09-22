@@ -11,6 +11,7 @@
   const COMMON_PATHS = [
     "/privacy",
     "/privacy-policy",
+    "/privacy-policy.html",
     "/privacy_policy",
     "/privacypolicy",
     "/legal/privacy",

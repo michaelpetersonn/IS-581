@@ -2,7 +2,7 @@
  * Offline verification of clean + rules against sample policy text.
  * Run: node scripts/verify-rules.mjs
  */
-import { htmlToPlainText } from "../lib/clean.js";
+import { htmlToPlainText, looksLikePrivacyPolicy } from "../lib/clean.js";
 import { analyzePolicy } from "../lib/rules.js";
 import { buildGuidance } from "../lib/templates.js";
 
@@ -137,6 +137,39 @@ if (!junk.findings.shared.found) {
   failed++;
 } else {
   console.log("OK skipped junk excerpt");
+}
+
+// Marketing / cookie-banner pages must not count as policies
+const marketing = htmlToPlainText(`
+<html><body>
+<h1>c3nsor</h1>
+<p>Join the waitlist today.</p>
+<p>We use cookies to personalize content and ads, and to measure our advertising.</p>
+</body></html>
+`);
+if (looksLikePrivacyPolicy(marketing)) {
+  console.error("EXPECTED marketing page to fail looksLikePrivacyPolicy");
+  failed++;
+} else {
+  console.log("OK rejected marketing/cookie-banner page as policy");
+}
+
+const policyLike = htmlToPlainText(`
+<html><body>
+<h1>Privacy Policy</h1>
+<p>Last updated: September 21, 2026</p>
+<p>We collect personal information including your email address when you join our waitlist.</p>
+<p>We use this information to contact you about product updates and to operate the site with service providers.</p>
+<p>We may share information with third parties that process submissions on our behalf.</p>
+<p>You may request deletion of your data by emailing privacy@example.com or using any opt-out link we provide.</p>
+<p>This Privacy Policy explains how we handle personal data on this website.</p>
+</body></html>
+`);
+if (!looksLikePrivacyPolicy(policyLike)) {
+  console.error("EXPECTED sample policy to pass looksLikePrivacyPolicy");
+  failed++;
+} else {
+  console.log("OK accepted real policy-like text");
 }
 
 if (failed) {

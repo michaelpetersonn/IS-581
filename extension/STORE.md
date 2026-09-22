@@ -23,7 +23,7 @@ Or manually zip the contents of `extension/` **excluding** `scripts/`, `node_mod
    - **Small promo tile** 440×280 (optional but nice).
    - **Store description** — short + detailed; say **rules-based, local, not AI, not legal advice**.
    - **Privacy practices form** — host permissions are broad (`http(s)://*/*`) so explain clearly: *only to fetch the privacy-policy URL the user (or page) pointed to; processed locally; no server logging of browsing history.*
-   - **Privacy policy URL** — required for many permission types. Host a short page on your site (or add one) stating: no account, no remote analysis, session cache only.
+   - **Privacy policy URL** — required for many permission types. Use your hosted page, e.g. `https://YOUR-SITE/privacy-policy.html`, stating: no account, no remote analysis, session cache only.
 
 4. **Permission justification (paste-ready)**
 

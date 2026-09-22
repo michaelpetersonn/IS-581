@@ -1,4 +1,4 @@
-import { htmlToPlainText } from "../lib/clean.js";
+import { htmlToPlainText, looksLikePrivacyPolicy } from "../lib/clean.js";
 import { fetchPolicyHtml } from "../lib/fetch.js";
 import { analyzePolicy } from "../lib/rules.js";
 import { buildGuidance } from "../lib/templates.js";
@@ -97,6 +97,9 @@ async function analyzeActiveTab(opts) {
   }
 
   let policyUrl = opts.policyUrlOverride;
+  let fetched = null;
+  let text = "";
+
   if (policyUrl) {
     try {
       const u = new URL(policyUrl);
@@ -107,36 +110,49 @@ async function analyzeActiveTab(opts) {
     } catch {
       return { ok: false, error: "That policy URL is not valid." };
     }
+    fetched = await fetchPolicyHtml(policyUrl);
+    if (!fetched.ok) {
+      await clearAlertBadge(tab.id);
+      return {
+        ok: false,
+        error: fetched.error,
+        domain,
+        pageUrl: tab.url,
+        policyUrl,
+        candidates: discovery.candidates
+      };
+    }
+    text = htmlToPlainText(fetched.html);
+    if (!looksLikePrivacyPolicy(text)) {
+      await clearAlertBadge(tab.id);
+      return {
+        ok: false,
+        error:
+          "That URL doesn’t look like a privacy policy (too little policy language). Paste a full policy page URL.",
+        domain,
+        pageUrl: tab.url,
+        policyUrl: fetched.finalUrl,
+        candidates: discovery.candidates
+      };
+    }
   } else {
-    policyUrl = await pickWorkingPolicyUrl(discovery.candidates);
+    const picked = await pickReadablePolicy(discovery.candidates, tab.url);
+    if (!picked) {
+      await clearAlertBadge(tab.id);
+      return {
+        ok: false,
+        error:
+          "No privacy policy was found on this page. Paste a policy URL below if you have one.",
+        domain,
+        pageUrl: tab.url,
+        candidates: discovery.candidates
+      };
+    }
+    fetched = picked.fetched;
+    text = picked.text;
+    policyUrl = fetched.finalUrl;
   }
 
-  if (!policyUrl) {
-    await clearAlertBadge(tab.id);
-    return {
-      ok: false,
-      error:
-        "No privacy policy was found on this page. Paste a policy URL below if you have one.",
-      domain,
-      pageUrl: tab.url,
-      candidates: discovery.candidates
-    };
-  }
-
-  const fetched = await fetchPolicyHtml(policyUrl);
-  if (!fetched.ok) {
-    await clearAlertBadge(tab.id);
-    return {
-      ok: false,
-      error: fetched.error,
-      domain,
-      pageUrl: tab.url,
-      policyUrl,
-      candidates: discovery.candidates
-    };
-  }
-
-  const text = htmlToPlainText(fetched.html);
   if (!text || text.length < 80) {
     await clearAlertBadge(tab.id);
     return {
@@ -144,7 +160,7 @@ async function analyzeActiveTab(opts) {
       error: "The policy page could not be read as text (empty or heavily scripted).",
       domain,
       pageUrl: tab.url,
-      policyUrl: fetched.finalUrl,
+      policyUrl: fetched?.finalUrl || policyUrl,
       candidates: discovery.candidates
     };
   }
@@ -177,6 +193,46 @@ async function analyzeActiveTab(opts) {
   return { ok: true, fromCache: false, ...result };
 }
 
+function normalizeUrlKey(url) {
+  try {
+    const u = new URL(url);
+    return (u.origin + u.pathname).replace(/\/+$/, "").toLowerCase();
+  } catch {
+    return String(url || "").toLowerCase();
+  }
+}
+
+/**
+ * Probe + fetch candidates until one looks like a real privacy policy.
+ * Prefer linked policies over the current page URL (avoids marketing-page false positives).
+ * @param {{ href: string, score?: number }[]} candidates
+ * @param {string} pageUrl
+ */
+async function pickReadablePolicy(candidates, pageUrl) {
+  const pageKey = normalizeUrlKey(pageUrl);
+  const list = [...(candidates || [])].sort((a, b) => {
+    const aSame = normalizeUrlKey(a.href) === pageKey ? 1 : 0;
+    const bSame = normalizeUrlKey(b.href) === pageKey ? 1 : 0;
+    if (aSame !== bSame) return aSame - bSame;
+    return (b.score || 0) - (a.score || 0);
+  });
+
+  for (const c of list.slice(0, 8)) {
+    // Skip analyzing the current marketing page unless it strongly looks like a policy URL
+    if (normalizeUrlKey(c.href) === pageKey && (c.score || 0) < 8) {
+      continue;
+    }
+    const probed = await probeUrl(c.href);
+    if (!probed) continue;
+    const fetched = await fetchPolicyHtml(probed);
+    if (!fetched.ok) continue;
+    const text = htmlToPlainText(fetched.html);
+    if (!looksLikePrivacyPolicy(text)) continue;
+    return { fetched, text };
+  }
+  return null;
+}
+
 function countAlerts(findings) {
   if (!findings) return 0;
   return Object.values(findings).filter((f) => f?.found).length;
@@ -205,6 +261,7 @@ function defaultCandidates(origin) {
   return [
     "/privacy",
     "/privacy-policy",
+    "/privacy-policy.html",
     "/legal/privacy",
     "/policies/privacy"
   ].map((path) => ({ href: origin + path, text: path, score: 1 }));

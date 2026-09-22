@@ -837,6 +837,56 @@ footer .brand-mark { min-width: 34px; height: 34px; font-size: 15px; }
   line-height: 1.6;
 }
 
+.footer-links {
+  display: flex;
+  gap: 18px;
+}
+.footer-links a {
+  color: #aaa;
+  text-decoration: none;
+  font: 10px "DM Mono", monospace;
+}
+.footer-links a:hover {
+  color: #fff;
+}
+
+.legal-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 72px 8vw 96px;
+  background: #fff;
+  color: #101010;
+}
+.legal-page h1 {
+  margin: 18px 0 8px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(40px, 5vw, 64px);
+  font-weight: 700;
+  letter-spacing: -0.05em;
+}
+.legal-updated {
+  margin: 0 0 28px;
+  color: #666;
+  font: 12px "DM Mono", monospace;
+}
+.legal-page h2 {
+  margin: 36px 0 12px;
+  font-size: 22px;
+  letter-spacing: -0.03em;
+}
+.legal-page p,
+.legal-page li {
+  color: #444;
+  font-size: 15px;
+  line-height: 1.65;
+}
+.legal-page ul {
+  padding-left: 22px;
+}
+.legal-page a {
+  color: #101010;
+}
+
 @media (max-width: 760px) {
   .site-nav {
     gap: 14px;
@@ -849,7 +899,8 @@ footer .brand-mark { min-width: 34px; height: 34px; font-size: 15px; }
   .ext-preview-band,
   .ext-features,
   .ext-install,
-  .ext-vision {
+  .ext-vision,
+  .legal-page {
     padding-left: 20px;
     padding-right: 20px;
   }
@@ -860,5 +911,9 @@ footer .brand-mark { min-width: 34px; height: 34px; font-size: 15px; }
   .ext-feature-grid article:nth-child(even) {
     padding: 24px 0;
     border-left: 0;
+  }
+  footer {
+    flex-wrap: wrap;
+    gap: 12px;
   }
 }
