@@ -1,4 +1,4 @@
-import { htmlToPlainText, looksLikePrivacyPolicy } from "../lib/clean.js";
+import { htmlToPlainText, looksLikePrivacyPolicy, looksAnalyzablePolicy } from "../lib/clean.js";
 import { fetchPolicyHtml } from "../lib/fetch.js";
 import { analyzePolicy } from "../lib/rules.js";
 import { buildGuidance } from "../lib/templates.js";
@@ -119,19 +119,22 @@ async function analyzeActiveTab(opts) {
         domain,
         pageUrl: tab.url,
         policyUrl,
+        openPolicyUrl: policyUrl,
         candidates: discovery.candidates
       };
     }
     text = htmlToPlainText(fetched.html);
-    if (!looksLikePrivacyPolicy(text)) {
+    // User / candidate picked this URL — use a softer readability gate
+    if (!looksAnalyzablePolicy(text)) {
       await clearAlertBadge(tab.id);
       return {
         ok: false,
         error:
-          "That URL doesn’t look like a privacy policy (too little policy language). Paste a full policy page URL.",
+          "Couldn’t extract enough policy text from that page (often a hub or script-heavy page). Open the link to read it, or paste a full policy URL.",
         domain,
         pageUrl: tab.url,
         policyUrl: fetched.finalUrl,
+        openPolicyUrl: fetched.finalUrl,
         candidates: discovery.candidates
       };
     }
@@ -139,12 +142,14 @@ async function analyzeActiveTab(opts) {
     const picked = await pickReadablePolicy(discovery.candidates, tab.url);
     if (!picked) {
       await clearAlertBadge(tab.id);
+      const topHref = discovery.candidates?.[0]?.href || null;
       return {
         ok: false,
         error:
-          "No privacy policy was found on this page. Paste a policy URL below if you have one.",
+          "No privacy policy was found on this page. Try a suggested link below, open it to read, or paste a policy URL.",
         domain,
         pageUrl: tab.url,
+        openPolicyUrl: topHref,
         candidates: discovery.candidates
       };
     }
@@ -161,6 +166,7 @@ async function analyzeActiveTab(opts) {
       domain,
       pageUrl: tab.url,
       policyUrl: fetched?.finalUrl || policyUrl,
+      openPolicyUrl: fetched?.finalUrl || policyUrl,
       candidates: discovery.candidates
     };
   }
@@ -227,7 +233,10 @@ async function pickReadablePolicy(candidates, pageUrl) {
     const fetched = await fetchPolicyHtml(probed);
     if (!fetched.ok) continue;
     const text = htmlToPlainText(fetched.html);
-    if (!looksLikePrivacyPolicy(text)) continue;
+    const ok =
+      looksLikePrivacyPolicy(text) ||
+      ((c.score || 0) >= 5 && looksAnalyzablePolicy(text));
+    if (!ok) continue;
     return { fetched, text };
   }
   return null;
@@ -262,8 +271,11 @@ function defaultCandidates(origin) {
     "/privacy",
     "/privacy-policy",
     "/privacy-policy.html",
+    "/privacy-statement",
+    "/privacy-notice",
     "/legal/privacy",
-    "/policies/privacy"
+    "/policies/privacy",
+    "/company/privacy"
   ].map((path) => ({ href: origin + path, text: path, score: 1 }));
 }
 

@@ -13,11 +13,14 @@
     "/privacy-policy",
     "/privacy-policy.html",
     "/privacy_policy",
+    "/privacy-statement",
+    "/privacy-notice",
     "/privacypolicy",
     "/legal/privacy",
     "/legal/privacy-policy",
     "/policies/privacy",
     "/about/privacy",
+    "/company/privacy",
     "/en/privacy",
     "/en-us/privacy"
   ];
@@ -61,11 +64,13 @@
     // Prefer exact / strong privacy-policy link text over weak path guesses
     if (/^privacy\s+policy$/i.test(trimmed)) score += 12;
     else if (/privacy\s+policy/i.test(trimmed)) score += 8;
-    else if (/^privacy\s+notice$/i.test(trimmed)) score += 10;
+    else if (/^privacy\s+(notice|statement)$/i.test(trimmed)) score += 10;
+    else if (/privacy\s+(notice|statement)/i.test(trimmed)) score += 8;
+    else if (/^privacy$/i.test(trimmed)) score += 7;
     else if (LINK_TEXT_RE.test(trimmed)) score += 5;
 
     if (HREF_RE.test(href)) score += 3;
-    if (/\/privacy([-_]?policy)?\/?$/i.test(href)) score += 2;
+    if (/\/privacy([-_]?(policy|statement|notice))?\/?$/i.test(href)) score += 2;
 
     // Cookie-only links are weak privacy-policy candidates
     if (/cookie/i.test(trimmed) && !/privacy/i.test(trimmed)) score -= 4;

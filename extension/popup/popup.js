@@ -85,16 +85,20 @@ function showError(message, detail) {
     metaEl.classList.add("hidden");
   }
 
-  renderAlternatives(detail?.candidates || []);
+  renderAlternatives(detail?.candidates || [], detail);
 }
 
 /**
  * Surface top policy URL candidates as one-click retries when discovery/fetch fails.
+ * Each row: Analyze (try excerpts) + Open (always read the live page).
  * @param {{ href: string, text?: string }[]} candidates
+ * @param {{ openPolicyUrl?: string, policyUrl?: string }|undefined} detail
  */
-function renderAlternatives(candidates) {
-  const top = (candidates || []).slice(0, 3);
-  if (!top.length) {
+function renderAlternatives(candidates, detail) {
+  const top = (candidates || []).slice(0, 4);
+  const openFallback = detail?.openPolicyUrl || detail?.policyUrl || top[0]?.href || null;
+
+  if (!top.length && !openFallback) {
     alternativesEl.classList.add("hidden");
     alternativesEl.innerHTML = "";
     return;
@@ -102,6 +106,22 @@ function renderAlternatives(candidates) {
 
   alternativesEl.classList.remove("hidden");
   alternativesEl.innerHTML = "";
+
+  if (openFallback && isHttpUrl(openFallback)) {
+    const openRow = document.createElement("div");
+    openRow.className = "alt-open-row";
+    const openBtn = document.createElement("a");
+    openBtn.href = openFallback;
+    openBtn.target = "_blank";
+    openBtn.rel = "noopener noreferrer";
+    openBtn.className = "alt-open-primary";
+    openBtn.textContent = "Open privacy policy";
+    openBtn.title = openFallback;
+    openRow.appendChild(openBtn);
+    alternativesEl.appendChild(openRow);
+  }
+
+  if (!top.length) return;
 
   const heading = document.createElement("h2");
   heading.textContent = "Try another policy URL";
@@ -111,24 +131,42 @@ function renderAlternatives(candidates) {
   list.className = "alt-list";
 
   for (const c of top) {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "alt-btn";
-    const label = c.text && !c.text.startsWith("/") ? `${c.text} — ${shortUrl(c.href)}` : shortUrl(c.href);
-    btn.textContent = label;
-    btn.title = c.href;
-    btn.addEventListener("click", () => {
+    if (!isHttpUrl(c.href)) continue;
+
+    const row = document.createElement("div");
+    row.className = "alt-row";
+
+    const analyzeBtn = document.createElement("button");
+    analyzeBtn.type = "button";
+    analyzeBtn.className = "alt-btn";
+    const label =
+      c.text && !c.text.startsWith("/") ? `${c.text} — ${shortUrl(c.href)}` : shortUrl(c.href);
+    analyzeBtn.textContent = label;
+    analyzeBtn.title = `Analyze ${c.href}`;
+    analyzeBtn.addEventListener("click", () => {
       policyInput.value = c.href;
       runAnalyze({ force: true, policyUrl: c.href });
     });
-    list.appendChild(btn);
+
+    const openLink = document.createElement("a");
+    openLink.href = c.href;
+    openLink.target = "_blank";
+    openLink.rel = "noopener noreferrer";
+    openLink.className = "alt-open";
+    openLink.textContent = "Open";
+    openLink.title = `Open ${c.href}`;
+
+    row.appendChild(analyzeBtn);
+    row.appendChild(openLink);
+    list.appendChild(row);
   }
 
   alternativesEl.appendChild(list);
 
   const hint = document.createElement("p");
   hint.className = "alt-hint";
-  hint.textContent = "Or paste a full policy URL below and click Analyze.";
+  hint.textContent =
+    "Tap a suggestion to analyze it, or Open to read the page directly if excerpts can’t be pulled.";
   alternativesEl.appendChild(hint);
 }
 

@@ -2,8 +2,6 @@
 
 const MAX_TEXT_CHARS = 200_000;
 
-const REMOVE_TAGS = /<\/?(script|style|noscript|svg|iframe|nav|header|footer|aside|form)[^>]*>/gi;
-
 /**
  * @param {string} html
  * @returns {string}
@@ -13,7 +11,12 @@ export function htmlToPlainText(html) {
 
   let cleaned = html
     .replace(/<!--[\s\S]*?-->/g, " ")
-    .replace(REMOVE_TAGS, " ")
+    // Remove element *contents* first (tag-only strip left CSS/JS in the text)
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
+    .replace(/<noscript\b[^>]*>[\s\S]*?<\/noscript>/gi, " ")
+    .replace(/<svg\b[^>]*>[\s\S]*?<\/svg>/gi, " ")
+    .replace(/<(nav|header|footer|aside|form|iframe)\b[^>]*>[\s\S]*?<\/\1>/gi, " ")
     .replace(/<br\s*\/?>/gi, "\n")
     .replace(/<\/(p|div|li|h[1-6]|tr|section|article)>/gi, "\n")
     .replace(/<[^>]+>/g, " ")
@@ -74,6 +77,32 @@ export function splitSentences(text) {
     .filter((s) => s.length > 20);
 }
 
+const LEGAL_SIGNALS = [
+  /\bwe collect\b/i,
+  /personal\s+(information|data)/i,
+  /\bservice providers?\b/i,
+  /\bthird[- ]part(y|ies)\b/i,
+  /\b(opt[- ]out|request deletion|right to (access|delete|erasure))\b/i,
+  /\binformation we collect\b/i,
+  /\bhow we use\b/i,
+  /\bdata\s+protection\b/i,
+  /\bprivacy\s+(policy|notice|statement|center)\b/i,
+  /\b(disclose|share)\s+(your |personal )?(information|data)\b/i
+];
+
+/**
+ * @param {string} text
+ * @returns {number}
+ */
+export function countLegalSignals(text) {
+  const t = String(text || "");
+  let n = 0;
+  for (const re of LEGAL_SIGNALS) {
+    if (re.test(t)) n += 1;
+  }
+  return n;
+}
+
 /**
  * Heuristic: is this cleaned text likely a privacy policy (not a marketing page / cookie banner)?
  * @param {string} text
@@ -81,7 +110,7 @@ export function splitSentences(text) {
  */
 export function looksLikePrivacyPolicy(text) {
   const t = String(text || "").trim();
-  if (t.length < 400) return false;
+  if (t.length < 280) return false;
 
   // SPA shells / CSS dumps (e.g. Meta privacy center HTML)
   if ((t.match(/--[a-z0-9-]+:|#\d{3,}|:root/gi) || []).length > 40) return false;
@@ -96,26 +125,30 @@ export function looksLikePrivacyPolicy(text) {
     /\bhow it works\b/i
   ].filter((re) => re.test(t)).length;
 
-  // Avoid matching marketing copy like “privacy policy checkpoint”
-  const hasPolicyTitle = /privacy\s+policy(?!\s+checkpoint)/i.test(t) || /\blast updated\b/i.test(t);
+  const hasPolicyTitle =
+    /privacy\s+(policy|notice|statement)(?!\s+checkpoint)/i.test(t) ||
+    /\blast updated\b/i.test(t) ||
+    /\bprivacy\s+center\b/i.test(t);
 
-  const legal = [
-    /\bwe collect\b/i,
-    /personal\s+(information|data)/i,
-    /\bservice providers?\b/i,
-    /\bthird[- ]part(y|ies)\b/i,
-    /\b(opt[- ]out|request deletion|right to (access|delete|erasure))\b/i,
-    /\binformation we collect\b/i,
-    /\bhow we use\b/i,
-    /\bdata\s+protection\b/i
-  ];
-  let legalHits = 0;
-  for (const re of legal) {
-    if (re.test(t)) legalHits += 1;
-  }
+  const legalHits = countLegalSignals(t);
 
-  if (hasPolicyTitle && legalHits >= 4) return true;
-  if (hasPolicyTitle && legalHits >= 3 && marketingHits <= 2) return true;
-  if (legalHits >= 5 && marketingHits <= 1) return true;
+  if (hasPolicyTitle && legalHits >= 3 && t.length >= 280) return true;
+  if (hasPolicyTitle && legalHits >= 2 && marketingHits <= 2 && t.length >= 1500) return true;
+  if (legalHits >= 4 && marketingHits <= 1 && t.length >= 400) return true;
+  if (legalHits >= 5 && marketingHits <= 2 && t.length >= 400) return true;
   return false;
+}
+
+/**
+ * Softer gate for URLs the user (or candidate list) explicitly chose.
+ * Still rejects empty SPA shells / pure marketing.
+ * @param {string} text
+ * @returns {boolean}
+ */
+export function looksAnalyzablePolicy(text) {
+  if (looksLikePrivacyPolicy(text)) return true;
+  const t = String(text || "").trim();
+  if (t.length < 500) return false;
+  if ((t.match(/--[a-z0-9-]+:|#\d{3,}|:root/gi) || []).length > 40) return false;
+  return countLegalSignals(t) >= 2;
 }

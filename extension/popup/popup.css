@@ -263,9 +263,38 @@ body {
   gap: 6px;
 }
 
-.alternatives button.alt-btn {
+.alternatives .alt-open-row {
+  margin-bottom: 10px;
+}
+
+.alternatives .alt-open-primary {
   display: block;
   width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: #fff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+}
+
+.alternatives .alt-open-primary:hover {
+  background: #333;
+}
+
+.alternatives .alt-row {
+  display: flex;
+  gap: 6px;
+  align-items: stretch;
+}
+
+.alternatives button.alt-btn {
+  display: block;
+  flex: 1;
+  min-width: 0;
   padding: 8px 10px;
   border: 1px solid var(--ink);
   background: #fff;
@@ -275,10 +304,28 @@ body {
   font-weight: 600;
   text-align: left;
   cursor: pointer;
-  word-break: break-all;
+  word-break: break-word;
 }
 
 .alternatives button.alt-btn:hover {
+  background: #f0f0f0;
+}
+
+.alternatives .alt-open {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  padding: 8px 10px;
+  border: 1px solid var(--ink);
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.alternatives .alt-open:hover {
   background: #f0f0f0;
 }
 

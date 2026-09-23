@@ -2,7 +2,7 @@
  * Offline verification of clean + rules against sample policy text.
  * Run: node scripts/verify-rules.mjs
  */
-import { htmlToPlainText, looksLikePrivacyPolicy } from "../lib/clean.js";
+import { htmlToPlainText, looksLikePrivacyPolicy, looksAnalyzablePolicy } from "../lib/clean.js";
 import { analyzePolicy } from "../lib/rules.js";
 import { buildGuidance } from "../lib/templates.js";
 
@@ -198,6 +198,36 @@ if (!looksLikePrivacyPolicy(policyLike)) {
   failed++;
 } else {
   console.log("OK accepted real policy-like text");
+}
+
+// Style/script contents must not leak into plain text
+const cssLeak = htmlToPlainText(`
+<html><body>
+<style>.foo { color: red; --fds-x: 1; }</style>
+<script>var aflag = "true";</script>
+<h1>Privacy Policy</h1>
+<p>Last updated: September 22, 2026</p>
+<p>We collect personal information including your email address when you use our services online.</p>
+<p>We use this information to provide and improve services with service providers that process data for us.</p>
+<p>You may opt-out of certain uses and request deletion of your personal data by contacting us.</p>
+<p>This Privacy Policy explains how we handle personal data and third parties that support our business.</p>
+</body></html>
+`);
+if (/aflag|--fds-|\.foo\s*\{/i.test(cssLeak)) {
+  console.error("EXPECTED style/script stripped, got", cssLeak.slice(0, 200));
+  failed++;
+} else if (!looksLikePrivacyPolicy(cssLeak)) {
+  console.error("EXPECTED cleaned policy to pass looksLikePrivacyPolicy", cssLeak.length);
+  failed++;
+} else {
+  console.log("OK stripped style/script contents");
+}
+
+if (!looksAnalyzablePolicy("We collect personal information. You may opt-out of sale. Privacy statement overview. ".repeat(20))) {
+  console.error("EXPECTED looksAnalyzablePolicy soft gate");
+  failed++;
+} else {
+  console.log("OK looksAnalyzablePolicy soft gate");
 }
 
 if (failed) {

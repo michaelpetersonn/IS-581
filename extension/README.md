@@ -26,7 +26,7 @@ Rules-based privacy checkpoint: find the current site’s privacy policy, show f
 4. Select this folder: `extension/` (the folder that contains `manifest.json`).
 5. Open any `https://` site, click the c3nsor icon.
 
-If automatic discovery fails, paste a policy URL in the popup and click **Analyze**.
+If automatic discovery fails, paste a policy URL in the popup and click **Analyze**. Suggested policy links also include **Open** so you can read the live page when a site is too script-heavy to extract excerpts.
 
 ## Class demo
 
