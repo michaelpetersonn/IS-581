@@ -42,6 +42,13 @@ export function htmlToPlainText(html) {
   // Second pass if entity decoding reintroduced tags
   cleaned = cleaned.replace(/<[^>]+>/g, " ");
 
+  // Soften common markdown leftovers from docs-style policies
+  cleaned = cleaned
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/^\s{0,3}#{1,6}\s+/gm, "")
+    .replace(/[*_]{1,3}/g, "")
+    .replace(/\|/g, " ");
+
   cleaned = cleaned
     .split("\n")
     .map((line) => line.replace(/[ \t]+/g, " ").trim())

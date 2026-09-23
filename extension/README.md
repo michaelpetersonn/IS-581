@@ -8,13 +8,13 @@ Rules-based privacy checkpoint: find the current site’s privacy policy, show f
 2. Scans the page for privacy-policy links (and common paths like `/privacy`).
 3. Downloads and cleans the policy text locally (size/time limited).
 4. Rejects pages that do **not** look like a privacy policy (e.g. marketing pages or cookie-banner demos).
-5. Matches five categories with keyword/rules templates:
+5. Matches five categories with keyword/rules templates and builds a **one-look summary** (e.g. “Uses your data for: analytics; marketing”) plus a short cleaned citation:
    - What data is collected
    - How the data is used
    - Who the data is shared with
    - Mentions sale/sharing (including “we do not sell”)
    - Access, opt-out, or deletion choices
-6. Shows a plain-English explanation and a **verbatim excerpt** for each hit (or “Not clearly specified”).
+6. Shows a plain-English summary and a **verbatim excerpt** for each hit (or “Not clearly specified”).
 7. Shows an **Alerts** count (how many categories matched) in the popup and on the toolbar badge.
 8. Suggests what you should do and links to the policy / opt-out page when found; can copy a real privacy contact email (placeholder addresses like `you@domain.com` are ignored).
 

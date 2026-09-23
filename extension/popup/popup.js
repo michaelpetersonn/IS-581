@@ -173,8 +173,16 @@ function renderResult(result) {
       </div>
     `;
 
-    if (item.found && item.excerpt) {
-      body += `<p class="excerpt" title="${escapeAttr(item.explanation || "")}">“${escapeHtml(item.excerpt)}”</p>`;
+    if (item.found) {
+      const summary =
+        item.summary ||
+        item.explanation ||
+        "Mentioned in the policy, but details are unclear in one look.";
+      body += `<p class="summary">${escapeHtml(summary)}</p>`;
+      if (item.excerpt) {
+        const cite = compactCite(item.excerpt);
+        body += `<p class="excerpt" title="${escapeAttr(item.excerpt)}">“${escapeHtml(cite)}”</p>`;
+      }
     }
 
     li.innerHTML = body;
@@ -272,6 +280,13 @@ function shortUrl(url) {
   } catch {
     return url;
   }
+}
+
+/** Keep citations short and readable under the one-look summary. */
+function compactCite(text) {
+  let s = String(text || "").replace(/\s+/g, " ").trim();
+  if (s.length > 140) s = `${s.slice(0, 137)}…`;
+  return s;
 }
 
 function escapeHtml(value) {

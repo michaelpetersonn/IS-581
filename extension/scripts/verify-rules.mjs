@@ -46,8 +46,11 @@ for (const id of required) {
   } else if (!f.excerpt) {
     console.error("EXPECTED excerpt:", id);
     failed++;
+  } else if (!f.summary || f.summary.length < 12) {
+    console.error("EXPECTED summary:", id, f.summary);
+    failed++;
   } else {
-    console.log("OK", id, "→", f.excerpt.slice(0, 80) + "...");
+    console.log("OK", id, "→", f.summary);
   }
 }
 
@@ -137,6 +140,31 @@ if (!junk.findings.shared.found) {
   failed++;
 } else {
   console.log("OK skipped junk excerpt");
+}
+
+// Markdown table / link leftovers should not become the primary citation
+const markdowny = analyzePolicy(`
+Privacy Policy
+We collect personal information including your email address and IP address when you use our services.
+| Personal Information Category | Collection | Retention Period |
+| Name | Yes | 2 years |
+[HOW WE USE YOUR INFORMATION](https://example.com/how-we-use)
+We use this information to provide our services, for analytics, and for marketing.
+#### With Affiliates
+We may disclose information to other affiliates and service providers.
+You may opt-out of sale of personal information and request deletion of your data.
+`);
+if (!markdowny.findings.collected.found || /\|/.test(markdowny.findings.collected.excerpt || "")) {
+  console.error("EXPECTED clean collected excerpt without pipes", markdowny.findings.collected);
+  failed++;
+} else {
+  console.log("OK avoided markdown table excerpt");
+}
+if (!/Uses your data for:/i.test(markdowny.findings.used.summary || "")) {
+  console.error("EXPECTED used summary with purposes", markdowny.findings.used.summary);
+  failed++;
+} else {
+  console.log("OK used one-look summary", markdowny.findings.used.summary);
 }
 
 // Marketing / cookie-banner pages must not count as policies

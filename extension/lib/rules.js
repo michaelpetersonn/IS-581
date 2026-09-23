@@ -1,4 +1,5 @@
 import { splitSentences } from "./clean.js";
+import { buildSummary } from "./summarize.js";
 import { CATEGORIES, NOT_SPECIFIED } from "./templates.js";
 
 /** Keyword / phrase patterns per category (case-insensitive). */
@@ -111,6 +112,12 @@ function pickContactEmail(emails) {
 function isJunkExcerpt(sentence) {
   const s = String(sentence || "").trim();
   if (s.length < 18) return true;
+  // Markdown tables / pipe grids (common in CCPA charts)
+  if ((s.match(/\|/g) || []).length >= 3) return true;
+  if (/^\s*\|/.test(s) || /\|\s*$/.test(s)) return true;
+  // Markdown-only link lines / ATX headings without prose
+  if (/^\s*#{1,6}\s+\S/.test(s) && !hasVerbSignal(s)) return true;
+  if (/^\s*\[[^\]]+\]\(https?:/i.test(s) && s.length < 120) return true;
   // Pure JSON / markup blobs without prose
   if (/^[{[]/.test(s) && !hasVerbSignal(s)) return true;
   if (/<\/?[a-z][\w:-]*\b/i.test(s) && !hasVerbSignal(s)) return true;
@@ -143,6 +150,11 @@ function polishExcerpt(sentence) {
   let s = String(sentence || "");
   s = s.replace(/\{[^{}]{0,200}\}/g, " ");
   s = s.replace(/<\/?[a-z][^>]*>/gi, " ");
+  // Markdown: [label](url) → label; strip heading hashes and emphasis markers
+  s = s.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
+  s = s.replace(/^\s{0,3}#{1,6}\s+/gm, "");
+  s = s.replace(/[*_]{1,3}([^*_]+)[*_]{1,3}/g, "$1");
+  s = s.replace(/\|/g, " ");
   // Drop leftover tag text crumbs before the prose starts
   s = s.replace(/^(?:nav|menu|footer|header|script|style)\s+/i, "");
   s = s.replace(/\s+/g, " ").trim();
@@ -176,6 +188,9 @@ function findExcerpt(sentences, patterns) {
     if (sentence.length >= 60 && sentence.length <= 280) score += 1;
     if (sentence.length < 40) score -= 2;
     if (/[{<]|<\/?[a-z]/i.test(sentence)) score -= 2;
+    if ((sentence.match(/\|/g) || []).length >= 2) score -= 3;
+    if (/\]\(https?:/i.test(sentence)) score -= 2;
+    if (/^\s*#{1,6}\s/.test(sentence)) score -= 2;
 
     if (score > bestScore) {
       bestScore = score;
@@ -203,10 +218,17 @@ export function analyzePolicy(text, extras = {}) {
     const patterns = RULES[category.id] || [];
     const excerpt = findExcerpt(sentences, patterns);
     if (excerpt) {
+      const summary = buildSummary(
+        category.id,
+        excerpt,
+        text,
+        category.explanation
+      );
       findings[category.id] = {
         found: true,
         label: category.label,
         explanation: category.explanation,
+        summary,
         excerpt,
         status: "found"
       };
@@ -215,6 +237,7 @@ export function analyzePolicy(text, extras = {}) {
         found: false,
         label: category.label,
         explanation: NOT_SPECIFIED,
+        summary: NOT_SPECIFIED,
         excerpt: null,
         status: "not_specified"
       };
