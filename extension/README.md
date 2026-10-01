@@ -18,12 +18,17 @@ Rules-based privacy checkpoint: find the current site’s privacy policy, show f
 7. Shows an **Alerts** count (how many categories matched) in the popup and on the toolbar badge.
 8. Suggests what you should do and links to the policy / opt-out page when found; can copy a real privacy contact email (placeholder addresses like `you@domain.com` are ignored).
 
+## Sharing with testers
+
+- **No install:** send people to the site’s **Try it** page (`docs/try.html`). It runs the same analyzer in the browser with sample sites, pasted policy text, and (once the proxy is deployed) live URLs.
+- **Real extension:** the site serves `downloads/c3nsor-extension.zip`, built on every Pages deploy. Testers unzip it and follow the steps below. Once the unlisted Chrome Web Store listing is approved, share that link instead (see [`STORE.md`](STORE.md)).
+
 ## Load unpacked (Chrome)
 
 1. Open `chrome://extensions`.
 2. Enable **Developer mode**.
 3. Click **Load unpacked**.
-4. Select this folder: `extension/` (the folder that contains `manifest.json`).
+4. Select this folder: `extension/` (the folder that contains `manifest.json`), or the unzipped `c3nsor-extension` folder.
 5. Open any `https://` site, click the c3nsor icon.
 
 If automatic discovery fails, paste a policy URL in the popup and click **Analyze**. Suggested policy links also include **Open** so you can read the live page when a site is too script-heavy to extract excerpts.
@@ -60,11 +65,14 @@ extension/
   manifest.json
   background/service-worker.js
   content/discover.js
-  lib/          # clean, fetch, rules, templates, cache
+  lib/          # clean, fetch, rules, summarize, templates, result, cache
   popup/
   icons/
+  scripts/      # verify + build-web (site engine copy, zip) + build-samples
   README.md
 ```
+
+`clean.js`, `rules.js`, `summarize.js`, `templates.js`, and `result.js` must stay browser-safe (no `chrome.*`): `npm run build:web` copies them into `docs/try/engine/` for the web demo.
 
 ## Development notes
 
@@ -77,6 +85,8 @@ extension/
 
 ```bash
 cd extension
-node scripts/verify-rules.mjs    # offline sample policy
+npm run verify                   # offline rule checks + web demo helper tests
 node scripts/verify-live.mjs     # fetch a few public policies (needs network)
+npm run build:web                # copy engine to docs/try/engine/ + zip to docs/downloads/
+npm run samples                  # refresh docs/try/samples.json (needs network)
 ```

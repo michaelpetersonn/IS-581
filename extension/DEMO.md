@@ -20,7 +20,7 @@ Open the homepage (or a normal product page), click the c3nsor icon, wait for an
 1. **Load** the unpacked `extension/` folder; pin the icon.
 2. Open **DuckDuckGo** → Analyze → point at **Alerts** count, one **Found** row with excerpt, and **What you should do**.
 3. Click **Open privacy policy** (or opt-out if present).
-4. If discovery fails anywhere: paste the backup URL → **Analyze**.
+4. If discovery fails anywhere: paste the backup URL → **Analyze**. If the extension can’t be installed on the demo machine, use the site’s **Try it** page instead (same analyzer, sample sites built in).
 5. Say out loud: *rules, not AI · not legal advice · landing page is the product vision; this extension is the Understand checkpoint.*
 6. Optional: **Clear cache** then **Refresh** to show a fresh run.
 

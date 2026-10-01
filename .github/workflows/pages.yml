@@ -27,6 +27,19 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Verify analyzer rules
+        working-directory: extension
+        run: npm run verify
+
+      - name: Build web demo engine + extension zip
+        working-directory: extension
+        run: npm run build:web
+
       - name: Upload docs site
         uses: actions/upload-pages-artifact@v3
         with:

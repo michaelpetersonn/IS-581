@@ -1,0 +1,7 @@
+name = "c3nsor-policy-proxy"
+main = "worker.js"
+compatibility_date = "2026-09-01"
+
+[vars]
+# Comma-separated origins allowed to call the proxy (the site hosting docs/try.html).
+ALLOWED_ORIGINS = "https://michael-peterson.com,https://michaelpetersonn.github.io"

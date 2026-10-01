@@ -50,7 +50,7 @@ const RULES = {
   choices: [
     /opt[- ]out/i,
     /your privacy choices/i,
-    /do not sell/i,
+    /do not sell (or share )?my/i,
     /request (access|deletion|deletion of)/i,
     /delete (your )?(account|data|personal)/i,
     /access (your )?(personal )?(information|data)/i,

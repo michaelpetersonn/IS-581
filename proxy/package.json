@@ -1,0 +1,10 @@
+{
+  "name": "c3nsor-policy-proxy",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "scripts": {
+    "test": "node --test worker.test.mjs",
+    "deploy": "npx wrangler deploy"
+  }
+}

@@ -1,0 +1,311 @@
+/* —— Try it (web demo) —— */
+.hidden { display: none !important; }
+
+.try-hero {
+  background: #101010;
+  color: #fff;
+  padding: 72px 8vw 56px;
+}
+.try-hero h1,
+.try-get h2 {
+  font-family: Manrope, Arial, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.075em;
+}
+.try-hero h1 {
+  margin: 24px 0 0;
+  font-size: clamp(42px, 6.5vw, 88px);
+  line-height: 1.02;
+}
+.try-lead {
+  max-width: 560px;
+  margin: 24px 0 0;
+  color: #cfcfcf;
+  font-size: 17px;
+  line-height: 1.65;
+}
+
+.try-bench {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 400px);
+  gap: 56px;
+  align-items: start;
+  padding: 64px 8vw 80px;
+  background: #e8e8e8;
+  color: #101010;
+}
+
+.try-step {
+  margin: 0 0 36px;
+  padding: 0 0 32px;
+  border-bottom: 1px solid #c8c8c8;
+}
+.try-step:last-child { margin-bottom: 0; border-bottom: 0; }
+.try-step i {
+  color: #707070;
+  font: 11px "DM Mono", monospace;
+  font-style: normal;
+}
+.try-step h2 {
+  margin: 10px 0 16px;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+.try-note {
+  margin: 12px 0 0;
+  color: #555;
+  font: 12px/1.55 "DM Mono", monospace;
+}
+
+.try-samples {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.try-sample {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  padding: 14px 16px;
+  border: 1px solid #101010;
+  background: #fff;
+  color: #101010;
+  font: 600 14px Manrope, Arial, sans-serif;
+  text-align: left;
+  cursor: pointer;
+}
+.try-sample span {
+  color: #666;
+  font: 11px "DM Mono", monospace;
+}
+.try-sample:hover { background: #f4f4f4; }
+.try-sample[aria-pressed="true"] {
+  background: #101010;
+  color: #fff;
+}
+.try-sample[aria-pressed="true"] span { color: #bdbdbd; }
+
+.try-input-row {
+  display: flex;
+  gap: 8px;
+}
+.try-input-row input,
+.try-step textarea {
+  flex: 1;
+  min-width: 0;
+  padding: 14px 14px;
+  border: 1px solid #101010;
+  background: #fff;
+  color: #101010;
+  font: 15px Manrope, Arial, sans-serif;
+}
+.try-step textarea {
+  display: block;
+  width: 100%;
+  min-height: 140px;
+  resize: vertical;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.try-step button[type="submit"] {
+  padding: 14px 20px;
+  border: 1px solid #101010;
+  background: #101010;
+  color: #fff;
+  font: 600 14px Manrope, Arial, sans-serif;
+  cursor: pointer;
+}
+#text-form button[type="submit"] { margin-top: 10px; }
+.try-step input:disabled,
+.try-step button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Result card mirrors the extension popup. */
+.try-result { position: sticky; top: 112px; }
+.try-card {
+  padding: 18px 18px 16px;
+  background: #fff;
+  border: 1px solid #d8d8d8;
+  box-shadow: 12px 12px 0 #101010;
+  color: #1c1e21;
+  font: 13px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+.try-card-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.try-card-top .brand-mark {
+  min-width: 26px;
+  height: 26px;
+  padding: 0 5px;
+  border: 0;
+  background: #101010;
+  color: #fff;
+  font: 700 11px -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+.try-card-brand {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: #101010;
+}
+.try-kicker {
+  margin: 0;
+  color: #65676b;
+  font-size: 11px;
+  font-weight: 600;
+}
+.try-kicker.loading { color: #101010; }
+.try-kicker.error { color: #b42318; font-size: 12px; line-height: 1.45; }
+
+.try-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 0 12px;
+  border-bottom: 1px solid #e4e6eb;
+}
+.try-head strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 18px;
+  color: #101010;
+}
+.try-alerts {
+  flex-shrink: 0;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: #fde8e6;
+  color: #b42318;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.try-findings { list-style: none; margin: 0; padding: 0; }
+.try-findings > li {
+  padding: 11px 0;
+  border-bottom: 1px solid #e4e6eb;
+}
+.try-row-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.try-badge {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.try-badge.found { background: #e8f5e9; color: #1a7f37; }
+.try-badge.miss { background: #eee; color: #666; }
+.try-label {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 700;
+  color: #101010;
+  line-height: 1.35;
+}
+.try-summary {
+  margin: 6px 0 0;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.45;
+}
+.try-excerpt {
+  margin: 4px 0 0;
+  color: #777;
+  font-size: 10px;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.try-guidance {
+  margin: 12px 0 0;
+  color: #444;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.try-act-label { margin-top: 14px; }
+.try-acts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+.try-acts a,
+.try-acts button,
+.try-open-primary {
+  display: grid;
+  place-items: center;
+  min-height: 36px;
+  padding: 6px 8px;
+  border: 0;
+  background: #1d1d1f;
+  color: #fff;
+  font: 600 12px -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+.try-acts button:disabled {
+  background: #c9c9c9;
+  color: #666;
+  cursor: not-allowed;
+}
+#result-open { margin-top: 12px; }
+.try-disclaimer {
+  margin: 24px 0 0;
+  color: #555;
+  font: 11px/1.5 "DM Mono", monospace;
+}
+
+.try-get {
+  padding: 88px 8vw;
+  background: #101010;
+  color: #fff;
+}
+.try-get h2 {
+  margin: 20px 0 20px;
+  font-size: clamp(40px, 5vw, 72px);
+  line-height: 1.05;
+}
+.try-get p {
+  max-width: 560px;
+  margin: 0 0 28px;
+  color: #cfcfcf;
+  font-size: 16px;
+  line-height: 1.6;
+}
+.try-get-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+@media (max-width: 900px) {
+  .try-bench { grid-template-columns: 1fr; gap: 40px; }
+  .try-result { position: static; }
+}
+@media (max-width: 760px) {
+  .try-hero,
+  .try-bench,
+  .try-get {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  .try-samples { grid-template-columns: 1fr; }
+}

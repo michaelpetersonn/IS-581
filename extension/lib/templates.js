@@ -1,4 +1,5 @@
 /** Plain-English templates and guidance — rules only, not AI. */
+import { sellStance } from "./summarize.js";
 
 export const CATEGORIES = [
   {
@@ -42,19 +43,12 @@ export const NOT_SPECIFIED = "Not clearly specified";
  */
 export function buildGuidance(findings) {
   const tips = [];
-  const adExcerptPositive =
-    findings.advertising?.found &&
-    !/\b(do not|don't|does not|never)\s+(rent or )?sell\b/i.test(
-      findings.advertising.excerpt || ""
-    );
+  const adStance = sellStance(findings.advertising?.excerpt || "");
+  const onlyDeniesSelling = adStance.deniesSelling && !adStance.sells;
 
-  if (adExcerptPositive) {
+  if (findings.advertising?.found && !onlyDeniesSelling) {
     tips.push(
       "Consider using any “Do Not Sell / Share” or “Your Privacy Choices” link before creating an account."
-    );
-  } else if (findings.advertising?.found) {
-    tips.push(
-      "This policy discusses selling or advertising practices — confirm whether that matches how you want your data used."
     );
   }
   if (findings.shared?.found) {

@@ -4,7 +4,9 @@
   "type": "module",
   "version": "0.1.0",
   "scripts": {
-    "verify": "node scripts/verify-rules.mjs",
-    "pack": "rm -f c3nsor-extension.zip && zip -r c3nsor-extension.zip manifest.json background content lib popup icons README.md -x \"*.DS_Store\""
+    "verify": "node scripts/verify-rules.mjs && node --test scripts/verify-web.mjs",
+    "pack": "rm -f c3nsor-extension.zip && zip -r c3nsor-extension.zip manifest.json background content lib popup icons README.md -x \"*.DS_Store\"",
+    "build:web": "node scripts/build-web.mjs",
+    "samples": "node scripts/build-samples.mjs"
   }
 }

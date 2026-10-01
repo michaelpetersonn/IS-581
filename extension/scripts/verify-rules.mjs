@@ -167,6 +167,60 @@ if (!/Uses your data for:/i.test(markdowny.findings.used.summary || "")) {
   console.log("OK used one-look summary", markdowny.findings.used.summary);
 }
 
+// “We do not sell” must never summarize as “may sell”, and is not a privacy choice by itself
+const noSell = analyzePolicy(
+  "We do not sell your personal information to anyone. We use targeted advertising based on search terms you enter."
+);
+if (!/^Says they do not sell/.test(noSell.findings.advertising.summary || "")) {
+  console.error("EXPECTED do-not-sell summary, got", noSell.findings.advertising.summary);
+  failed++;
+} else {
+  console.log("OK negated sell →", noSell.findings.advertising.summary);
+}
+if (noSell.findings.choices.found) {
+  console.error("EXPECTED 'we do not sell' alone not to count as a choice", noSell.findings.choices);
+  failed++;
+} else {
+  console.log("OK 'we do not sell' is not a privacy choice");
+}
+
+const optOutLabel = analyzePolicy(
+  "Use the Do Not Sell or Share My Personal Information link to opt out of targeted advertising by partners."
+);
+if (!/^Offers a “Do Not Sell \/ Share” option/.test(optOutLabel.findings.advertising.summary || "")) {
+  console.error("EXPECTED opt-out label summary, got", optOutLabel.findings.advertising.summary);
+  failed++;
+} else {
+  console.log("OK opt-out link label →", optOutLabel.findings.advertising.summary);
+}
+
+const sells = analyzePolicy(
+  "We may sell your personal information to advertising partners for targeted advertising purposes."
+);
+if (!/^May sell personal information/.test(sells.findings.advertising.summary || "")) {
+  console.error("EXPECTED may-sell summary, got", sells.findings.advertising.summary);
+  failed++;
+} else {
+  console.log("OK affirmative sell →", sells.findings.advertising.summary);
+}
+
+// “Sale of personal information” is not a business transfer
+if (/business transfers/.test(sells.findings.shared.summary || "")) {
+  console.error("EXPECTED no business transfers from sale-of-data wording", sells.findings.shared.summary);
+  failed++;
+} else {
+  console.log("OK sale of data ≠ business transfer");
+}
+const merger = analyzePolicy(
+  "We may share your information with a buyer in connection with a merger or acquisition of our company."
+);
+if (!/business transfers/.test(merger.findings.shared.summary || "")) {
+  console.error("EXPECTED business transfers for merger wording", merger.findings.shared.summary);
+  failed++;
+} else {
+  console.log("OK merger → business transfers");
+}
+
 // Marketing / cookie-banner pages must not count as policies
 const marketing = htmlToPlainText(`
 <html><body>

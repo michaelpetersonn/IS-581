@@ -1,7 +1,6 @@
 import { htmlToPlainText, looksLikePrivacyPolicy, looksAnalyzablePolicy } from "../lib/clean.js";
 import { fetchPolicyHtml } from "../lib/fetch.js";
-import { analyzePolicy } from "../lib/rules.js";
-import { buildGuidance } from "../lib/templates.js";
+import { buildAnalysisResult } from "../lib/result.js";
 import { getCached, setCached, clearCache } from "../lib/cache.js";
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
@@ -171,31 +170,15 @@ async function analyzeActiveTab(opts) {
     };
   }
 
-  const analysis = analyzePolicy(text, {
+  const result = buildAnalysisResult(text, {
+    domain,
     policyUrl: fetched.finalUrl,
+    pageUrl: tab.url,
     pageLinks: discovery.pageLinks || []
   });
 
-  if (!analysis.actions.policyUrl) {
-    analysis.actions.policyUrl = fetched.finalUrl;
-  }
-
-  const guidance = buildGuidance(analysis.findings);
-  const alertCount = analysis.alertCount ?? countAlerts(analysis.findings);
-
-  const result = {
-    domain,
-    pageUrl: tab.url,
-    policyUrl: fetched.finalUrl,
-    findings: analysis.findings,
-    actions: analysis.actions,
-    guidance,
-    alertCount,
-    analyzedAt: new Date().toISOString()
-  };
-
   await setCached(domain, result);
-  await setAlertBadge(tab.id, alertCount);
+  await setAlertBadge(tab.id, result.alertCount);
   return { ok: true, fromCache: false, ...result };
 }
 

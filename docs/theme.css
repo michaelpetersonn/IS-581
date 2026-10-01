@@ -852,6 +852,7 @@ footer .brand-mark { min-width: 34px; height: 34px; font-size: 15px; }
   font-size: 13px;
   color: #fff;
 }
+.ext-install-cta { margin-top: 32px; }
 .ext-install-note {
   max-width: 520px;
   margin: 28px 0 0;
@@ -914,7 +915,7 @@ footer .brand-mark { min-width: 34px; height: 34px; font-size: 15px; }
 
 @media (max-width: 760px) {
   .site-nav { gap: 14px; margin-right: 10px; }
-  .site-nav a { font-size: 10px; }
+  .site-nav a { font-size: 10px; white-space: nowrap; }
   .ext-hero,
   .ext-preview-band,
   .ext-features,
@@ -930,4 +931,15 @@ footer .brand-mark { min-width: 34px; height: 34px; font-size: 15px; }
     padding: 24px 0;
     border-left: 0;
   }
+}
+
+@media (max-width: 480px) {
+  /* The logo already links home; drop the Home tab so the nav fits on phones. */
+  .site-nav a[href="index.html"] { display: none; }
+  .site-nav { gap: 12px; margin-right: 8px; }
+  .site-header .nav-cta { padding: 8px 9px; font-size: 11px; white-space: nowrap; }
+}
+
+@media (max-width: 420px) {
+  .site-header .brand-name { display: none; }
 }

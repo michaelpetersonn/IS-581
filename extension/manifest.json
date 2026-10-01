@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "c3nsor",
   "version": "0.1.0",
-  "description": "Find a site’s privacy policy and show five key data practices in clear English — with citations and action links. Analysis runs locally with rules, not AI.",
+  "description": "Find a site’s privacy policy and see what it says about your data in plain English, with citations. Local rules, not AI.",
   "action": {
     "default_title": "c3nsor — privacy checkpoint",
     "default_popup": "popup/popup.html",

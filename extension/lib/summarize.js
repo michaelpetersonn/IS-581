@@ -39,11 +39,13 @@ const SIGNALS = {
     { re: /\bthird[- ]part(y|ies)\b/i, label: "third parties" },
     { re: /\bvendors?\b/i, label: "vendors" },
     { re: /\blaw enforcement|government\b/i, label: "law enforcement / government" },
-    { re: /\b(in connection with )?(sale|merger|acquisition)\b/i, label: "business transfers" }
+    {
+      re: /\b(merger|acquisition|bankruptcy|sale of (all or (a )?part of )?(our |the )?(company|business|assets))\b/i,
+      label: "business transfers"
+    }
   ],
+  // Sell / do-not-sell stance is decided by sellStance(), which understands negation.
   advertising: [
-    { re: /\b(do not|don't|does not|never)\s+(rent or )?sell\b/i, label: "says they do not sell personal info" },
-    { re: /\bsell(s|ing)? (your )?personal\b/i, label: "may sell personal information" },
     { re: /\bshare.{0,40}(for )?(cross[- ]context|advertising)\b/i, label: "sharing for advertising" },
     { re: /\btargeted advertising|interest[- ]based|behavioral advertising|personalized ads?\b/i, label: "targeted / personalized ads" },
     { re: /\badvertising partners?\b/i, label: "advertising partners" }
@@ -53,10 +55,56 @@ const SIGNALS = {
     { re: /\b(request )?deletion|right to (delete|erasure)|delete (your )?(account|data)\b/i, label: "request deletion" },
     { re: /\b(request )?access|right to access\b/i, label: "access your data" },
     { re: /\bcorrect|rectif(y|ication)\b/i, label: "correct your data" },
-    { re: /\byour privacy choices|do not sell\b/i, label: "privacy choices / do-not-sell" },
+    { re: /\byour privacy choices\b|\bdo not sell (or share )?my\b/i, label: "privacy choices / do-not-sell" },
     { re: /\bcookie (settings|preferences)\b/i, label: "cookie settings" }
   ]
 };
+
+const SELL_RE = /\b(sell|sells|selling|sold)\b[^.]{0,40}\bpersonal\b/gi;
+const NEGATION_BEFORE_RE = /\b(not|never|don't|doesn't|won't|neither|nor)\b[^.]{0,20}$/i;
+/** “Do Not Sell (or Share) My Personal Information” is a link label, not a statement either way. */
+const OPT_OUT_LABEL_BEFORE_RE = /\bdo not\s*$/i;
+const OPT_OUT_LABEL_AFTER_RE = /^\s*(or share\s+)?my\b/i;
+
+/**
+ * Classify sell mentions so “we do not sell your personal information” never reads as “may sell”.
+ * @param {string} hay
+ * @returns {{ sells: boolean, deniesSelling: boolean, hasOptOutLabel: boolean }}
+ */
+export function sellStance(hay) {
+  const stance = { sells: false, deniesSelling: false, hasOptOutLabel: false };
+  const text = String(hay || "");
+  for (const match of text.matchAll(SELL_RE)) {
+    const before = text.slice(Math.max(0, match.index - 30), match.index);
+    const after = text.slice(match.index + match[1].length, match.index + match[1].length + 20);
+    if (OPT_OUT_LABEL_BEFORE_RE.test(before) && OPT_OUT_LABEL_AFTER_RE.test(after)) {
+      stance.hasOptOutLabel = true;
+    } else if (NEGATION_BEFORE_RE.test(before)) {
+      stance.deniesSelling = true;
+    } else {
+      stance.sells = true;
+    }
+  }
+  return stance;
+}
+
+/**
+ * @param {string} hay
+ * @param {string[]} adLabels
+ */
+function advertisingSummary(hay, adLabels) {
+  const { sells, deniesSelling, hasOptOutLabel } = sellStance(hay);
+  const also = adLabels.slice(0, 2);
+  const tail = also.length ? `; also mentions ${also.join(", ")}` : "";
+
+  if (sells) {
+    const optOut = hasOptOutLabel ? ", with a “Do Not Sell / Share” option" : "";
+    return `May sell personal information${optOut}${tail}.`;
+  }
+  if (hasOptOutLabel) return `Offers a “Do Not Sell / Share” option${tail}.`;
+  if (deniesSelling) return `Says they do not sell personal information${tail}.`;
+  return also.length ? `Sale / ads: ${also.join("; ")}.` : "";
+}
 
 const PREFIX = {
   collected: "May collect",
@@ -91,42 +139,15 @@ export function buildSummary(categoryId, excerpt, fullText = "", fallbackExplana
     if (labels.length >= 4) break;
   }
 
+  if (categoryId === "advertising") {
+    const summary = advertisingSummary(hay, labels);
+    if (summary) return summary;
+  }
+
   if (!labels.length) {
     return fallbackExplanation || "Mentioned in the policy, but details are unclear in one look.";
   }
 
-  // Advertising: prefer a clear sell / do-not-sell headline
-  if (categoryId === "advertising") {
-    const noSell = labels.find((l) => /do not sell/i.test(l));
-    const doesSell = labels.find((l) => /may sell/i.test(l));
-    const ads = labels.filter(
-      (l) => l !== noSell && l !== doesSell
-    );
-    if (doesSell && noSell) {
-      const extra = ads.slice(0, 1);
-      return extra.length
-        ? `May sell personal information, with do-not-sell / opt-out language; also ${extra.join(", ")}.`
-        : "May sell personal information, with do-not-sell / opt-out language.";
-    }
-    if (noSell && !doesSell) {
-      const rest = ads.slice(0, 2);
-      return rest.length ? `${noSell}; also mentions ${rest.join(", ")}.` : `${capitalize(noSell)}.`;
-    }
-    if (doesSell) {
-      const rest = ads.slice(0, 2);
-      return rest.length
-        ? `${capitalize(doesSell)}; also ${rest.join(", ")}.`
-        : `${capitalize(doesSell)}.`;
-    }
-  }
-
   const prefix = PREFIX[categoryId] || "Policy mentions";
   return `${prefix}: ${labels.join("; ")}.`;
-}
-
-/**
- * @param {string} s
- */
-function capitalize(s) {
-  return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
 }

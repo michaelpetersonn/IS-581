@@ -1,0 +1,237 @@
+{
+  "generatedAt": "2026-10-01T21:45:06.370Z",
+  "samples": [
+    {
+      "id": "duckduckgo",
+      "result": {
+        "domain": "duckduckgo.com",
+        "pageUrl": "https://duckduckgo.com/privacy",
+        "policyUrl": "https://duckduckgo.com/privacy",
+        "findings": {
+          "collected": {
+            "found": true,
+            "label": "What data is collected",
+            "explanation": "This policy appears to describe personal or device information the site may collect about you.",
+            "summary": "May collect: email; IP address; cookies; location.",
+            "excerpt": "Nevertheless, we will only disclose the very limited personal information that we might have, for example, your email address if you subscribe to our newsletter, if we are legally forced to do so, and we will use legal means to fight against such disclosure.",
+            "status": "found"
+          },
+          "used": {
+            "found": true,
+            "label": "How the data is used",
+            "explanation": "This policy appears to describe purposes for using information it collects (for example accounts, analytics, or advertising).",
+            "summary": "Uses your data for: running the service; product improvement; marketing; security & fraud prevention.",
+            "excerpt": "Similarly, if you reach out to us directly for support, to provide feedback (such as in a crash report or on our search engine), or for other reasons, we will only use your contact information to respond to you.",
+            "status": "found"
+          },
+          "shared": {
+            "found": true,
+            "label": "Who the data is shared with",
+            "explanation": "This policy appears to describe sharing information with partners, vendors, or other third parties.",
+            "summary": "May share with: service providers; vendors.",
+            "excerpt": "In that process, your communication may be accessible to the software-as-a-service providers we use in our corporate systems (such as our company email, project management software, and customer support vendors).",
+            "status": "found"
+          },
+          "advertising": {
+            "found": true,
+            "label": "Mentions sale/sharing (including “we do not sell”)",
+            "explanation": "This policy appears to mention advertising, targeted ads, or selling/sharing personal information — including statements that the company does not sell data.",
+            "summary": "Says they do not sell personal information.",
+            "excerpt": "We do not sell your personal information.",
+            "status": "found"
+          },
+          "choices": {
+            "found": true,
+            "label": "Access, opt-out, or deletion choices",
+            "explanation": "This policy appears to describe ways to access, correct, opt out of, or delete your information.",
+            "summary": "You can: opt out; request deletion; access your data.",
+            "excerpt": "Before you choose to use an optional feature, we always let you know what personal information we’ll need (if any), how we’ll use it, and how you can subsequently opt out.",
+            "status": "found"
+          }
+        },
+        "actions": {
+          "policyUrl": "https://duckduckgo.com/privacy",
+          "optOutUrl": null,
+          "contactEmail": null
+        },
+        "guidance": "Review who receives your data if you plan to sign up or submit personal details. You may have access, opt-out, or deletion options — open the links below when available.",
+        "alertCount": 5,
+        "analyzedAt": "2026-10-01T21:45:05.885Z"
+      }
+    },
+    {
+      "id": "mozilla",
+      "result": {
+        "domain": "mozilla.org",
+        "pageUrl": "https://www.mozilla.org/en-US/privacy/",
+        "policyUrl": "https://www.mozilla.org/en-US/privacy/",
+        "findings": {
+          "collected": {
+            "found": true,
+            "label": "What data is collected",
+            "explanation": "This policy appears to describe personal or device information the site may collect about you.",
+            "summary": "May collect: email; IP address; name; personal information.",
+            "excerpt": "We also don't want your personal information for any longer than we need it, so we only keep it long enough to do what we collected it for.",
+            "status": "found"
+          },
+          "used": {
+            "found": true,
+            "label": "How the data is used",
+            "explanation": "This policy appears to describe purposes for using information it collects (for example accounts, analytics, or advertising).",
+            "summary": "Uses your data for: running the service; analytics; product improvement; personalization.",
+            "excerpt": "Generally, we use your information to help us provide and improve our products and services for you.",
+            "status": "found"
+          },
+          "shared": {
+            "found": true,
+            "label": "Who the data is shared with",
+            "explanation": "This policy appears to describe sharing information with partners, vendors, or other third parties.",
+            "summary": "May share with: affiliates; third parties; law enforcement / government.",
+            "excerpt": "Nothing in this policy is intended to limit any legal defenses or objections that you may have to a third party's request to disclose your information.",
+            "status": "found"
+          },
+          "advertising": {
+            "found": false,
+            "label": "Mentions sale/sharing (including “we do not sell”)",
+            "explanation": "Not clearly specified",
+            "summary": "Not clearly specified",
+            "excerpt": null,
+            "status": "not_specified"
+          },
+          "choices": {
+            "found": false,
+            "label": "Access, opt-out, or deletion choices",
+            "explanation": "Not clearly specified",
+            "summary": "Not clearly specified",
+            "excerpt": null,
+            "status": "not_specified"
+          }
+        },
+        "actions": {
+          "policyUrl": "https://www.mozilla.org/en-US/privacy/",
+          "optOutUrl": "https://www.mozilla.org/en-US/privacy/websites/cookie-settings/",
+          "contactEmail": null
+        },
+        "guidance": "Review who receives your data if you plan to sign up or submit personal details. The policy describes collection but may not clearly explain how to control it — read carefully before you agree.",
+        "alertCount": 3,
+        "analyzedAt": "2026-10-01T21:45:05.974Z"
+      }
+    },
+    {
+      "id": "wikimedia",
+      "result": {
+        "domain": "wikipedia.org",
+        "pageUrl": "https://foundation.wikimedia.org/wiki/Policy:Privacy_policy",
+        "policyUrl": "https://foundation.wikimedia.org/wiki/Policy:Privacy_policy",
+        "findings": {
+          "collected": {
+            "found": true,
+            "label": "What data is collected",
+            "explanation": "This policy appears to describe personal or device information the site may collect about you.",
+            "summary": "May collect: email; phone number; IP address; cookies.",
+            "excerpt": "This Policy explains how we collect, use, and share your Personal Information.",
+            "status": "found"
+          },
+          "used": {
+            "found": true,
+            "label": "How the data is used",
+            "explanation": "This policy appears to describe purposes for using information it collects (for example accounts, analytics, or advertising).",
+            "summary": "Uses your data for: running the service; analytics; product improvement; marketing.",
+            "excerpt": "For example, we use this information to provide greater security, optimize mobile applications, and learn how to expand and better support Wikimedia communities.",
+            "status": "found"
+          },
+          "shared": {
+            "found": true,
+            "label": "Who the data is shared with",
+            "explanation": "This policy appears to describe sharing information with partners, vendors, or other third parties.",
+            "summary": "May share with: service providers; third parties; law enforcement / government.",
+            "excerpt": "We disclose Personal Information to our third-party service providers or contractors to help run or improve the Wikimedia Sites and provide services in support of our mission.",
+            "status": "found"
+          },
+          "advertising": {
+            "found": true,
+            "label": "Mentions sale/sharing (including “we do not sell”)",
+            "explanation": "This policy appears to mention advertising, targeted ads, or selling/sharing personal information — including statements that the company does not sell data.",
+            "summary": "Says they do not sell personal information.",
+            "excerpt": "We do not rent or sell your Personal Information to third parties.",
+            "status": "found"
+          },
+          "choices": {
+            "found": true,
+            "label": "Access, opt-out, or deletion choices",
+            "explanation": "This policy appears to describe ways to access, correct, opt out of, or delete your information.",
+            "summary": "You can: access your data.",
+            "excerpt": "If you would like to request access to or removal of your Personal Information, you may contact us.",
+            "status": "found"
+          }
+        },
+        "actions": {
+          "policyUrl": "https://foundation.wikimedia.org/wiki/Policy:Privacy_policy",
+          "optOutUrl": "https://foundation.wikimedia.org/wiki/Special:MyLanguage/Policy:Privacy_policy#donotsell",
+          "contactEmail": "privacy@wikimedia.org"
+        },
+        "guidance": "Review who receives your data if you plan to sign up or submit personal details. You may have access, opt-out, or deletion options — open the links below when available.",
+        "alertCount": 5,
+        "analyzedAt": "2026-10-01T21:45:06.162Z"
+      }
+    },
+    {
+      "id": "discover",
+      "result": {
+        "domain": "discover.com",
+        "pageUrl": "https://www.discover.com/privacy-statement/",
+        "policyUrl": "https://www.discover.com/privacy-statement/",
+        "findings": {
+          "collected": {
+            "found": true,
+            "label": "What data is collected",
+            "explanation": "This policy appears to describe personal or device information the site may collect about you.",
+            "summary": "May collect: phone number; payment info.",
+            "excerpt": "Our Privacy Center provides information about Discover's privacy practices, including how we collect, use, and share information and your privacy rights and choices.",
+            "status": "found"
+          },
+          "used": {
+            "found": false,
+            "label": "How the data is used",
+            "explanation": "Not clearly specified",
+            "summary": "Not clearly specified",
+            "excerpt": null,
+            "status": "not_specified"
+          },
+          "shared": {
+            "found": true,
+            "label": "Who the data is shared with",
+            "explanation": "This policy appears to describe sharing information with partners, vendors, or other third parties.",
+            "summary": "This policy appears to describe sharing information with partners, vendors, or other third parties.",
+            "excerpt": "Our Privacy Center provides information about Discover's privacy practices, including how we collect, use, and share information and your privacy rights and choices.",
+            "status": "found"
+          },
+          "advertising": {
+            "found": false,
+            "label": "Mentions sale/sharing (including “we do not sell”)",
+            "explanation": "Not clearly specified",
+            "summary": "Not clearly specified",
+            "excerpt": null,
+            "status": "not_specified"
+          },
+          "choices": {
+            "found": true,
+            "label": "Access, opt-out, or deletion choices",
+            "explanation": "This policy appears to describe ways to access, correct, opt out of, or delete your information.",
+            "summary": "You can: opt out.",
+            "excerpt": "Link to CPRA form Make a Request to Opt out of Sharing",
+            "status": "found"
+          }
+        },
+        "actions": {
+          "policyUrl": "https://www.discover.com/privacy-statement/",
+          "optOutUrl": "https://www.discover.com/cpra/form",
+          "contactEmail": null
+        },
+        "guidance": "Review who receives your data if you plan to sign up or submit personal details. You may have access, opt-out, or deletion options — open the links below when available.",
+        "alertCount": 3,
+        "analyzedAt": "2026-10-01T21:45:06.370Z"
+      }
+    }
+  ]
+}
