@@ -1,5 +1,6 @@
 import { htmlToPlainText, looksLikePrivacyPolicy, looksAnalyzablePolicy } from "../lib/clean.js";
-import { fetchPolicyHtml } from "../lib/fetch.js";
+import { fetchPolicyHtml, FETCH_TIMEOUT_MS, MAX_BYTES } from "../lib/fetch.js";
+import { createPolicyFetcher } from "../lib/policy-access.js";
 import { buildAnalysisResult } from "../lib/result.js";
 import { getCached, setCached, clearCache } from "../lib/cache.js";
 
@@ -95,6 +96,13 @@ async function analyzeActiveTab(opts) {
     discovery.candidates = defaultCandidates(tabUrl.origin);
   }
 
+  const fetchPolicy = createPolicyFetcher({
+    pageUrl: tab.url,
+    fetchInPage: (url) => fetchInTab(tab.id, url),
+    hasHostAccess: (pattern) => chrome.permissions.contains({ origins: [pattern] }),
+    fetchDirect: (url) => fetchPolicyHtml(url)
+  });
+
   let policyUrl = opts.policyUrlOverride;
   let fetched = null;
   let text = "";
@@ -109,12 +117,13 @@ async function analyzeActiveTab(opts) {
     } catch {
       return { ok: false, error: "That policy URL is not valid." };
     }
-    fetched = await fetchPolicyHtml(policyUrl);
+    fetched = await fetchPolicy(policyUrl);
     if (!fetched.ok) {
       await clearAlertBadge(tab.id);
       return {
         ok: false,
         error: fetched.error,
+        needsPermission: permissionRequest(fetched),
         domain,
         pageUrl: tab.url,
         policyUrl,
@@ -138,9 +147,20 @@ async function analyzeActiveTab(opts) {
       };
     }
   } else {
-    const picked = await pickReadablePolicy(discovery.candidates, tab.url);
-    if (!picked) {
+    const picked = await pickReadablePolicy(discovery.candidates, tab.url, fetchPolicy);
+    if (!picked.fetched) {
       await clearAlertBadge(tab.id);
+      if (picked.blocked) {
+        return {
+          ok: false,
+          error: picked.blocked.error,
+          needsPermission: permissionRequest(picked.blocked),
+          domain,
+          pageUrl: tab.url,
+          openPolicyUrl: picked.blocked.url,
+          candidates: discovery.candidates
+        };
+      }
       const topHref = discovery.candidates?.[0]?.href || null;
       return {
         ok: false,
@@ -192,12 +212,15 @@ function normalizeUrlKey(url) {
 }
 
 /**
- * Probe + fetch candidates until one looks like a real privacy policy.
+ * Fetch candidates until one looks like a real privacy policy.
  * Prefer linked policies over the current page URL (avoids marketing-page false positives).
+ * Returns the first candidate that needs a host permission when nothing readable was found.
  * @param {{ href: string, score?: number }[]} candidates
  * @param {string} pageUrl
+ * @param {(url: string) => Promise<any>} fetchPolicy
+ * @returns {Promise<{ fetched?: { html: string, finalUrl: string }, text?: string, blocked?: any }>}
  */
-async function pickReadablePolicy(candidates, pageUrl) {
+async function pickReadablePolicy(candidates, pageUrl, fetchPolicy) {
   const pageKey = normalizeUrlKey(pageUrl);
   const list = [...(candidates || [])].sort((a, b) => {
     const aSame = normalizeUrlKey(a.href) === pageKey ? 1 : 0;
@@ -206,15 +229,17 @@ async function pickReadablePolicy(candidates, pageUrl) {
     return (b.score || 0) - (a.score || 0);
   });
 
+  let blocked = null;
   for (const c of list.slice(0, 8)) {
     // Skip analyzing the current marketing page unless it strongly looks like a policy URL
     if (normalizeUrlKey(c.href) === pageKey && (c.score || 0) < 8) {
       continue;
     }
-    const probed = await probeUrl(c.href);
-    if (!probed) continue;
-    const fetched = await fetchPolicyHtml(probed);
-    if (!fetched.ok) continue;
+    const fetched = await fetchPolicy(c.href);
+    if (!fetched.ok) {
+      if (fetched.needsPermission && !blocked) blocked = fetched;
+      continue;
+    }
     const text = htmlToPlainText(fetched.html);
     const ok =
       looksLikePrivacyPolicy(text) ||
@@ -222,7 +247,31 @@ async function pickReadablePolicy(candidates, pageUrl) {
     if (!ok) continue;
     return { fetched, text };
   }
-  return null;
+  return { blocked };
+}
+
+/** Only the fields the popup needs to ask for one host’s permission. */
+function permissionRequest(result) {
+  if (!result?.needsPermission) return undefined;
+  return { origin: result.origin, host: result.host, url: result.url };
+}
+
+/**
+ * Download a same-origin policy page from inside the tab, using the activeTab grant.
+ * @param {number} tabId
+ * @param {string} url
+ */
+async function fetchInTab(tabId, url) {
+  try {
+    const [injected] = await chrome.scripting.executeScript({
+      target: { tabId },
+      func: fetchPolicyHtml,
+      args: [url, { maxBytes: MAX_BYTES, timeoutMs: FETCH_TIMEOUT_MS }]
+    });
+    return injected?.result || { ok: false, error: "Could not read the policy from this page." };
+  } catch {
+    return { ok: false, error: "Could not read the policy from this page." };
+  }
 }
 
 function countAlerts(findings) {
@@ -260,58 +309,4 @@ function defaultCandidates(origin) {
     "/policies/privacy",
     "/company/privacy"
   ].map((path) => ({ href: origin + path, text: path, score: 1 }));
-}
-
-/**
- * Probe candidates with HEAD/GET until one returns HTML-ish success.
- * @param {{ href: string, score: number }[]} candidates
- */
-async function pickWorkingPolicyUrl(candidates) {
-  for (const c of candidates.slice(0, 8)) {
-    const result = await probeUrl(c.href);
-    if (result) return result;
-  }
-  return null;
-}
-
-async function probeUrl(url) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 5000);
-  try {
-    // Prefer HEAD; fall back to a short GET if HEAD is rejected.
-    let response = await fetch(url, {
-      method: "HEAD",
-      redirect: "follow",
-      credentials: "omit",
-      signal: controller.signal
-    }).catch(() => null);
-
-    if (!response || response.status === 405 || response.status === 501) {
-      response = await fetch(url, {
-        method: "GET",
-        redirect: "follow",
-        credentials: "omit",
-        signal: controller.signal,
-        headers: { Accept: "text/html", Range: "bytes=0-2047" }
-      });
-    }
-
-    if (!response.ok && response.status !== 206) return null;
-    const type = response.headers.get("content-type") || "";
-    if (type && !/html|text|xml|json/i.test(type) && response.status !== 206) {
-      return null;
-    }
-    if (response.body) {
-      try {
-        await response.body.cancel();
-      } catch {
-        /* ignore */
-      }
-    }
-    return response.url || url;
-  } catch {
-    return null;
-  } finally {
-    clearTimeout(timer);
-  }
 }

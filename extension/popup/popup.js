@@ -1,3 +1,8 @@
+import { isSameOrigin, originPattern } from "../lib/policy-access.js";
+
+const PENDING_KEY = "c3nsor:pendingPolicyUrl";
+const PENDING_TTL_MS = 2 * 60 * 1000;
+
 const statusEl = document.getElementById("status");
 const metaEl = document.getElementById("meta");
 const alternativesEl = document.getElementById("alternatives");
@@ -20,13 +25,15 @@ document.getElementById("refresh-btn").addEventListener("click", () => {
   runAnalyze({ force: true });
 });
 
+let pageUrl = "";
+
 document.getElementById("analyze-url-btn").addEventListener("click", () => {
   const url = policyInput.value.trim();
   if (!url) {
     showError("Paste a privacy policy URL first.");
     return;
   }
-  runAnalyze({ force: true, policyUrl: url });
+  analyzeUrl(url);
 });
 
 document.getElementById("clear-cache-btn").addEventListener("click", async () => {
@@ -36,7 +43,65 @@ document.getElementById("clear-cache-btn").addEventListener("click", async () =>
   alternativesEl.classList.add("hidden");
 });
 
-runAnalyze({ force: false });
+start();
+
+async function start() {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true }).catch(() => []);
+  pageUrl = tab?.url || "";
+  const pending = await takePendingPolicyUrl();
+  if (pending) {
+    policyInput.value = pending;
+    runAnalyze({ force: true, policyUrl: pending });
+    return;
+  }
+  runAnalyze({ force: false });
+}
+
+/**
+ * Policies on another host need that host's permission. Chrome only shows its prompt
+ * when chrome.permissions.request runs inside the click, before any other await.
+ * @param {string} url
+ */
+async function analyzeUrl(url) {
+  if (!isHttpUrl(url)) {
+    showError("Policy URL must be a full http or https link.");
+    return;
+  }
+  if (!isSameOrigin(url, pageUrl)) {
+    const granted = await requestHostAccess(url);
+    if (!granted) {
+      showError(
+        `c3nsor can only read ${hostOf(url)} if you allow it. You can still open the policy and read it yourself.`,
+        { openPolicyUrl: url }
+      );
+      return;
+    }
+  }
+  runAnalyze({ force: true, policyUrl: url });
+}
+
+/** @param {string} url */
+async function requestHostAccess(url) {
+  // Chrome's prompt can close the popup; the next open resumes this URL.
+  chrome.storage.session.set({ [PENDING_KEY]: { url, pageUrl, at: Date.now() } }).catch(() => {});
+  let granted = false;
+  try {
+    granted = await chrome.permissions.request({ origins: [originPattern(url)] });
+  } catch {
+    granted = false;
+  }
+  await chrome.storage.session.remove(PENDING_KEY).catch(() => {});
+  return granted;
+}
+
+async function takePendingPolicyUrl() {
+  const data = await chrome.storage.session.get(PENDING_KEY).catch(() => ({}));
+  const pending = data?.[PENDING_KEY];
+  if (!pending) return null;
+  await chrome.storage.session.remove(PENDING_KEY).catch(() => {});
+  const fresh = Date.now() - (pending.at || 0) < PENDING_TTL_MS;
+  return fresh && pending.pageUrl === pageUrl && isHttpUrl(pending.url) ? pending.url : null;
+}
 
 /**
  * @param {{ force?: boolean, policyUrl?: string }} opts
@@ -97,8 +162,9 @@ function showError(message, detail) {
 function renderAlternatives(candidates, detail) {
   const top = (candidates || []).slice(0, 4);
   const openFallback = detail?.openPolicyUrl || detail?.policyUrl || top[0]?.href || null;
+  const access = detail?.needsPermission;
 
-  if (!top.length && !openFallback) {
+  if (!top.length && !openFallback && !access) {
     alternativesEl.classList.add("hidden");
     alternativesEl.innerHTML = "";
     return;
@@ -106,6 +172,25 @@ function renderAlternatives(candidates, detail) {
 
   alternativesEl.classList.remove("hidden");
   alternativesEl.innerHTML = "";
+
+  if (access && isHttpUrl(access.url)) {
+    const allowRow = document.createElement("div");
+    allowRow.className = "alt-open-row";
+    const allowBtn = document.createElement("button");
+    allowBtn.type = "button";
+    allowBtn.className = "alt-open-primary";
+    allowBtn.textContent = `Allow c3nsor to read ${access.host || hostOf(access.url)}`;
+    allowBtn.addEventListener("click", () => {
+      policyInput.value = access.url;
+      analyzeUrl(access.url);
+    });
+    const why = document.createElement("p");
+    why.className = "alt-hint";
+    why.textContent =
+      "c3nsor only reads sites you approve. Chrome will ask once for this site, and the policy is still analyzed on your device.";
+    allowRow.append(allowBtn, why);
+    alternativesEl.appendChild(allowRow);
+  }
 
   if (openFallback && isHttpUrl(openFallback)) {
     const openRow = document.createElement("div");
@@ -145,7 +230,7 @@ function renderAlternatives(candidates, detail) {
     analyzeBtn.title = `Analyze ${c.href}`;
     analyzeBtn.addEventListener("click", () => {
       policyInput.value = c.href;
-      runAnalyze({ force: true, policyUrl: c.href });
+      analyzeUrl(c.href);
     });
 
     const openLink = document.createElement("a");
@@ -307,6 +392,14 @@ function isHttpUrl(value) {
     return u.protocol === "http:" || u.protocol === "https:";
   } catch {
     return false;
+  }
+}
+
+function hostOf(url) {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return "that site";
   }
 }
 

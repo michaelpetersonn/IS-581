@@ -4,10 +4,16 @@ export const FETCH_TIMEOUT_MS = 12_000;
 export const MAX_BYTES = 1_500_000;
 
 /**
+ * Must stay self-contained (no module-scope references in the body): it is also
+ * injected into the active tab via chrome.scripting.executeScript with explicit limits.
  * @param {string} url
+ * @param {{ maxBytes: number, timeoutMs: number }} [limits]
  * @returns {Promise<{ ok: true, html: string, finalUrl: string } | { ok: false, error: string }>}
  */
-export async function fetchPolicyHtml(url) {
+export async function fetchPolicyHtml(
+  url,
+  limits = { maxBytes: MAX_BYTES, timeoutMs: FETCH_TIMEOUT_MS }
+) {
   let parsed;
   try {
     parsed = new URL(url);
@@ -19,7 +25,7 @@ export async function fetchPolicyHtml(url) {
   }
 
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  const timer = setTimeout(() => controller.abort(), limits.timeoutMs);
 
   try {
     const response = await fetch(parsed.href, {
@@ -38,7 +44,7 @@ export async function fetchPolicyHtml(url) {
     }
 
     const buffer = await response.arrayBuffer();
-    if (buffer.byteLength > MAX_BYTES) {
+    if (buffer.byteLength > limits.maxBytes) {
       return {
         ok: false,
         error: "The privacy policy page is too large to process safely."

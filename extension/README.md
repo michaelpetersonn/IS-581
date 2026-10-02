@@ -45,10 +45,12 @@ See [`STORE.md`](STORE.md) for the publish checklist, permission justifications,
 
 | Permission | Why |
 | --- | --- |
-| `activeTab` | Read the current tab when you open the popup. |
-| `scripting` | Run a short discover script on the page to find policy links. |
+| `activeTab` | Access the current tab only when you open the popup. Same-site policy pages are downloaded from inside that tab. |
+| `scripting` | Run the bundled discover script (and the policy download) in that tab. |
 | `storage` | Session cache of analysis results (domain + structured findings only, ~30 minutes). |
-| Host access (`http(s)://*/*`) | Fetch the privacy policy document you (or the page) already pointed to. |
+| Optional host access (`http(s)://*/*`) | Not granted at install. When a policy lives on another host (e.g. `policies.google.com`), the popup shows **Allow c3nsor to read …** and Chrome asks for that one host. |
+
+Policy download logic lives in [`lib/policy-access.js`](lib/policy-access.js) and is covered by `scripts/verify-access.mjs` (including a check that the manifest never requests every site at install).
 
 c3nsor does **not** log a history of sites you visit to any server. Session cache stays in the browser (`chrome.storage.session`) and can be cleared from the popup. Fetches use `credentials: "omit"` (no cookies sent).
 

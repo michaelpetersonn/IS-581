@@ -20,8 +20,9 @@ The same zip is published on the site at `downloads/c3nsor-extension.zip` on eve
 
 3. **Assets Google asks for**
    - **Icon** 128×128: `icons/icon128.png`.
-   - **Screenshots**: at least one, **1280×800** or **640×400**. Load the extension, open DuckDuckGo or Wikipedia, open the popup, and capture the browser window with the popup visible. Two or three shots is ideal (a 5-alert result, a result with an Opt out link, and the “Try another policy URL” fallback).
-   - **Small promo tile** 440×280 (optional).
+   - **Screenshots**: at least one, **1280×800** or **640×400**. Ready-made shots from the website are in `store/screenshots/` (upload `1-` through `5-` in order; the `extra-home-vision` shot shows roadmap features that don't ship yet, so keep it off the listing). For a real-browser shot, load the extension, open DuckDuckGo or Wikipedia, open the popup, and capture the browser window with the popup visible. Two or three shots is ideal (a 5-alert result, a result with an Opt out link, and the “Try another policy URL” fallback).
+   - **Small promo tile** 440×280 (optional): `store/promo-small-440x280.jpg`.
+   - **Marquee promo tile** 1400×560 (optional): `store/promo-marquee-1400x560.jpg`.
    - **Privacy policy URL**: `https://michael-peterson.com/IS-581/privacy-policy.html`
 
 ## Paste-ready listing
@@ -57,10 +58,11 @@ Show the user what the current website’s privacy policy says about their data,
 
 | Permission | Justification |
 | --- | --- |
-| `activeTab` | Read the current tab’s URL when the user opens the popup. |
-| `scripting` | Find privacy-policy links on the current page when the user opens the popup. |
-| `storage` | Cache the analysis for the current session (~30 min), clearable by the user. |
-| Host access (`http(s)://*/*`) | Download the privacy policy for whatever site the user is on so analysis can run on-device. Any site can host a policy, so access can’t be limited to a fixed list. |
+| `activeTab` | When the user clicks the c3nsor toolbar button, activeTab gives temporary access to that one tab so c3nsor can find and download that website’s privacy policy. Nothing runs until the user opens the popup, and c3nsor never reads tabs in the background. |
+| `scripting` | After the user opens the popup, c3nsor runs bundled code in the active tab: content/discover.js finds links to the site’s privacy policy, privacy choices, and opt-out pages, and a small function downloads that same-site policy page as text so it can be analyzed on the device. It only reads link text, URLs, and the policy page; it does not change the page or read form fields. |
+| `storage` | Uses chrome.storage.session to cache the latest analysis for about 30 minutes so reopening the popup on the same site is instant. Nothing is written to persistent storage, the cache clears when the browser closes, and the user can clear it from the popup. |
+| Optional host access (`http(s)://*/*`, if the form asks) | Not granted at install. Some sites host their privacy policy on a different domain (for example policies.google.com). Only then does the popup show an “Allow c3nsor to read [host]” button, and Chrome asks the user to approve that single host. Requests send no cookies, and nothing is sent to the developer. |
+| Remote code | No. All JavaScript ships inside the extension package; nothing is downloaded and executed. Policy pages are fetched as text and analyzed, never run. |
 
 **Data usage (privacy practices tab):**
 - Collected user data: **none**. Policy pages are downloaded and analyzed on the device; nothing is sent to the developer.
@@ -73,7 +75,7 @@ Show the user what the current website’s privacy policy says about their data,
 2. **Store listing** tab: paste the text above, add screenshots and the icon.
 3. **Privacy practices** tab: single purpose, permission justifications, data usage, privacy policy URL.
 4. **Distribution** tab → Visibility: **Unlisted**.
-5. Submit for review. It often takes a few days, and broad host access can make it longer.
+5. Submit for review. It often takes a few days. c3nsor requests no install-time host access (only `activeTab` plus optional per-host access), which avoids the “Broad Host Permissions” in-depth review.
 
 ## After approval
 

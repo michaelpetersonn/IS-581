@@ -279,6 +279,7 @@ body {
   font-weight: 700;
   text-align: center;
   text-decoration: none;
+  cursor: pointer;
 }
 
 .alternatives .alt-open-primary:hover {

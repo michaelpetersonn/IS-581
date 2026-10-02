@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "c3nsor",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Find a site’s privacy policy and see what it says about your data in plain English, with citations. Local rules, not AI.",
   "action": {
     "default_title": "c3nsor — privacy checkpoint",
@@ -24,6 +24,6 @@
     "type": "module"
   },
   "permissions": ["activeTab", "scripting", "storage"],
-  "host_permissions": ["http://*/*", "https://*/*"],
+  "optional_host_permissions": ["http://*/*", "https://*/*"],
   "content_scripts": []
 }
