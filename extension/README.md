@@ -20,7 +20,7 @@ Rules-based privacy checkpoint: find the current site’s privacy policy, show f
 
 ## Sharing with testers
 
-- **No install:** send people to the site’s **Try it** page (`docs/try.html`). It runs the same analyzer in the browser with sample sites, pasted policy text, and (once the proxy is deployed) live URLs.
+- **No install:** send people to the site’s **Try it** page (`docs/try.html`). It runs the same analyzer in the browser with sample sites, pasted policy text, and live URLs (via the Cloudflare proxy in `proxy/`).
 - **Real extension:** the site serves `downloads/c3nsor-extension.zip`, built on every Pages deploy. Testers unzip it and follow the steps below. Once the unlisted Chrome Web Store listing is approved, share that link instead (see [`STORE.md`](STORE.md)).
 
 ## Load unpacked (Chrome)
