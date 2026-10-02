@@ -14,6 +14,10 @@ Website and Chrome extension for **c3nsor**, which shows people what a site’s 
 - **Download:** the Extension page links `downloads/c3nsor-extension.zip` plus 2-minute install steps.
 - **Chrome Web Store (unlisted):** checklist and paste-ready listing in [`extension/STORE.md`](extension/STORE.md).
 
+## Style guide
+
+Colors, fonts, and usage rules: [`STYLE_GUIDE.md`](STYLE_GUIDE.md). Visual swatches: [`docs/style-guide.html`](docs/style-guide.html).
+
 ## GitHub Pages
 
 The site deploys with GitHub Actions ([`.github/workflows/pages.yml`](.github/workflows/pages.yml)) on every push to `main`. In repo **Settings → Pages**, Source must be **GitHub Actions**.

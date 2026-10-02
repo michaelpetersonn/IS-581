@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>c3nsor — Style guide</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #101010;
+      --paper: #ffffff;
+      --line: #d0d0d0;
+      --muted: #6d6d6d;
+      --accent: #b42318;
+      --soft: #ececec;
+      --kicker: #a6a6a6;
+      --copy-dark: #d0d0d0;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: Manrope, Arial, sans-serif;
+    }
+    .top {
+      background: var(--ink);
+      color: #fff;
+      padding: 28px 6vw 36px;
+    }
+    .top a {
+      color: var(--copy-dark);
+      font: 500 11px/1 "DM Mono", monospace;
+      letter-spacing: .16em;
+      text-decoration: none;
+    }
+    .top h1 {
+      margin: 18px 0 10px;
+      font-weight: 600;
+      letter-spacing: -.075em;
+      font-size: clamp(40px, 7vw, 72px);
+      line-height: .92;
+    }
+    .top p {
+      margin: 0;
+      max-width: 520px;
+      color: var(--copy-dark);
+      font-size: 16px;
+      line-height: 1.6;
+    }
+    main { padding: 48px 6vw 80px; max-width: 1100px; }
+    section { margin-bottom: 64px; }
+    h2 {
+      margin: 0 0 8px;
+      font-size: clamp(28px, 3vw, 40px);
+      font-weight: 600;
+      letter-spacing: -.05em;
+    }
+    .lead {
+      margin: 0 0 28px;
+      color: var(--muted);
+      max-width: 540px;
+      line-height: 1.55;
+    }
+    .swatches {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 16px;
+    }
+    .swatch {
+      border: 1px solid var(--line);
+    }
+    .chip {
+      height: 88px;
+      border-bottom: 1px solid var(--line);
+    }
+    .meta {
+      padding: 12px 14px 14px;
+      font: 400 12px/1.45 "DM Mono", monospace;
+    }
+    .meta strong {
+      display: block;
+      margin-bottom: 4px;
+      font-family: Manrope, Arial, sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: -.02em;
+    }
+    .type-row {
+      border-top: 1px solid var(--line);
+      padding: 22px 0;
+    }
+    .type-row:last-child { border-bottom: 1px solid var(--line); }
+    .label {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font: 500 11px/1 "DM Mono", monospace;
+      letter-spacing: .16em;
+    }
+    .specimen-brand {
+      font: 800 clamp(40px, 6vw, 72px)/.88 Manrope, Arial, sans-serif;
+      letter-spacing: -.07em;
+    }
+    .specimen-display {
+      font: 600 clamp(36px, 5.5vw, 64px)/.95 Manrope, Arial, sans-serif;
+      letter-spacing: -.075em;
+    }
+    .specimen-h3 {
+      font: 600 36px/1.1 Manrope, Arial, sans-serif;
+      letter-spacing: -.04em;
+    }
+    .specimen-body {
+      max-width: 540px;
+      font-size: 17px;
+      line-height: 1.65;
+      color: var(--ink);
+    }
+    .specimen-kicker {
+      color: var(--kicker);
+      font: 500 11px/1 "DM Mono", monospace;
+      letter-spacing: .16em;
+    }
+    .specimen-mark {
+      display: inline-grid;
+      place-items: center;
+      min-width: 38px;
+      height: 38px;
+      padding: 0 7px;
+      border: 1.5px solid currentColor;
+      font: 500 16px "DM Mono", monospace;
+    }
+    .pair {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 8px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px 24px;
+      font: 600 17px/1 Manrope, Arial, sans-serif;
+      letter-spacing: -.02em;
+      text-decoration: none;
+      border: 1px solid transparent;
+    }
+    .btn-light { background: #fff; color: var(--ink); border-color: #fff; }
+    .btn-dark { background: var(--ink); color: #fff; border-color: var(--ink); }
+    .demo-dark {
+      background: var(--ink);
+      color: #fff;
+      padding: 28px;
+      margin-top: 12px;
+    }
+    .demo-dark .specimen-body { color: var(--copy-dark); }
+    .note {
+      margin-top: 12px;
+      color: var(--muted);
+      font: 400 13px/1.5 "DM Mono", monospace;
+    }
+    footer {
+      padding: 24px 6vw 40px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font: 400 12px/1.4 "DM Mono", monospace;
+    }
+    footer a { color: var(--ink); }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <a href="index.html">← BACK TO SITE</a>
+    <h1>Style guide</h1>
+    <p>Colors and fonts for c3nsor. Keep the brand in ink, paper, and a single red signal.</p>
+  </header>
+
+  <main>
+    <section>
+      <h2>Core colors</h2>
+      <p class="lead">Primary brand tokens. Use these first; supporting grays only for hierarchy and chrome.</p>
+      <div class="swatches">
+        <div class="swatch">
+          <div class="chip" style="background:#101010"></div>
+          <div class="meta"><strong>Ink</strong>#101010<br>--ink</div>
+        </div>
+        <div class="swatch">
+          <div class="chip" style="background:#ffffff"></div>
+          <div class="meta"><strong>Paper</strong>#ffffff<br>--paper</div>
+        </div>
+        <div class="swatch">
+          <div class="chip" style="background:#d0d0d0"></div>
+          <div class="meta"><strong>Line</strong>#d0d0d0<br>--line</div>
+        </div>
+        <div class="swatch">
+          <div class="chip" style="background:#6d6d6d"></div>
+          <div class="meta"><strong>Muted</strong>#6d6d6d<br>--muted</div>
+        </div>
+        <div class="swatch">
+          <div class="chip" style="background:#b42318"></div>
+          <div class="meta"><strong>Accent</strong>#b42318<br>--accent</div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Supporting grays</h2>
+      <p class="lead">Secondary tones for dark UI copy and soft light surfaces.</p>
+      <div class="swatches">
+        <div class="swatch">
+          <div class="chip" style="background:#343434"></div>
+          <div class="meta"><strong>Header line</strong>#343434</div>
+        </div>
+        <div class="swatch">
+          <div class="chip" style="background:#a6a6a6"></div>
+          <div class="meta"><strong>Kicker</strong>#a6a6a6</div>
+        </div>
+        <div class="swatch">
+          <div class="chip" style="background:#d0d0d0"></div>
+          <div class="meta"><strong>Copy on dark</strong>#d0d0d0</div>
+        </div>
+        <div class="swatch">
+          <div class="chip" style="background:#ececec"></div>
+          <div class="meta"><strong>Soft surface</strong>#ececec</div>
+        </div>
+        <div class="swatch">
+          <div class="chip" style="background:#f5f5f7"></div>
+          <div class="meta"><strong>Soft paper</strong>#f5f5f7</div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Typography</h2>
+      <p class="lead">Manrope for brand and reading. DM Mono for kickers, marks, and meta.</p>
+
+      <div class="type-row">
+        <p class="label">HERO BRAND · MANROPE 800</p>
+        <div class="specimen-brand">c3nsor</div>
+      </div>
+      <div class="type-row">
+        <p class="label">DISPLAY · MANROPE 600</p>
+        <div class="specimen-display">Take control of your data.</div>
+      </div>
+      <div class="type-row">
+        <p class="label">SECTION TITLE · MANROPE 600</p>
+        <div class="specimen-h3">Browse Safely and Peacefully.</div>
+      </div>
+      <div class="type-row">
+        <p class="label">BODY · MANROPE 400 / 17PX</p>
+        <p class="specimen-body">Stop sites from taking advantage of you before you create an account, accept cookies, or share personal details.</p>
+      </div>
+      <div class="type-row">
+        <p class="label">KICKER · DM MONO 500</p>
+        <p class="specimen-kicker">BROWSER EXTENSION</p>
+      </div>
+      <div class="type-row">
+        <p class="label">BRAND MARK · DM MONO</p>
+        <span class="specimen-mark">c3</span>
+      </div>
+    </section>
+
+    <section>
+      <h2>Buttons</h2>
+      <p class="lead">High contrast CTAs. Light on dark hero; dark on light forms.</p>
+      <div class="demo-dark">
+        <div class="pair">
+          <a class="btn btn-light" href="#">GET ACCESS</a>
+        </div>
+        <p class="note" style="color:#d0d0d0">Join the waitlist today.</p>
+      </div>
+      <div class="pair" style="margin-top:20px">
+        <a class="btn btn-dark" href="#">GET ACCESS</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Full written guide:
+    <a href="https://github.com/michaelpetersonn/IS-581/blob/main/STYLE_GUIDE.md">STYLE_GUIDE.md</a>
+    ·
+    <a href="index.html">Landing page</a>
+  </footer>
+</body>
+</html>
