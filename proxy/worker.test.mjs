@@ -4,7 +4,7 @@
  */
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { handleRequest, validateTargetUrl, MAX_BYTES } from "./worker.js";
+import { handleRequest, upstreamStatusError, validateTargetUrl, MAX_BYTES } from "./worker.js";
 
 const ORIGIN = "https://michael-peterson.com";
 const env = { ALLOWED_ORIGINS: `${ORIGIN},http://localhost:8000` };
@@ -91,7 +91,19 @@ test("re-validates every redirect hop", async () => {
   });
   const res = await handleRequest(proxyRequest("https://example.com/privacy"), env, fetchImpl);
   assert.equal(res.status, 400);
+  assert.equal((await res.json()).code, "bad_redirect");
   assert.deepEqual(fetchImpl.calls, ["https://example.com/privacy"]);
+});
+
+test("blocked targets return a machine-readable code", async () => {
+  const fetchImpl = mockFetch({});
+  const host = await handleRequest(proxyRequest("http://127.0.0.1/"), env, fetchImpl);
+  assert.equal(host.status, 400);
+  assert.equal((await host.json()).code, "blocked_host");
+  const port = await handleRequest(proxyRequest("https://example.com:8443/"), env, fetchImpl);
+  assert.equal(port.status, 400);
+  assert.equal((await port.json()).code, "invalid_url");
+  assert.equal(fetchImpl.calls.length, 0);
 });
 
 test("follows safe redirects and reports the final URL", async () => {
@@ -117,15 +129,58 @@ test("rejects non-HTML content and oversized pages", async () => {
   });
   const pdf = await handleRequest(proxyRequest("https://example.com/file.pdf"), env, fetchImpl);
   assert.equal(pdf.status, 415);
+  assert.equal((await pdf.json()).code, "not_html");
   const huge = await handleRequest(proxyRequest("https://example.com/huge"), env, fetchImpl);
   assert.equal(huge.status, 413);
+  assert.equal((await huge.json()).code, "too_large");
 });
 
-test("passes upstream errors through as 502 with a readable message", async () => {
+test("upstream 404 becomes 502 not_found with the original status as data", async () => {
   const fetchImpl = mockFetch({});
   const res = await handleRequest(proxyRequest("https://example.com/missing"), env, fetchImpl);
   assert.equal(res.status, 502);
-  assert.match((await res.json()).error, /HTTP 404/);
+  assert.equal(res.headers.get("Access-Control-Allow-Origin"), ORIGIN);
+  const body = await res.json();
+  assert.equal(body.code, "not_found");
+  assert.equal(body.upstreamStatus, 404);
+  assert.doesNotMatch(body.error, /HTTP/);
+});
+
+test("Cloudflare DNS/origin errors (530, 52x) become unreachable or timeout, never passed through", async () => {
+  const fetchImpl = mockFetch({
+    "https://no-such-site.example/": new Response("error code: 1016", { status: 530 }),
+    "https://slow.example/": new Response("", { status: 522 })
+  });
+  const dns = await handleRequest(proxyRequest("https://no-such-site.example/"), env, fetchImpl);
+  assert.equal(dns.status, 502);
+  assert.equal((await dns.json()).code, "unreachable");
+  const slow = await handleRequest(proxyRequest("https://slow.example/"), env, fetchImpl);
+  assert.equal(slow.status, 504);
+  assert.equal((await slow.json()).code, "timeout");
+});
+
+test("upstreamStatusError classifies site responses", () => {
+  assert.equal(upstreamStatusError(403).code, "blocked");
+  assert.equal(upstreamStatusError(429).code, "blocked");
+  assert.equal(upstreamStatusError(410).code, "not_found");
+  assert.equal(upstreamStatusError(503).code, "upstream_error");
+  assert.equal(upstreamStatusError(524).code, "timeout");
+  assert.equal(upstreamStatusError(521).code, "unreachable");
+  for (const s of [403, 404, 503, 530]) assert.equal(upstreamStatusError(s).status, 502);
+});
+
+test("network failures and timeouts map to unreachable (502) and timeout (504)", async () => {
+  const refused = await handleRequest(proxyRequest("https://example.com/"), env, async () => {
+    throw new TypeError("Network connection lost.");
+  });
+  assert.equal(refused.status, 502);
+  assert.equal((await refused.json()).code, "unreachable");
+
+  const timedOut = await handleRequest(proxyRequest("https://example.com/"), env, async () => {
+    throw new DOMException("The operation was aborted.", "AbortError");
+  });
+  assert.equal(timedOut.status, 504);
+  assert.equal((await timedOut.json()).code, "timeout");
 });
 
 test("only GET and OPTIONS are allowed", async () => {

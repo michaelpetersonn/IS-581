@@ -4,6 +4,7 @@ import { PROXY_URL } from "./config.js";
 import {
   MAX_PASTE_CHARS,
   compactCite,
+  describeProxyError,
   hostOf,
   isHttpUrl,
   looksLikeHtml,
@@ -141,7 +142,9 @@ async function analyzeUrl(raw) {
     if (!picked) {
       renderError(
         "Couldn’t find readable policy text on that site. Open the policy to read it, or paste its text below.",
-        candidates[0]?.href || first.finalUrl
+        candidates[0]
+          ? { href: candidates[0].href, label: "Open privacy policy" }
+          : { href: first.finalUrl, label: "Open site" }
       );
       return;
     }
@@ -156,7 +159,8 @@ async function analyzeUrl(raw) {
     renderResult(result, "Rules matched language in this policy");
   } catch (err) {
     if (myRun !== runId) return;
-    renderError(err?.message || "Could not download that page.", target);
+    const { message, siteUrl } = describeProxyError(err?.code, target);
+    renderError(message, siteUrl ? { href: siteUrl, label: "Open site" } : null);
   } finally {
     if (myRun === runId) el.urlButton.disabled = false;
   }
@@ -183,6 +187,7 @@ async function pickPolicyFromCandidates(candidates, myRun) {
 }
 
 /**
+ * Errors carry the proxy's machine-readable `code`; describeProxyError turns it into visitor wording.
  * @param {string} url
  * @returns {Promise<{ html: string, finalUrl: string }>}
  */
@@ -191,13 +196,15 @@ async function proxyFetch(url) {
   endpoint.searchParams.set("url", url);
   const res = await fetch(endpoint, { credentials: "omit" });
   if (!res.ok) {
-    let message = "";
+    let body = {};
     try {
-      message = (await res.json()).error || "";
+      body = await res.json();
     } catch {
       /* non-JSON error body */
     }
-    throw new Error(message || `Could not download that page (HTTP ${res.status}).`);
+    const err = new Error(body.error || "Proxy request failed.");
+    err.code = typeof body.code === "string" ? body.code : null;
+    throw err;
   }
   return { html: await res.text(), finalUrl: res.headers.get("X-Final-Url") || url };
 }
@@ -301,13 +308,13 @@ function renderLoading(message) {
 
 /**
  * @param {string} message
- * @param {string|null} [openUrl]
+ * @param {{ href: string, label: string }|null} [link] only for a site we actually reached
  */
-function renderError(message, openUrl = null) {
+function renderError(message, link = null) {
   hideResultParts();
   setStatus(message, "error");
-  if (openUrl && isHttpUrl(openUrl)) {
-    el.open.append(linkButton(openUrl, "Open privacy policy", "try-open-primary"));
+  if (link && isHttpUrl(link.href)) {
+    el.open.append(linkButton(link.href, link.label, "try-open-primary"));
     el.open.classList.remove("hidden");
   }
 }

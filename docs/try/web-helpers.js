@@ -81,6 +81,58 @@ export function scorePolicyLink(href, text, pageHost) {
   return score;
 }
 
+/** Proxy error codes where the site itself answered, so linking visitors to it is useful. */
+const REACHABLE_ERROR_CODES = new Set(["blocked", "not_found", "upstream_error", "too_large", "not_html", "bad_redirect"]);
+
+/**
+ * Visitor-facing wording for a proxy error `code` (see proxy/worker.js). Never includes HTTP status codes.
+ * `siteUrl` is the site's homepage when the site was reachable, otherwise null (no link to a dead domain).
+ * @param {string|undefined|null} code
+ * @param {string} targetUrl the URL the visitor asked to analyze
+ * @returns {{ message: string, siteUrl: string|null }}
+ */
+export function describeProxyError(code, targetUrl) {
+  const host = hostOf(targetUrl) || "That site";
+  let message;
+  switch (code) {
+    case "unreachable":
+      message = `We couldn’t reach ${host}. Check the spelling, or try the site’s full address.`;
+      break;
+    case "timeout":
+      message = `${host} took too long to respond. Try again, or paste the policy text below.`;
+      break;
+    case "blocked":
+      message = `${host} didn’t let us read its pages. Open the site’s privacy policy and paste its text below.`;
+      break;
+    case "not_found":
+      message = `We couldn’t find that page on ${host}. Check the address, or try just the site name.`;
+      break;
+    case "upstream_error":
+      message = `${host} had a problem loading that page. Try again later, or paste the policy text below.`;
+      break;
+    case "too_large":
+      message = "That page is too large to analyze. Paste the policy text below instead.";
+      break;
+    case "not_html":
+      message = "That address isn’t a web page we can read (it may be a PDF or a download). Try the site’s privacy policy page instead.";
+      break;
+    case "bad_redirect":
+      message = `${host} sent us somewhere we can’t follow. Open the site’s privacy policy and paste its text below.`;
+      break;
+    case "invalid_url":
+    case "blocked_host":
+      message = "Enter a public website address like duckduckgo.com.";
+      break;
+    default:
+      message = "We couldn’t download that page right now. Try again, or paste the policy text below.";
+  }
+  let siteUrl = null;
+  if (code && REACHABLE_ERROR_CODES.has(code) && isHttpUrl(targetUrl)) {
+    siteUrl = `${new URL(targetUrl).origin}/`;
+  }
+  return { message, siteUrl };
+}
+
 /**
  * Keep citations short and readable under the one-look summary.
  * @param {string} text

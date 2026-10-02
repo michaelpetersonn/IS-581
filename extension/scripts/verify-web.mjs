@@ -6,6 +6,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   compactCite,
+  describeProxyError,
   hostOf,
   isHttpUrl,
   looksLikeHtml,
@@ -38,6 +39,45 @@ test("scorePolicyLink prefers same-site privacy policy links over cookie links",
   assert.ok(policy > offsite, "same-site should beat off-site");
   assert.ok(cookie <= 0, "cookie-only link should not be a candidate");
   assert.equal(scorePolicyLink("javascript:void(0)", "Privacy Policy", "example.com"), 0);
+});
+
+test("describeProxyError: unreachable sites get plain wording and no link", () => {
+  const dead = describeProxyError("unreachable", "https://this-domain-does-not-exist-c3nsor.com/");
+  assert.equal(
+    dead.message,
+    "We couldn’t reach this-domain-does-not-exist-c3nsor.com. Check the spelling, or try the site’s full address."
+  );
+  assert.equal(dead.siteUrl, null);
+
+  const slow = describeProxyError("timeout", "https://www.slow.example/privacy");
+  assert.equal(slow.message, "slow.example took too long to respond. Try again, or paste the policy text below.");
+  assert.equal(slow.siteUrl, null);
+
+  for (const code of ["invalid_url", "blocked_host", undefined, null, "something_new"]) {
+    assert.equal(describeProxyError(code, "https://example.com/").siteUrl, null, String(code));
+  }
+});
+
+test("describeProxyError: reachable-site errors link to the site homepage", () => {
+  const blocked = describeProxyError("blocked", "https://www.instagram.com/accounts/");
+  assert.equal(
+    blocked.message,
+    "instagram.com didn’t let us read its pages. Open the site’s privacy policy and paste its text below."
+  );
+  assert.equal(blocked.siteUrl, "https://www.instagram.com/");
+  for (const code of ["not_found", "upstream_error", "too_large", "not_html", "bad_redirect"]) {
+    assert.equal(describeProxyError(code, "https://example.com/a/b").siteUrl, "https://example.com/", code);
+  }
+});
+
+test("describeProxyError never shows raw HTTP status codes", () => {
+  const codes = ["unreachable", "timeout", "blocked", "not_found", "upstream_error", "too_large", "not_html", "bad_redirect", "invalid_url", "blocked_host", undefined];
+  for (const code of codes) {
+    const { message } = describeProxyError(code, "https://example.com/");
+    assert.doesNotMatch(message, /HTTP|\b[1-5]\d\d\b/, String(code));
+    assert.ok(message.length > 10);
+  }
+  assert.match(describeProxyError("unreachable", "not a url").message, /^We couldn’t reach That site/);
 });
 
 test("small helpers", () => {
