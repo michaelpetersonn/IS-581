@@ -1,0 +1,5 @@
+.thank-you { min-height: calc(100vh - 76px); padding: 11vw 4.2vw; background: #101010; color: #fff; }
+.thank-you h1 { max-width: 980px; margin: 36px 0 30px; font-size: clamp(52px, 9vw, 132px); font-weight: 600; letter-spacing: -.075em; line-height: .92; }
+.thank-you p { max-width: 470px; color: #c4c4c4; font-size: 17px; line-height: 1.6; }
+.thank-you .button { margin-top: 27px; }
+@media (max-width: 720px) { .thank-you { padding: 85px 20px; } }

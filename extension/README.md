@@ -54,6 +54,10 @@ Policy download logic lives in [`lib/policy-access.js`](lib/policy-access.js) an
 
 c3nsor does **not** log a history of sites you visit to any server. Session cache stays in the browser (`chrome.storage.session`) and can be cleared from the popup. Fetches use `credentials: "omit"` (no cookies sent).
 
+## Security
+
+Policy pages are untrusted, so the popup renders everything with `textContent` through [`popup/render.js`](popup/render.js) (no `innerHTML`), and `manifest.json` sets a strict `content_security_policy.extension_pages` (`script-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'`). The service worker only answers this extension's own pages and validates every message in [`lib/messages.js`](lib/messages.js). Threat model and reporting: [`SECURITY.md`](../SECURITY.md).
+
 ## How analysis works
 
 Explanations come from **predefined templates** plus regex/keyword matches over policy sentences. This is intentionally limited and can miss nuanced language. It is **not** legal advice and **not** an AI summary.
@@ -67,8 +71,8 @@ extension/
   manifest.json
   background/service-worker.js
   content/discover.js
-  lib/          # clean, fetch, rules, summarize, templates, result, cache
-  popup/
+  lib/          # clean, fetch, rules, summarize, templates, result, cache, messages
+  popup/        # popup.html/js/css + render.js (safe DOM builders)
   icons/
   scripts/      # verify + build-web (site engine copy, zip) + build-samples
   README.md
@@ -87,7 +91,7 @@ extension/
 
 ```bash
 cd extension
-npm run verify                   # offline rule checks + web demo helper tests
+npm run verify                   # offline rule checks, web demo helpers, access, XSS/CSP/message-validation tests
 node scripts/verify-live.mjs     # fetch a few public policies (needs network)
 npm run build:web                # copy engine to docs/try/engine/ + zip to docs/downloads/
 npm run samples                  # refresh docs/try/samples.json (needs network)

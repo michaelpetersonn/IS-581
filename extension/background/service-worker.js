@@ -3,8 +3,12 @@ import { fetchPolicyHtml, FETCH_TIMEOUT_MS, MAX_BYTES } from "../lib/fetch.js";
 import { createPolicyFetcher } from "../lib/policy-access.js";
 import { buildAnalysisResult } from "../lib/result.js";
 import { getCached, setCached, clearCache } from "../lib/cache.js";
+import { isTrustedSender, sanitizeDiscovery, validateMessage } from "../lib/messages.js";
 
-chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (!isTrustedSender(sender, chrome.runtime.id, chrome.runtime.getURL(""))) {
+    return false;
+  }
   handleMessage(message)
     .then(sendResponse)
     .catch((err) =>
@@ -16,10 +20,10 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   return true;
 });
 
-async function handleMessage(message) {
-  if (!message || typeof message !== "object") {
-    return { ok: false, error: "Invalid message." };
-  }
+async function handleMessage(raw) {
+  const checked = validateMessage(raw);
+  if (!checked.ok) return checked;
+  const message = checked.message;
 
   if (message.type === "CLEAR_CACHE") {
     await clearCache();
@@ -28,14 +32,10 @@ async function handleMessage(message) {
     return { ok: true };
   }
 
-  if (message.type === "ANALYZE_TAB") {
-    return analyzeActiveTab({
-      force: Boolean(message.force),
-      policyUrlOverride: message.policyUrl || null
-    });
-  }
-
-  return { ok: false, error: "Unknown message type." };
+  return analyzeActiveTab({
+    force: message.force,
+    policyUrlOverride: message.policyUrl
+  });
 }
 
 /**
@@ -85,7 +85,7 @@ async function analyzeActiveTab(opts) {
       files: ["content/discover.js"]
     });
     if (injected?.[0]?.result) {
-      discovery = injected[0].result;
+      discovery = sanitizeDiscovery(injected[0].result, discovery);
     }
   } catch {
     // Restricted pages or injection failure — still try common paths / pasted URL

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "c3nsor",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Find a site’s privacy policy and see what it says about your data in plain English, with citations. Local rules, not AI.",
   "action": {
     "default_title": "c3nsor — privacy checkpoint",
@@ -25,5 +25,8 @@
   },
   "permissions": ["activeTab", "scripting", "storage"],
   "optional_host_permissions": ["http://*/*", "https://*/*"],
+  "content_security_policy": {
+    "extension_pages": "default-src 'self'; script-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; connect-src https: http:"
+  },
   "content_scripts": []
 }

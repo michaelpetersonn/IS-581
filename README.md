@@ -47,3 +47,9 @@ npx wrangler deploy
 To use your own Cloudflare account instead, deploy the same way (the account needs a workers.dev subdomain) and put the printed `https://c3nsor-policy-proxy.<you>.workers.dev` URL in `config.js`. Set `PROXY_URL` to `""` to switch live URL analysis off.
 
 `ALLOWED_ORIGINS` in [`proxy/wrangler.toml`](proxy/wrangler.toml) limits which sites can call the proxy (add `http://localhost:8000` while previewing locally). The Worker only fetches public http(s) hostnames on default ports, re-checks every redirect, caps pages at 1.5 MB / 12 s, accepts HTML only, and returns it as plain text. For extra protection against abuse, add a Cloudflare rate-limiting rule for the Worker route.
+
+## Security
+
+See [`SECURITY.md`](SECURITY.md) for the threat model, protections, and how to report a vulnerability. In short: third-party policy text is only ever rendered as text (never HTML), the extension and every site page ship a strict Content Security Policy, and there is no database or SQL anywhere.
+
+Each page in `docs/` declares its CSP in a `<meta http-equiv="Content-Security-Policy">` tag (GitHub Pages can’t send headers). If you add a script, stylesheet, font, form target, or fetch to another origin, add it to that page’s CSP; keep scripts and styles in files (no inline `<script>`, `<style>`, `style=""`, or `onclick=""`). `cd extension && npm run verify` fails if a page or the extension loses its CSP or reintroduces `innerHTML`-style rendering.

@@ -7,6 +7,7 @@
 
 export const MAX_BYTES = 1_500_000;
 export const TIMEOUT_MS = 12_000;
+export const MAX_URL_LENGTH = 2048;
 const MAX_REDIRECTS = 5;
 const DEFAULT_ALLOWED_ORIGINS = "https://michael-peterson.com,https://michaelpetersonn.github.io";
 const USER_AGENT = "c3nsor-demo/0.1 (+https://michael-peterson.com/IS-581/try.html)";
@@ -17,6 +18,12 @@ const ALLOWED_TYPE_RE = /^(text\/html|application\/xhtml\+xml|text\/plain)\b/i;
 /** Cloudflare-generated origin errors (DNS failure, refused, timed out, bad TLS) — not real site responses. */
 const CF_TIMEOUT_STATUSES = new Set([522, 524]);
 const CF_UNREACHABLE_STATUSES = new Set([520, 521, 523, 525, 526, 527, 530]);
+/** On every response, so a proxied page can never be rendered, framed, or sniffed as HTML by a browser. */
+export const SECURITY_HEADERS = {
+  "X-Content-Type-Options": "nosniff",
+  "Content-Security-Policy": "default-src 'none'; frame-ancestors 'none'",
+  "Referrer-Policy": "no-referrer"
+};
 
 class ProxyError extends Error {
   /**
@@ -60,9 +67,13 @@ export function upstreamStatusError(status) {
  * @returns {URL}
  */
 export function validateTargetUrl(raw) {
+  const value = String(raw || "");
+  if (value.length > MAX_URL_LENGTH) {
+    throw new ProxyError(400, "invalid_url", "That URL is too long.");
+  }
   let url;
   try {
-    url = new URL(String(raw || ""));
+    url = new URL(value);
   } catch {
     throw new ProxyError(400, "invalid_url", "That URL is not valid.");
   }
@@ -121,7 +132,12 @@ function jsonError(err, headers = {}) {
   if (err.upstreamStatus) body.upstreamStatus = err.upstreamStatus;
   return new Response(JSON.stringify(body), {
     status: err.status,
-    headers: { "Content-Type": "application/json; charset=utf-8", ...headers }
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": "no-store",
+      ...SECURITY_HEADERS,
+      ...headers
+    }
   });
 }
 
@@ -210,9 +226,14 @@ export async function handleRequest(request, env, fetchImpl) {
   }
   const cors = corsHeaders(origin);
 
-  if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
+  if (request.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: { ...cors, ...SECURITY_HEADERS } });
+  }
   if (request.method !== "GET") {
-    return jsonError(new ProxyError(405, "method_not_allowed", "Only GET is supported."), cors);
+    return jsonError(new ProxyError(405, "method_not_allowed", "Only GET is supported."), {
+      ...cors,
+      Allow: "GET, OPTIONS"
+    });
   }
 
   const controller = new AbortController();
@@ -236,7 +257,7 @@ export async function handleRequest(request, env, fetchImpl) {
         ...cors,
         // Served as plain text so the proxy origin can never render third-party HTML.
         "Content-Type": "text/plain; charset=utf-8",
-        "X-Content-Type-Options": "nosniff",
+        ...SECURITY_HEADERS,
         "Cache-Control": "public, max-age=3600",
         "X-Final-Url": finalUrl
       }

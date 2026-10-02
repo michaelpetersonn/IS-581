@@ -1,4 +1,14 @@
 import { isSameOrigin, originPattern } from "../lib/policy-access.js";
+import {
+  buildDisabledAction,
+  buildFinding,
+  buildLink,
+  buildMeta,
+  el,
+  hostOf,
+  isHttpUrl,
+  shortUrl
+} from "./render.js";
 
 const PENDING_KEY = "c3nsor:pendingPolicyUrl";
 const PENDING_TTL_MS = 2 * 60 * 1000;
@@ -145,7 +155,7 @@ function showError(message, detail) {
 
   if (detail?.domain) {
     metaEl.classList.remove("hidden");
-    metaEl.innerHTML = `<strong>${escapeHtml(detail.domain)}</strong>`;
+    metaEl.replaceChildren(...buildMeta(document, { domain: detail.domain }));
   } else {
     metaEl.classList.add("hidden");
   }
@@ -166,12 +176,12 @@ function renderAlternatives(candidates, detail) {
 
   if (!top.length && !openFallback && !access) {
     alternativesEl.classList.add("hidden");
-    alternativesEl.innerHTML = "";
+    alternativesEl.replaceChildren();
     return;
   }
 
   alternativesEl.classList.remove("hidden");
-  alternativesEl.innerHTML = "";
+  alternativesEl.replaceChildren();
 
   if (access && isHttpUrl(access.url)) {
     const allowRow = document.createElement("div");
@@ -192,15 +202,10 @@ function renderAlternatives(candidates, detail) {
     alternativesEl.appendChild(allowRow);
   }
 
-  if (openFallback && isHttpUrl(openFallback)) {
+  const openBtn = openFallback && buildLink(document, openFallback, "Open privacy policy", "alt-open-primary");
+  if (openBtn) {
     const openRow = document.createElement("div");
     openRow.className = "alt-open-row";
-    const openBtn = document.createElement("a");
-    openBtn.href = openFallback;
-    openBtn.target = "_blank";
-    openBtn.rel = "noopener noreferrer";
-    openBtn.className = "alt-open-primary";
-    openBtn.textContent = "Open privacy policy";
     openBtn.title = openFallback;
     openRow.appendChild(openBtn);
     alternativesEl.appendChild(openRow);
@@ -233,12 +238,7 @@ function renderAlternatives(candidates, detail) {
       analyzeUrl(c.href);
     });
 
-    const openLink = document.createElement("a");
-    openLink.href = c.href;
-    openLink.target = "_blank";
-    openLink.rel = "noopener noreferrer";
-    openLink.className = "alt-open";
-    openLink.textContent = "Open";
+    const openLink = buildLink(document, c.href, "Open", "alt-open");
     openLink.title = `Open ${c.href}`;
 
     row.appendChild(analyzeBtn);
@@ -262,7 +262,7 @@ function renderResult(result) {
     : "Rules matched language in this policy";
 
   alternativesEl.classList.add("hidden");
-  alternativesEl.innerHTML = "";
+  alternativesEl.replaceChildren();
 
   const alertCount =
     typeof result.alertCount === "number"
@@ -270,86 +270,55 @@ function renderResult(result) {
       : Object.values(result.findings || {}).filter((f) => f?.found).length;
 
   metaEl.classList.remove("hidden");
-  const alertLabel = alertCount === 1 ? "1 alert" : `${alertCount} alerts`;
-  metaEl.innerHTML = `
-    <strong title="${escapeAttr(result.policyUrl || "")}">${escapeHtml(result.domain)}</strong>
-    <span class="alerts">${escapeHtml(alertLabel)}</span>
-  `;
+  metaEl.replaceChildren(
+    ...buildMeta(document, { domain: result.domain, policyUrl: result.policyUrl, alertCount })
+  );
 
   findingsEl.classList.remove("hidden");
-  findingsEl.innerHTML = "";
+  findingsEl.replaceChildren();
 
   const order = ["collected", "used", "shared", "advertising", "choices"];
   for (const id of order) {
     const item = result.findings?.[id];
     if (!item) continue;
-
-    const li = document.createElement("li");
-    const label = DISPLAY_LABELS[id] || item.label;
-    const badgeClass = item.found ? "found" : "miss";
-    const badgeText = item.found ? "Found" : "Unclear";
-
-    let body = `
-      <div class="row-main">
-        <span class="badge ${badgeClass}">${badgeText}</span>
-        <span class="label">${escapeHtml(label)}</span>
-      </div>
-    `;
-
-    if (item.found) {
-      const summary =
-        item.summary ||
-        item.explanation ||
-        "Mentioned in the policy, but details are unclear in one look.";
-      body += `<p class="summary">${escapeHtml(summary)}</p>`;
-      if (item.excerpt) {
-        const cite = compactCite(item.excerpt);
-        body += `<p class="excerpt" title="${escapeAttr(item.excerpt)}">“${escapeHtml(cite)}”</p>`;
-      }
-    }
-
-    li.innerHTML = body;
-    findingsEl.appendChild(li);
+    findingsEl.appendChild(buildFinding(document, DISPLAY_LABELS[id] || item.label, item));
   }
 
   if (result.guidance) {
     guidanceEl.classList.remove("hidden");
-    guidanceEl.innerHTML = `<p>${escapeHtml(result.guidance)}</p>`;
+    guidanceEl.replaceChildren(el(document, "p", { text: result.guidance }));
   } else {
     guidanceEl.classList.add("hidden");
-    guidanceEl.innerHTML = "";
+    guidanceEl.replaceChildren();
   }
 
   actLabelEl.classList.remove("hidden");
   actionsEl.classList.remove("hidden");
-  actionsEl.innerHTML = "";
+  actionsEl.replaceChildren();
   const acts = result.actions || {};
 
-  const openPolicy = linkBtn(acts.policyUrl, "Open policy");
-  if (openPolicy) {
-    actionsEl.appendChild(openPolicy);
-  } else {
-    actionsEl.appendChild(disabledAct("Open policy"));
-  }
+  actionsEl.appendChild(
+    buildLink(document, acts.policyUrl, "Open policy") || buildDisabledAction(document, "Open policy")
+  );
 
-  if (acts.optOutUrl && isHttpUrl(acts.optOutUrl)) {
-    const openOptOut = linkBtn(acts.optOutUrl, "Opt out");
-    if (openOptOut) actionsEl.appendChild(openOptOut);
-    else actionsEl.appendChild(disabledAct("Opt out"));
+  const openOptOut = buildLink(document, acts.optOutUrl, "Opt out");
+  if (openOptOut) {
+    actionsEl.appendChild(openOptOut);
   } else {
-    const missing = disabledAct("Opt out");
+    const missing = buildDisabledAction(document, "Opt out");
     missing.title = "No opt-out link found on this page.";
     actionsEl.appendChild(missing);
   }
 
   if (acts.contactEmail) {
+    const email = String(acts.contactEmail);
     const btn = document.createElement("button");
     btn.type = "button";
     btn.textContent = "Copy email";
-    btn.title = acts.contactEmail;
+    btn.title = email;
     btn.addEventListener("click", async () => {
       try {
-        await navigator.clipboard.writeText(acts.contactEmail);
+        await navigator.clipboard.writeText(email);
         btn.textContent = "Copied";
         setTimeout(() => {
           btn.textContent = "Copy email";
@@ -360,74 +329,8 @@ function renderResult(result) {
     });
     actionsEl.appendChild(btn);
   } else {
-    const missing = disabledAct("Copy email");
+    const missing = buildDisabledAction(document, "Copy email");
     missing.title = "No contact email found.";
     actionsEl.appendChild(missing);
   }
-}
-
-function linkBtn(href, label) {
-  const a = document.createElement("a");
-  if (!isHttpUrl(href)) return null;
-  a.href = href;
-  a.target = "_blank";
-  a.rel = "noopener noreferrer";
-  a.textContent = label;
-  return a;
-}
-
-function disabledAct(label) {
-  const span = document.createElement("button");
-  span.type = "button";
-  span.textContent = label;
-  span.disabled = true;
-  span.className = "is-disabled";
-  return span;
-}
-
-/** Only allow navigable http(s) action links (blocks javascript:/data:). */
-function isHttpUrl(value) {
-  try {
-    const u = new URL(String(value || ""));
-    return u.protocol === "http:" || u.protocol === "https:";
-  } catch {
-    return false;
-  }
-}
-
-function hostOf(url) {
-  try {
-    return new URL(url).hostname;
-  } catch {
-    return "that site";
-  }
-}
-
-function shortUrl(url) {
-  try {
-    const u = new URL(url);
-    const path = u.pathname.length > 28 ? `${u.pathname.slice(0, 28)}…` : u.pathname;
-    return u.hostname + path;
-  } catch {
-    return url;
-  }
-}
-
-/** Keep citations short and readable under the one-look summary. */
-function compactCite(text) {
-  let s = String(text || "").replace(/\s+/g, " ").trim();
-  if (s.length > 140) s = `${s.slice(0, 137)}…`;
-  return s;
-}
-
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
-function escapeAttr(value) {
-  return escapeHtml(value).replace(/'/g, "&#39;");
 }
