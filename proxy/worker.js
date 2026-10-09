@@ -9,10 +9,13 @@ export const MAX_BYTES = 1_500_000;
 export const TIMEOUT_MS = 12_000;
 export const MAX_URL_LENGTH = 2048;
 const MAX_REDIRECTS = 5;
-const DEFAULT_ALLOWED_ORIGINS = "https://michael-peterson.com,https://michaelpetersonn.github.io";
-const USER_AGENT = "c3nsor-demo/0.1 (+https://michael-peterson.com/IS-581/try.html)";
+const DEFAULT_ALLOWED_ORIGINS =
+  "https://michael-peterson.com,https://michaelpetersonn.github.io";
+const USER_AGENT =
+  "c3nsor-demo/0.1 (+https://michael-peterson.com/IS-581/try.html)";
 
-const BLOCKED_HOST_RE = /(^|\.)(localhost|local|internal|lan|home\.arpa|intranet|corp)$/i;
+const BLOCKED_HOST_RE =
+  /(^|\.)(localhost|local|internal|lan|home\.arpa|intranet|corp)$/i;
 const IPV4_RE = /^\d{1,3}(\.\d{1,3}){3}$/;
 const ALLOWED_TYPE_RE = /^(text\/html|application\/xhtml\+xml|text\/plain)\b/i;
 /** Cloudflare-generated origin errors (DNS failure, refused, timed out, bad TLS) — not real site responses. */
@@ -22,7 +25,7 @@ const CF_UNREACHABLE_STATUSES = new Set([520, 521, 523, 525, 526, 527, 530]);
 export const SECURITY_HEADERS = {
   "X-Content-Type-Options": "nosniff",
   "Content-Security-Policy": "default-src 'none'; frame-ancestors 'none'",
-  "Referrer-Policy": "no-referrer"
+  "Referrer-Policy": "no-referrer",
 };
 
 class ProxyError extends Error {
@@ -47,18 +50,43 @@ class ProxyError extends Error {
  */
 export function upstreamStatusError(status) {
   if (CF_TIMEOUT_STATUSES.has(status)) {
-    return new ProxyError(504, "timeout", "The site took too long to respond.", status);
+    return new ProxyError(
+      504,
+      "timeout",
+      "The site took too long to respond.",
+      status,
+    );
   }
   if (CF_UNREACHABLE_STATUSES.has(status)) {
-    return new ProxyError(502, "unreachable", "Could not reach that site.", status);
+    return new ProxyError(
+      502,
+      "unreachable",
+      "Could not reach that site.",
+      status,
+    );
   }
   if (status === 404 || status === 410) {
-    return new ProxyError(502, "not_found", "The site has no page at that address.", status);
+    return new ProxyError(
+      502,
+      "not_found",
+      "The site has no page at that address.",
+      status,
+    );
   }
   if (status >= 400 && status < 500) {
-    return new ProxyError(502, "blocked", "The site refused the request.", status);
+    return new ProxyError(
+      502,
+      "blocked",
+      "The site refused the request.",
+      status,
+    );
   }
-  return new ProxyError(502, "upstream_error", "The site returned an error.", status);
+  return new ProxyError(
+    502,
+    "upstream_error",
+    "The site returned an error.",
+    status,
+  );
 }
 
 /**
@@ -78,10 +106,18 @@ export function validateTargetUrl(raw) {
     throw new ProxyError(400, "invalid_url", "That URL is not valid.");
   }
   if (url.protocol !== "http:" && url.protocol !== "https:") {
-    throw new ProxyError(400, "invalid_url", "Only http and https URLs are allowed.");
+    throw new ProxyError(
+      400,
+      "invalid_url",
+      "Only http and https URLs are allowed.",
+    );
   }
   if (url.username || url.password) {
-    throw new ProxyError(400, "invalid_url", "URLs with credentials are not allowed.");
+    throw new ProxyError(
+      400,
+      "invalid_url",
+      "URLs with credentials are not allowed.",
+    );
   }
   if (url.port) {
     throw new ProxyError(400, "invalid_url", "Only default ports are allowed.");
@@ -119,7 +155,7 @@ function corsHeaders(origin) {
     "Access-Control-Allow-Methods": "GET, OPTIONS",
     "Access-Control-Expose-Headers": "X-Final-Url",
     "Access-Control-Max-Age": "86400",
-    Vary: "Origin"
+    Vary: "Origin",
   };
 }
 
@@ -136,8 +172,8 @@ function jsonError(err, headers = {}) {
       "Content-Type": "application/json; charset=utf-8",
       "Cache-Control": "no-store",
       ...SECURITY_HEADERS,
-      ...headers
-    }
+      ...headers,
+    },
   });
 }
 
@@ -158,8 +194,8 @@ async function fetchFollowingSafeRedirects(target, fetchImpl, signal) {
         signal,
         headers: {
           Accept: "text/html,application/xhtml+xml;q=0.9,text/plain;q=0.8",
-          "User-Agent": USER_AGENT
-        }
+          "User-Agent": USER_AGENT,
+        },
       });
     } catch (err) {
       if (err?.name === "AbortError") throw err;
@@ -171,9 +207,17 @@ async function fetchFollowingSafeRedirects(target, fetchImpl, signal) {
         current = validateTargetUrl(new URL(location, current).href);
       } catch (err) {
         if (err instanceof ProxyError) {
-          throw new ProxyError(err.status, "bad_redirect", `Redirect blocked: ${err.message}`);
+          throw new ProxyError(
+            err.status,
+            "bad_redirect",
+            `Redirect blocked: ${err.message}`,
+          );
         }
-        throw new ProxyError(400, "bad_redirect", "Redirect blocked: invalid location.");
+        throw new ProxyError(
+          400,
+          "bad_redirect",
+          "Redirect blocked: invalid location.",
+        );
       }
       continue;
     }
@@ -188,7 +232,12 @@ async function fetchFollowingSafeRedirects(target, fetchImpl, signal) {
  */
 async function readCappedText(response, maxBytes) {
   const declared = Number(response.headers.get("Content-Length") || 0);
-  if (declared > maxBytes) throw new ProxyError(413, "too_large", "That page is too large to analyze.");
+  if (declared > maxBytes)
+    throw new ProxyError(
+      413,
+      "too_large",
+      "That page is too large to analyze.",
+    );
   if (!response.body) return "";
 
   const reader = response.body.getReader();
@@ -200,7 +249,11 @@ async function readCappedText(response, maxBytes) {
     total += value.byteLength;
     if (total > maxBytes) {
       await reader.cancel();
-      throw new ProxyError(413, "too_large", "That page is too large to analyze.");
+      throw new ProxyError(
+        413,
+        "too_large",
+        "That page is too large to analyze.",
+      );
     }
     chunks.push(value);
   }
@@ -222,28 +275,38 @@ async function readCappedText(response, maxBytes) {
 export async function handleRequest(request, env, fetchImpl) {
   const origin = request.headers.get("Origin") || "";
   if (!allowedOrigins(env).includes(origin)) {
-    return jsonError(new ProxyError(403, "origin_not_allowed", "Origin not allowed."));
+    return jsonError(
+      new ProxyError(403, "origin_not_allowed", "Origin not allowed."),
+    );
   }
   const cors = corsHeaders(origin);
 
   if (request.method === "OPTIONS") {
-    return new Response(null, { status: 204, headers: { ...cors, ...SECURITY_HEADERS } });
+    return new Response(null, {
+      status: 204,
+      headers: { ...cors, ...SECURITY_HEADERS },
+    });
   }
   if (request.method !== "GET") {
-    return jsonError(new ProxyError(405, "method_not_allowed", "Only GET is supported."), {
-      ...cors,
-      Allow: "GET, OPTIONS"
-    });
+    return jsonError(
+      new ProxyError(405, "method_not_allowed", "Only GET is supported."),
+      {
+        ...cors,
+        Allow: "GET, OPTIONS",
+      },
+    );
   }
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
   try {
-    const target = validateTargetUrl(new URL(request.url).searchParams.get("url"));
+    const target = validateTargetUrl(
+      new URL(request.url).searchParams.get("url"),
+    );
     const { response, finalUrl } = await fetchFollowingSafeRedirects(
       target,
       fetchImpl,
-      controller.signal
+      controller.signal,
     );
     if (!response.ok) throw upstreamStatusError(response.status);
     const type = response.headers.get("Content-Type") || "";
@@ -259,15 +322,21 @@ export async function handleRequest(request, env, fetchImpl) {
         "Content-Type": "text/plain; charset=utf-8",
         ...SECURITY_HEADERS,
         "Cache-Control": "public, max-age=3600",
-        "X-Final-Url": finalUrl
-      }
+        "X-Final-Url": finalUrl,
+      },
     });
   } catch (err) {
     if (err instanceof ProxyError) return jsonError(err, cors);
     if (err?.name === "AbortError") {
-      return jsonError(new ProxyError(504, "timeout", "Timed out downloading that page."), cors);
+      return jsonError(
+        new ProxyError(504, "timeout", "Timed out downloading that page."),
+        cors,
+      );
     }
-    return jsonError(new ProxyError(502, "unreachable", "Could not download that page."), cors);
+    return jsonError(
+      new ProxyError(502, "unreachable", "Could not download that page."),
+      cors,
+    );
   } finally {
     clearTimeout(timer);
   }
@@ -280,5 +349,5 @@ export default {
    */
   fetch(request, env) {
     return handleRequest(request, env, fetch);
-  }
+  },
 };

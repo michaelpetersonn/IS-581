@@ -15,7 +15,7 @@
     fetch(endpoint, {
       method: "POST",
       body: new FormData(form),
-      headers: { Accept: "application/json" }
+      headers: { Accept: "application/json" },
     })
       .then(function (response) {
         window.location.replace("thank-you.html");

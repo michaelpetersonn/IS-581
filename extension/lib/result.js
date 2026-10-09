@@ -10,7 +10,7 @@ export function buildAnalysisResult(text, ctx) {
   const policyUrl = ctx.policyUrl || null;
   const analysis = analyzePolicy(text, {
     policyUrl: policyUrl || undefined,
-    pageLinks: ctx.pageLinks || []
+    pageLinks: ctx.pageLinks || [],
   });
   if (!analysis.actions.policyUrl) analysis.actions.policyUrl = policyUrl;
 
@@ -22,6 +22,6 @@ export function buildAnalysisResult(text, ctx) {
     actions: analysis.actions,
     guidance: buildGuidance(analysis.findings),
     alertCount: analysis.alertCount,
-    analyzedAt: new Date().toISOString()
+    analyzedAt: new Date().toISOString(),
   };
 }

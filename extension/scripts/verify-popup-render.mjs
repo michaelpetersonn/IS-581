@@ -13,7 +13,7 @@ import {
   compactCite,
   el,
   isHttpUrl,
-  shortUrl
+  shortUrl,
 } from "../popup/render.js";
 
 const PAYLOAD = `<img src=x onerror=alert(1)><script>alert(2)</script>"'><svg onload=alert(3)>`;
@@ -43,7 +43,8 @@ class FakeElement {
     throw new Error("insertAdjacentHTML must not be used");
   }
   setAttribute(name) {
-    if (/^on/i.test(name) || name === "srcdoc") throw new Error(`setAttribute(${name}) must not be used`);
+    if (/^on/i.test(name) || name === "srcdoc")
+      throw new Error(`setAttribute(${name}) must not be used`);
   }
 }
 
@@ -53,7 +54,7 @@ const doc = {
     const node = new FakeElement(tag);
     this.created.push(node.tagName);
     return node;
-  }
+  },
 };
 
 function allTags(node) {
@@ -61,7 +62,11 @@ function allTags(node) {
 }
 
 test("el sets untrusted strings as text only", () => {
-  const node = el(doc, "p", { className: "summary", text: PAYLOAD, title: PAYLOAD });
+  const node = el(doc, "p", {
+    className: "summary",
+    text: PAYLOAD,
+    title: PAYLOAD,
+  });
   assert.equal(node.textContent, PAYLOAD);
   assert.equal(node.title, PAYLOAD);
   assert.deepEqual(node.children, []);
@@ -69,18 +74,29 @@ test("el sets untrusted strings as text only", () => {
 });
 
 test("buildMeta keeps a hostile domain and policy URL as text", () => {
-  const [strong, pill] = buildMeta(doc, { domain: PAYLOAD, policyUrl: PAYLOAD, alertCount: 1 });
+  const [strong, pill] = buildMeta(doc, {
+    domain: PAYLOAD,
+    policyUrl: PAYLOAD,
+    alertCount: 1,
+  });
   assert.equal(strong.tagName, "STRONG");
   assert.equal(strong.textContent, PAYLOAD);
   assert.equal(strong.title, PAYLOAD);
   assert.equal(pill.className, "alerts");
   assert.equal(pill.textContent, "1 alert");
-  assert.equal(buildMeta(doc, { domain: "a.com", alertCount: 3 })[1].textContent, "3 alerts");
+  assert.equal(
+    buildMeta(doc, { domain: "a.com", alertCount: 3 })[1].textContent,
+    "3 alerts",
+  );
   assert.equal(buildMeta(doc, { domain: "a.com" }).length, 1);
 });
 
 test("buildFinding renders summary and excerpt as inert text with the popup's classes", () => {
-  const li = buildFinding(doc, PAYLOAD, { found: true, summary: PAYLOAD, excerpt: PAYLOAD });
+  const li = buildFinding(doc, PAYLOAD, {
+    found: true,
+    summary: PAYLOAD,
+    excerpt: PAYLOAD,
+  });
   assert.deepEqual(allTags(li), ["LI", "DIV", "SPAN", "SPAN", "P", "P"]);
   const [row, summary, excerpt] = li.children;
   assert.equal(row.className, "row-main");
@@ -96,14 +112,26 @@ test("buildFinding renders summary and excerpt as inert text with the popup's cl
 });
 
 test("buildFinding for a miss shows only the badge row", () => {
-  const li = buildFinding(doc, "Label", { found: false, summary: "ignored", excerpt: "ignored" });
+  const li = buildFinding(doc, "Label", {
+    found: false,
+    summary: "ignored",
+    excerpt: "ignored",
+  });
   assert.deepEqual(allTags(li), ["LI", "DIV", "SPAN", "SPAN"]);
   assert.equal(li.children[0].children[0].className, "badge miss");
   assert.equal(li.children[0].children[0].textContent, "Unclear");
 });
 
 test("buildLink only allows http(s) and opens safely", () => {
-  for (const bad of ["javascript:alert(1)", " javascript:alert(1)", "data:text/html,hi", "vbscript:x", "", null, PAYLOAD]) {
+  for (const bad of [
+    "javascript:alert(1)",
+    " javascript:alert(1)",
+    "data:text/html,hi",
+    "vbscript:x",
+    "",
+    null,
+    PAYLOAD,
+  ]) {
     assert.equal(buildLink(doc, bad, "Open"), null, String(bad));
   }
   const a = buildLink(doc, "https://example.com/privacy", PAYLOAD, "alt-open");
@@ -125,6 +153,9 @@ test("buildDisabledAction", () => {
 test("small helpers", () => {
   assert.equal(isHttpUrl("https://a.com"), true);
   assert.equal(isHttpUrl("javascript:alert(1)"), false);
-  assert.equal(shortUrl("https://www.example.com/legal/privacy"), "www.example.com/legal/privacy");
+  assert.equal(
+    shortUrl("https://www.example.com/legal/privacy"),
+    "www.example.com/legal/privacy",
+  );
   assert.equal(compactCite("a".repeat(200)).length, 138);
 });

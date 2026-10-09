@@ -12,20 +12,40 @@ import {
   isTrustedSender,
   safeHttpUrl,
   sanitizeDiscovery,
-  validateMessage
+  validateMessage,
 } from "../lib/messages.js";
 
 const ID = "abcdefghijklmnopabcdefghijklmnop";
 const ORIGIN = `chrome-extension://${ID}/`;
 
 test("isTrustedSender accepts only this extension's own pages", () => {
-  assert.equal(isTrustedSender({ id: ID, url: `${ORIGIN}popup/popup.html` }, ID, ORIGIN), true);
+  assert.equal(
+    isTrustedSender({ id: ID, url: `${ORIGIN}popup/popup.html` }, ID, ORIGIN),
+    true,
+  );
   // content script injected into a web page: same extension id, but the page's URL
-  assert.equal(isTrustedSender({ id: ID, url: "https://evil.example/", tab: { id: 3 } }, ID, ORIGIN), false);
-  assert.equal(isTrustedSender({ id: "other-extension", url: `${ORIGIN}popup/popup.html` }, ID, ORIGIN), false);
+  assert.equal(
+    isTrustedSender(
+      { id: ID, url: "https://evil.example/", tab: { id: 3 } },
+      ID,
+      ORIGIN,
+    ),
+    false,
+  );
+  assert.equal(
+    isTrustedSender(
+      { id: "other-extension", url: `${ORIGIN}popup/popup.html` },
+      ID,
+      ORIGIN,
+    ),
+    false,
+  );
   assert.equal(isTrustedSender({ id: ID }, ID, ORIGIN), false);
   assert.equal(isTrustedSender(undefined, ID, ORIGIN), false);
-  assert.equal(isTrustedSender({ id: undefined, url: ORIGIN }, undefined, ORIGIN), false);
+  assert.equal(
+    isTrustedSender({ id: undefined, url: ORIGIN }, undefined, ORIGIN),
+    false,
+  );
   assert.equal(isTrustedSender({ id: ID, url: `${ORIGIN}x` }, ID, ""), false);
 });
 
@@ -33,7 +53,13 @@ test("validateMessage rejects non-objects and unknown types", () => {
   for (const bad of [null, undefined, "ANALYZE_TAB", 42, [], ["ANALYZE_TAB"]]) {
     assert.equal(validateMessage(bad).ok, false, String(bad));
   }
-  for (const type of [undefined, "", "DELETE_ALL", "analyze_tab", { toString: () => "ANALYZE_TAB" }]) {
+  for (const type of [
+    undefined,
+    "",
+    "DELETE_ALL",
+    "analyze_tab",
+    { toString: () => "ANALYZE_TAB" },
+  ]) {
     const r = validateMessage({ type });
     assert.equal(r.ok, false);
     assert.equal(r.error, "Unknown message type.");
@@ -41,19 +67,29 @@ test("validateMessage rejects non-objects and unknown types", () => {
 });
 
 test("validateMessage normalizes valid messages and drops extra fields", () => {
-  assert.deepEqual(validateMessage({ type: "CLEAR_CACHE", extra: "<script>" }), {
-    ok: true,
-    message: { type: "CLEAR_CACHE" }
-  });
-  assert.deepEqual(validateMessage({ type: "ANALYZE_TAB", force: true, policyUrl: null }), {
-    ok: true,
-    message: { type: "ANALYZE_TAB", force: true, policyUrl: null }
-  });
+  assert.deepEqual(
+    validateMessage({ type: "CLEAR_CACHE", extra: "<script>" }),
+    {
+      ok: true,
+      message: { type: "CLEAR_CACHE" },
+    },
+  );
+  assert.deepEqual(
+    validateMessage({ type: "ANALYZE_TAB", force: true, policyUrl: null }),
+    {
+      ok: true,
+      message: { type: "ANALYZE_TAB", force: true, policyUrl: null },
+    },
+  );
   assert.deepEqual(validateMessage({ type: "ANALYZE_TAB" }), {
     ok: true,
-    message: { type: "ANALYZE_TAB", force: false, policyUrl: null }
+    message: { type: "ANALYZE_TAB", force: false, policyUrl: null },
   });
-  const r = validateMessage({ type: "ANALYZE_TAB", force: false, policyUrl: "https://example.com/privacy#top" });
+  const r = validateMessage({
+    type: "ANALYZE_TAB",
+    force: false,
+    policyUrl: "https://example.com/privacy#top",
+  });
   assert.equal(r.ok, true);
   assert.equal(r.message.policyUrl, "https://example.com/privacy#top");
 });
@@ -69,12 +105,19 @@ test("validateMessage rejects bad policyUrl values", () => {
     `https://example.com/${"a".repeat(MAX_URL_LENGTH)}`,
     { href: "https://example.com" },
     ["https://example.com"],
-    123
+    123,
   ];
   for (const policyUrl of bad) {
-    assert.equal(validateMessage({ type: "ANALYZE_TAB", policyUrl }).ok, false, String(policyUrl).slice(0, 40));
+    assert.equal(
+      validateMessage({ type: "ANALYZE_TAB", policyUrl }).ok,
+      false,
+      String(policyUrl).slice(0, 40),
+    );
   }
-  assert.equal(validateMessage({ type: "ANALYZE_TAB", force: "yes" }).ok, false);
+  assert.equal(
+    validateMessage({ type: "ANALYZE_TAB", force: "yes" }).ok,
+    false,
+  );
 });
 
 test("safeHttpUrl", () => {
@@ -94,30 +137,50 @@ test("sanitizeDiscovery keeps only capped http(s) links and trusted origin/pageU
       { href: "https://example.com/p2", text: { evil: true }, score: "9" },
       null,
       "https://example.com/str",
-      ...Array.from({ length: 30 }, (_, i) => ({ href: `https://example.com/p${i + 3}`, text: "", score: 1 }))
+      ...Array.from({ length: 30 }, (_, i) => ({
+        href: `https://example.com/p${i + 3}`,
+        text: "",
+        score: 1,
+      })),
     ],
-    pageLinks: "not an array"
+    pageLinks: "not an array",
   };
-  const out = sanitizeDiscovery(raw, { origin: "https://example.com", pageUrl: "https://example.com/" });
+  const out = sanitizeDiscovery(raw, {
+    origin: "https://example.com",
+    pageUrl: "https://example.com/",
+  });
   assert.equal(out.origin, "https://example.com");
   assert.equal(out.pageUrl, "https://example.com/");
   assert.equal(out.candidates.length, MAX_CANDIDATES);
   assert.equal(out.candidates[0].href, "https://example.com/privacy");
   assert.equal(out.candidates[0].text.length, MAX_LINK_TEXT);
-  assert.deepEqual(out.candidates[1], { href: "https://example.com/p2", text: "", score: 0 });
+  assert.deepEqual(out.candidates[1], {
+    href: "https://example.com/p2",
+    text: "",
+    score: 0,
+  });
   assert.ok(out.candidates.every((c) => c.href.startsWith("https://")));
   assert.deepEqual(out.pageLinks, []);
-  assert.deepEqual(sanitizeDiscovery(undefined, { origin: "o", pageUrl: "p" }), {
-    candidates: [],
-    pageLinks: [],
-    origin: "o",
-    pageUrl: "p"
-  });
+  assert.deepEqual(
+    sanitizeDiscovery(undefined, { origin: "o", pageUrl: "p" }),
+    {
+      candidates: [],
+      pageLinks: [],
+      origin: "o",
+      pageUrl: "p",
+    },
+  );
 });
 
 test("service worker checks the sender and validates every message", () => {
-  const src = readFileSync(new URL("../background/service-worker.js", import.meta.url), "utf8");
-  assert.match(src, /isTrustedSender\(sender, chrome\.runtime\.id, chrome\.runtime\.getURL\(""\)\)/);
+  const src = readFileSync(
+    new URL("../background/service-worker.js", import.meta.url),
+    "utf8",
+  );
+  assert.match(
+    src,
+    /isTrustedSender\(sender, chrome\.runtime\.id, chrome\.runtime\.getURL\(""\)\)/,
+  );
   assert.match(src, /validateMessage\(raw\)/);
   assert.match(src, /sanitizeDiscovery\(injected\[0\]\.result/);
   assert.doesNotMatch(src, /onMessageExternal|onConnectExternal/);

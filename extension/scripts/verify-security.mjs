@@ -26,7 +26,8 @@ function effective(csp, directive) {
   return csp.get(directive) || csp.get("default-src") || [];
 }
 
-const HTML_SINKS = /\.innerHTML\b|\.outerHTML\b|insertAdjacentHTML|document\.write|\beval\s*\(|new Function\b|setTimeout\(\s*["'`]|setInterval\(\s*["'`]/;
+const HTML_SINKS =
+  /\.innerHTML\b|\.outerHTML\b|insertAdjacentHTML|document\.write|\beval\s*\(|new Function\b|setTimeout\(\s*["'`]|setInterval\(\s*["'`]/;
 const UI_SCRIPTS = [
   [extUrl, "popup/popup.js"],
   [extUrl, "popup/render.js"],
@@ -34,7 +35,7 @@ const UI_SCRIPTS = [
   [extUrl, "content/discover.js"],
   [docsUrl, "try/try.js"],
   [docsUrl, "try/web-helpers.js"],
-  [docsUrl, "signup.js"]
+  [docsUrl, "signup.js"],
 ];
 
 test("UI code never parses strings as HTML or code", () => {
@@ -71,7 +72,13 @@ test("popup page has no inline script, inline style, or event handlers", () => {
 const pages = readdirSync(docsUrl).filter((f) => f.endsWith(".html"));
 
 test("site has the expected pages", () => {
-  for (const page of ["index.html", "extension.html", "try.html", "privacy-policy.html", "thank-you.html"]) {
+  for (const page of [
+    "index.html",
+    "extension.html",
+    "try.html",
+    "privacy-policy.html",
+    "thank-you.html",
+  ]) {
     assert.ok(pages.includes(page), page);
   }
 });
@@ -79,51 +86,107 @@ test("site has the expected pages", () => {
 for (const page of pages) {
   test(`${page}: strict CSP meta and no inline code`, () => {
     const html = read(docsUrl, page);
-    const metas = [...html.matchAll(/<meta\s+http-equiv="Content-Security-Policy"\s+content="([^"]+)"/gi)];
+    const metas = [
+      ...html.matchAll(
+        /<meta\s+http-equiv="Content-Security-Policy"\s+content="([^"]+)"/gi,
+      ),
+    ];
     assert.equal(metas.length, 1, "exactly one CSP meta");
     const policy = metas[0][1];
     const csp = parseCsp(policy);
 
-    assert.ok(html.indexOf(metas[0][0]) < html.search(/<link\b|<script\b|<style\b/i), "CSP must come before any resource");
+    assert.ok(
+      html.indexOf(metas[0][0]) < html.search(/<link\b|<script\b|<style\b/i),
+      "CSP must come before any resource",
+    );
     assert.deepEqual(csp.get("default-src"), ["'none'"]);
     assert.deepEqual(csp.get("base-uri"), ["'none'"]);
     assert.deepEqual(csp.get("object-src"), ["'none'"]);
     assert.ok(csp.has("form-action"), "form-action set");
-    assert.doesNotMatch(policy, /'unsafe-eval'|'unsafe-hashes'|'strict-dynamic'|\*|data:|blob:/);
+    assert.doesNotMatch(
+      policy,
+      /'unsafe-eval'|'unsafe-hashes'|'strict-dynamic'|\*|data:|blob:/,
+    );
     for (const dir of ["script-src", "style-src"]) {
-      assert.ok(!effective(csp, dir).includes("'unsafe-inline'"), `${dir} must not allow 'unsafe-inline'`);
+      assert.ok(
+        !effective(csp, dir).includes("'unsafe-inline'"),
+        `${dir} must not allow 'unsafe-inline'`,
+      );
     }
     // Ignored (and warned about) when delivered via <meta>.
-    for (const dir of ["frame-ancestors", "report-uri", "sandbox"]) assert.ok(!csp.has(dir), dir);
+    for (const dir of ["frame-ancestors", "report-uri", "sandbox"])
+      assert.ok(!csp.has(dir), dir);
 
-    assert.match(html, /<meta name="referrer" content="(strict-origin-when-cross-origin|strict-origin|same-origin|no-referrer)"/);
-    assert.doesNotMatch(html, /<script(?![^>]*\bsrc=)[^>]*>/i, "no inline <script>");
-    assert.doesNotMatch(html, /<[a-z][^>]*\son[a-z]+\s*=/i, "no inline event handlers");
-    assert.doesNotMatch(html, /<style\b|<[a-z][^>]*\sstyle\s*=/i, "no inline styles");
-    assert.doesNotMatch(html, /(href|src|action)\s*=\s*["']?\s*(javascript|data|vbscript):/i);
+    assert.match(
+      html,
+      /<meta name="referrer" content="(strict-origin-when-cross-origin|strict-origin|same-origin|no-referrer)"/,
+    );
+    assert.doesNotMatch(
+      html,
+      /<script(?![^>]*\bsrc=)[^>]*>/i,
+      "no inline <script>",
+    );
+    assert.doesNotMatch(
+      html,
+      /<[a-z][^>]*\son[a-z]+\s*=/i,
+      "no inline event handlers",
+    );
+    assert.doesNotMatch(
+      html,
+      /<style\b|<[a-z][^>]*\sstyle\s*=/i,
+      "no inline styles",
+    );
+    assert.doesNotMatch(
+      html,
+      /(href|src|action)\s*=\s*["']?\s*(javascript|data|vbscript):/i,
+    );
 
     const scriptSrc = effective(csp, "script-src");
     for (const [, src] of html.matchAll(/<script[^>]*\bsrc="([^"]+)"/gi)) {
-      assert.ok(!/^https?:/i.test(src) && scriptSrc.includes("'self'"), `script ${src} allowed by script-src`);
+      assert.ok(
+        !/^https?:/i.test(src) && scriptSrc.includes("'self'"),
+        `script ${src} allowed by script-src`,
+      );
     }
     const styleSrc = effective(csp, "style-src");
-    for (const [, href] of html.matchAll(/<link[^>]*\bhref="(https:[^"]+)"[^>]*rel="stylesheet"/gi)) {
-      assert.ok(styleSrc.includes(new URL(href).origin), `stylesheet ${href} allowed by style-src`);
+    for (const [, href] of html.matchAll(
+      /<link[^>]*\bhref="(https:[^"]+)"[^>]*rel="stylesheet"/gi,
+    )) {
+      assert.ok(
+        styleSrc.includes(new URL(href).origin),
+        `stylesheet ${href} allowed by style-src`,
+      );
     }
-    for (const [, action] of html.matchAll(/<form[^>]*\baction="(https:[^"]+)"/gi)) {
-      assert.ok(csp.get("form-action").includes(new URL(action).origin), `form action ${action} allowed`);
+    for (const [, action] of html.matchAll(
+      /<form[^>]*\baction="(https:[^"]+)"/gi,
+    )) {
+      assert.ok(
+        csp.get("form-action").includes(new URL(action).origin),
+        `form action ${action} allowed`,
+      );
     }
     for (const [, endpoint] of html.matchAll(/data-endpoint="([^"]+)"/gi)) {
-      assert.ok(effective(csp, "connect-src").includes(new URL(endpoint).origin), `fetch ${endpoint} allowed`);
+      assert.ok(
+        effective(csp, "connect-src").includes(new URL(endpoint).origin),
+        `fetch ${endpoint} allowed`,
+      );
     }
   });
 }
 
 test("try.html allows the configured proxy and nothing else cross-origin", async () => {
   const { PROXY_URL } = await import(new URL("try/config.js", docsUrl).href);
-  const csp = parseCsp(read(docsUrl, "try.html").match(/http-equiv="Content-Security-Policy"\s+content="([^"]+)"/)[1]);
+  const csp = parseCsp(
+    read(docsUrl, "try.html").match(
+      /http-equiv="Content-Security-Policy"\s+content="([^"]+)"/,
+    )[1],
+  );
   const connect = csp.get("connect-src");
   assert.ok(connect.includes("'self'"), "samples.json");
-  if (PROXY_URL) assert.ok(connect.includes(new URL(PROXY_URL).origin), "proxy origin");
-  assert.equal(connect.filter((v) => /^https:/.test(v)).length, PROXY_URL ? 1 : 0);
+  if (PROXY_URL)
+    assert.ok(connect.includes(new URL(PROXY_URL).origin), "proxy origin");
+  assert.equal(
+    connect.filter((v) => /^https:/.test(v)).length,
+    PROXY_URL ? 1 : 0,
+  );
 });

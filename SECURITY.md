@@ -4,13 +4,13 @@ c3nsor has three parts: the Chrome extension (`extension/`), the static GitHub P
 
 ## Threat model
 
-| Untrusted input | Where it enters | Main risk |
-| --- | --- | --- |
+| Untrusted input                                     | Where it enters                                                    | Main risk                                                                        |
+| --------------------------------------------------- | ------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
 | Privacy-policy HTML and text from third-party sites | Extension service worker, Try-it page (via the proxy), pasted text | Cross-site scripting (XSS) when findings, excerpts, domains, and links are shown |
-| URLs typed or pasted by a user | Popup policy URL box, Try-it URL box | `javascript:`/`data:` links, malformed URLs |
-| Messages to the service worker | `chrome.runtime.onMessage` | A content script or web page asking the extension to act |
-| Results from the injected discover script | `chrome.scripting.executeScript` | Malformed or oversized link lists from a hostile page |
-| URLs sent to the proxy | `GET /?url=` on the Worker | Server-side request forgery (SSRF), abuse as an open proxy |
+| URLs typed or pasted by a user                      | Popup policy URL box, Try-it URL box                               | `javascript:`/`data:` links, malformed URLs                                      |
+| Messages to the service worker                      | `chrome.runtime.onMessage`                                         | A content script or web page asking the extension to act                         |
+| Results from the injected discover script           | `chrome.scripting.executeScript`                                   | Malformed or oversized link lists from a hostile page                            |
+| URLs sent to the proxy                              | `GET /?url=` on the Worker                                         | Server-side request forgery (SSRF), abuse as an open proxy                       |
 
 ## Protections
 

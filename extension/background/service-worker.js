@@ -1,9 +1,17 @@
-import { htmlToPlainText, looksLikePrivacyPolicy, looksAnalyzablePolicy } from "../lib/clean.js";
+import {
+  htmlToPlainText,
+  looksLikePrivacyPolicy,
+  looksAnalyzablePolicy,
+} from "../lib/clean.js";
 import { fetchPolicyHtml, FETCH_TIMEOUT_MS, MAX_BYTES } from "../lib/fetch.js";
 import { createPolicyFetcher } from "../lib/policy-access.js";
 import { buildAnalysisResult } from "../lib/result.js";
 import { getCached, setCached, clearCache } from "../lib/cache.js";
-import { isTrustedSender, sanitizeDiscovery, validateMessage } from "../lib/messages.js";
+import {
+  isTrustedSender,
+  sanitizeDiscovery,
+  validateMessage,
+} from "../lib/messages.js";
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (!isTrustedSender(sender, chrome.runtime.id, chrome.runtime.getURL(""))) {
@@ -14,8 +22,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     .catch((err) =>
       sendResponse({
         ok: false,
-        error: err?.message || "Unexpected extension error."
-      })
+        error: err?.message || "Unexpected extension error.",
+      }),
     );
   return true;
 });
@@ -34,7 +42,7 @@ async function handleMessage(raw) {
 
   return analyzeActiveTab({
     force: message.force,
-    policyUrlOverride: message.policyUrl
+    policyUrlOverride: message.policyUrl,
   });
 }
 
@@ -58,7 +66,8 @@ async function analyzeActiveTab(opts) {
     await clearAlertBadge(tab.id);
     return {
       ok: false,
-      error: "Open a normal website (http/https). Chrome system pages cannot be scanned."
+      error:
+        "Open a normal website (http/https). Chrome system pages cannot be scanned.",
     };
   }
 
@@ -67,7 +76,10 @@ async function analyzeActiveTab(opts) {
   if (!opts.force && !opts.policyUrlOverride) {
     const cached = await getCached(domain);
     if (cached) {
-      await setAlertBadge(tab.id, cached.alertCount ?? countAlerts(cached.findings));
+      await setAlertBadge(
+        tab.id,
+        cached.alertCount ?? countAlerts(cached.findings),
+      );
       return { ok: true, fromCache: true, ...cached };
     }
   }
@@ -76,13 +88,13 @@ async function analyzeActiveTab(opts) {
     candidates: [],
     pageLinks: [],
     origin: tabUrl.origin,
-    pageUrl: tab.url
+    pageUrl: tab.url,
   };
 
   try {
     const injected = await chrome.scripting.executeScript({
       target: { tabId: tab.id },
-      files: ["content/discover.js"]
+      files: ["content/discover.js"],
     });
     if (injected?.[0]?.result) {
       discovery = sanitizeDiscovery(injected[0].result, discovery);
@@ -99,13 +111,14 @@ async function analyzeActiveTab(opts) {
   const fetchPolicy = createPolicyFetcher({
     pageUrl: tab.url,
     fetchInPage: (url) => fetchInTab(tab.id, url),
-    hasHostAccess: (pattern) => chrome.permissions.contains({ origins: [pattern] }),
-    fetchDirect: (url) => fetchPolicyHtml(url)
+    hasHostAccess: (pattern) =>
+      chrome.permissions.contains({ origins: [pattern] }),
+    fetchDirect: (url) => fetchPolicyHtml(url),
   });
 
   let policyUrl = opts.policyUrlOverride;
-  let fetched = null;
-  let text = "";
+  let fetched;
+  let text;
 
   if (policyUrl) {
     try {
@@ -128,7 +141,7 @@ async function analyzeActiveTab(opts) {
         pageUrl: tab.url,
         policyUrl,
         openPolicyUrl: policyUrl,
-        candidates: discovery.candidates
+        candidates: discovery.candidates,
       };
     }
     text = htmlToPlainText(fetched.html);
@@ -143,11 +156,15 @@ async function analyzeActiveTab(opts) {
         pageUrl: tab.url,
         policyUrl: fetched.finalUrl,
         openPolicyUrl: fetched.finalUrl,
-        candidates: discovery.candidates
+        candidates: discovery.candidates,
       };
     }
   } else {
-    const picked = await pickReadablePolicy(discovery.candidates, tab.url, fetchPolicy);
+    const picked = await pickReadablePolicy(
+      discovery.candidates,
+      tab.url,
+      fetchPolicy,
+    );
     if (!picked.fetched) {
       await clearAlertBadge(tab.id);
       if (picked.blocked) {
@@ -158,7 +175,7 @@ async function analyzeActiveTab(opts) {
           domain,
           pageUrl: tab.url,
           openPolicyUrl: picked.blocked.url,
-          candidates: discovery.candidates
+          candidates: discovery.candidates,
         };
       }
       const topHref = discovery.candidates?.[0]?.href || null;
@@ -169,7 +186,7 @@ async function analyzeActiveTab(opts) {
         domain,
         pageUrl: tab.url,
         openPolicyUrl: topHref,
-        candidates: discovery.candidates
+        candidates: discovery.candidates,
       };
     }
     fetched = picked.fetched;
@@ -181,12 +198,13 @@ async function analyzeActiveTab(opts) {
     await clearAlertBadge(tab.id);
     return {
       ok: false,
-      error: "The policy page could not be read as text (empty or heavily scripted).",
+      error:
+        "The policy page could not be read as text (empty or heavily scripted).",
       domain,
       pageUrl: tab.url,
       policyUrl: fetched?.finalUrl || policyUrl,
       openPolicyUrl: fetched?.finalUrl || policyUrl,
-      candidates: discovery.candidates
+      candidates: discovery.candidates,
     };
   }
 
@@ -194,7 +212,7 @@ async function analyzeActiveTab(opts) {
     domain,
     policyUrl: fetched.finalUrl,
     pageUrl: tab.url,
-    pageLinks: discovery.pageLinks || []
+    pageLinks: discovery.pageLinks || [],
   });
 
   await setCached(domain, result);
@@ -266,9 +284,14 @@ async function fetchInTab(tabId, url) {
     const [injected] = await chrome.scripting.executeScript({
       target: { tabId },
       func: fetchPolicyHtml,
-      args: [url, { maxBytes: MAX_BYTES, timeoutMs: FETCH_TIMEOUT_MS }]
+      args: [url, { maxBytes: MAX_BYTES, timeoutMs: FETCH_TIMEOUT_MS }],
     });
-    return injected?.result || { ok: false, error: "Could not read the policy from this page." };
+    return (
+      injected?.result || {
+        ok: false,
+        error: "Could not read the policy from this page.",
+      }
+    );
   } catch {
     return { ok: false, error: "Could not read the policy from this page." };
   }
@@ -282,10 +305,12 @@ function countAlerts(findings) {
 async function setAlertBadge(tabId, count) {
   const n = Number(count) || 0;
   await chrome.action.setBadgeBackgroundColor({ color: "#101010", tabId });
-  await chrome.action.setBadgeTextColor({ color: "#ffffff", tabId }).catch(() => {});
+  await chrome.action
+    .setBadgeTextColor({ color: "#ffffff", tabId })
+    .catch(() => {});
   await chrome.action.setBadgeText({
     text: n > 0 ? String(n) : "",
-    tabId
+    tabId,
   });
 }
 
@@ -307,6 +332,6 @@ function defaultCandidates(origin) {
     "/privacy-notice",
     "/legal/privacy",
     "/policies/privacy",
-    "/company/privacy"
+    "/company/privacy",
   ].map((path) => ({ href: origin + path, text: path, score: 1 }));
 }

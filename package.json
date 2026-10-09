@@ -1,0 +1,24 @@
+{
+  "name": "c3nsor",
+  "private": true,
+  "type": "module",
+  "description": "Repository tooling for c3nsor: lint, format, test, and dependency audit across extension/, docs/, and proxy/.",
+  "engines": {
+    "node": ">=22.21.0 <23"
+  },
+  "scripts": {
+    "lint": "eslint . --max-warnings=0",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
+    "test": "npm --prefix extension run verify && npm --prefix proxy test",
+    "audit": "npm audit --include=dev --audit-level=high && npm --prefix proxy audit --include=dev --audit-level=high",
+    "ci": "npm run lint && npm run format:check && npm test && npm run audit"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "eslint": "10.12.0",
+    "eslint-config-prettier": "10.1.8",
+    "globals": "17.13.0",
+    "prettier": "3.9.9"
+  }
+}

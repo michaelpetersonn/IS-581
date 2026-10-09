@@ -25,7 +25,8 @@ export function hostOf(url) {
 export function shortUrl(url) {
   try {
     const u = new URL(url);
-    const path = u.pathname.length > 28 ? `${u.pathname.slice(0, 28)}…` : u.pathname;
+    const path =
+      u.pathname.length > 28 ? `${u.pathname.slice(0, 28)}…` : u.pathname;
     return u.hostname + path;
   } catch {
     return String(url ?? "");
@@ -34,7 +35,9 @@ export function shortUrl(url) {
 
 /** Keep citations short and readable under the one-look summary. */
 export function compactCite(text) {
-  let s = String(text || "").replace(/\s+/g, " ").trim();
+  let s = String(text || "")
+    .replace(/\s+/g, " ")
+    .trim();
   if (s.length > 140) s = `${s.slice(0, 137)}…`;
   return s;
 }
@@ -59,9 +62,12 @@ export function el(doc, tag, props = {}) {
  * @returns {HTMLElement[]}
  */
 export function buildMeta(doc, info) {
-  const nodes = [el(doc, "strong", { text: info.domain, title: info.policyUrl || "" })];
+  const nodes = [
+    el(doc, "strong", { text: info.domain, title: info.policyUrl || "" }),
+  ];
   if (typeof info.alertCount === "number") {
-    const label = info.alertCount === 1 ? "1 alert" : `${info.alertCount} alerts`;
+    const label =
+      info.alertCount === 1 ? "1 alert" : `${info.alertCount} alerts`;
     nodes.push(el(doc, "span", { className: "alerts", text: label }));
   }
   return nodes;
@@ -78,23 +84,25 @@ export function buildFinding(doc, label, item) {
   row.append(
     el(doc, "span", {
       className: `badge ${item.found ? "found" : "miss"}`,
-      text: item.found ? "Found" : "Unclear"
+      text: item.found ? "Found" : "Unclear",
     }),
-    el(doc, "span", { className: "label", text: label })
+    el(doc, "span", { className: "label", text: label }),
   );
   li.append(row);
 
   if (!item.found) return li;
   const summary =
-    item.summary || item.explanation || "Mentioned in the policy, but details are unclear in one look.";
+    item.summary ||
+    item.explanation ||
+    "Mentioned in the policy, but details are unclear in one look.";
   li.append(el(doc, "p", { className: "summary", text: summary }));
   if (item.excerpt) {
     li.append(
       el(doc, "p", {
         className: "excerpt",
         text: `“${compactCite(item.excerpt)}”`,
-        title: item.excerpt
-      })
+        title: item.excerpt,
+      }),
     );
   }
   return li;
@@ -109,7 +117,9 @@ export function buildFinding(doc, label, item) {
  */
 export function buildLink(doc, href, label, className = "") {
   if (!isHttpUrl(href)) return null;
-  const a = /** @type {HTMLAnchorElement} */ (el(doc, "a", { className, text: label }));
+  const a = /** @type {HTMLAnchorElement} */ (
+    el(doc, "a", { className, text: label })
+  );
   a.href = String(href);
   a.target = "_blank";
   a.rel = "noopener noreferrer";
@@ -121,7 +131,9 @@ export function buildLink(doc, href, label, className = "") {
  * @param {string} label
  */
 export function buildDisabledAction(doc, label) {
-  const btn = /** @type {HTMLButtonElement} */ (el(doc, "button", { className: "is-disabled", text: label }));
+  const btn = /** @type {HTMLButtonElement} */ (
+    el(doc, "button", { className: "is-disabled", text: label })
+  );
   btn.type = "button";
   btn.disabled = true;
   return btn;

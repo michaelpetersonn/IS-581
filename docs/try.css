@@ -1,5 +1,7 @@
 /* —— Try it (web demo) —— */
-.hidden { display: none !important; }
+.hidden {
+  display: none !important;
+}
 
 .try-hero {
   background: #101010;
@@ -40,10 +42,15 @@
   padding: 0 0 32px;
   border-bottom: 1px solid #c8c8c8;
 }
-.try-step:last-child { margin-bottom: 0; border-bottom: 0; }
+.try-step:last-child {
+  margin-bottom: 0;
+  border-bottom: 0;
+}
 .try-step i {
   color: #707070;
-  font: 11px "DM Mono", monospace;
+  font:
+    11px "DM Mono",
+    monospace;
   font-style: normal;
 }
 .try-step h2 {
@@ -55,7 +62,9 @@
 .try-note {
   margin: 12px 0 0;
   color: #555;
-  font: 12px/1.55 "DM Mono", monospace;
+  font:
+    12px/1.55 "DM Mono",
+    monospace;
 }
 
 .try-samples {
@@ -74,20 +83,29 @@
   border: 1px solid #101010;
   background: #fff;
   color: #101010;
-  font: 600 14px Manrope, Arial, sans-serif;
+  font:
+    600 14px Manrope,
+    Arial,
+    sans-serif;
   text-align: left;
   cursor: pointer;
 }
 .try-sample span {
   color: #666;
-  font: 11px "DM Mono", monospace;
+  font:
+    11px "DM Mono",
+    monospace;
 }
-.try-sample:hover { background: #f4f4f4; }
+.try-sample:hover {
+  background: #f4f4f4;
+}
 .try-sample[aria-pressed="true"] {
   background: #101010;
   color: #fff;
 }
-.try-sample[aria-pressed="true"] span { color: #bdbdbd; }
+.try-sample[aria-pressed="true"] span {
+  color: #bdbdbd;
+}
 
 .try-input-row {
   display: flex;
@@ -101,7 +119,10 @@
   border: 1px solid #101010;
   background: #fff;
   color: #101010;
-  font: 15px Manrope, Arial, sans-serif;
+  font:
+    15px Manrope,
+    Arial,
+    sans-serif;
 }
 .try-step textarea {
   display: block;
@@ -116,10 +137,15 @@
   border: 1px solid #101010;
   background: #101010;
   color: #fff;
-  font: 600 14px Manrope, Arial, sans-serif;
+  font:
+    600 14px Manrope,
+    Arial,
+    sans-serif;
   cursor: pointer;
 }
-#text-form button[type="submit"] { margin-top: 10px; }
+#text-form button[type="submit"] {
+  margin-top: 10px;
+}
 .try-step input:disabled,
 .try-step button:disabled {
   opacity: 0.45;
@@ -127,14 +153,23 @@
 }
 
 /* Result card mirrors the extension popup. */
-.try-result { position: sticky; top: 112px; }
+.try-result {
+  position: sticky;
+  top: 112px;
+}
 .try-card {
   padding: 18px 18px 16px;
   background: #fff;
   border: 1px solid #d8d8d8;
   box-shadow: 12px 12px 0 #101010;
   color: #1c1e21;
-  font: 13px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  font:
+    13px/1.45 -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Helvetica,
+    Arial,
+    sans-serif;
 }
 .try-card-top {
   display: flex;
@@ -149,7 +184,13 @@
   border: 0;
   background: #101010;
   color: #fff;
-  font: 700 11px -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  font:
+    700 11px -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Helvetica,
+    Arial,
+    sans-serif;
 }
 .try-card-brand {
   font-size: 16px;
@@ -163,8 +204,14 @@
   font-size: 11px;
   font-weight: 600;
 }
-.try-kicker.loading { color: #101010; }
-.try-kicker.error { color: #b42318; font-size: 12px; line-height: 1.45; }
+.try-kicker.loading {
+  color: #101010;
+}
+.try-kicker.error {
+  color: #b42318;
+  font-size: 12px;
+  line-height: 1.45;
+}
 
 .try-head {
   display: flex;
@@ -190,7 +237,11 @@
   font-weight: 600;
 }
 
-.try-findings { list-style: none; margin: 0; padding: 0; }
+.try-findings {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
 .try-findings > li {
   padding: 11px 0;
   border-bottom: 1px solid #e4e6eb;
@@ -208,8 +259,14 @@
   font-weight: 600;
   line-height: 1.4;
 }
-.try-badge.found { background: #e8f5e9; color: #1a7f37; }
-.try-badge.miss { background: #eee; color: #666; }
+.try-badge.found {
+  background: #e8f5e9;
+  color: #1a7f37;
+}
+.try-badge.miss {
+  background: #eee;
+  color: #666;
+}
 .try-label {
   flex: 1;
   font-size: 13px;
@@ -239,7 +296,9 @@
   font-size: 12px;
   line-height: 1.45;
 }
-.try-act-label { margin-top: 14px; }
+.try-act-label {
+  margin-top: 14px;
+}
 .try-acts {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -256,7 +315,13 @@
   border: 0;
   background: #1d1d1f;
   color: #fff;
-  font: 600 12px -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  font:
+    600 12px -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Helvetica,
+    Arial,
+    sans-serif;
   text-align: center;
   text-decoration: none;
   cursor: pointer;
@@ -266,11 +331,15 @@
   color: #666;
   cursor: not-allowed;
 }
-#result-open { margin-top: 12px; }
+#result-open {
+  margin-top: 12px;
+}
 .try-disclaimer {
   margin: 24px 0 0;
   color: #555;
-  font: 11px/1.5 "DM Mono", monospace;
+  font:
+    11px/1.5 "DM Mono",
+    monospace;
 }
 
 .try-get {
@@ -297,8 +366,13 @@
 }
 
 @media (max-width: 900px) {
-  .try-bench { grid-template-columns: 1fr; gap: 40px; }
-  .try-result { position: static; }
+  .try-bench {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .try-result {
+    position: static;
+  }
 }
 @media (max-width: 760px) {
   .try-hero,
@@ -307,5 +381,7 @@
     padding-left: 20px;
     padding-right: 20px;
   }
-  .try-samples { grid-template-columns: 1fr; }
+  .try-samples {
+    grid-template-columns: 1fr;
+  }
 }

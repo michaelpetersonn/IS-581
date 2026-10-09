@@ -51,7 +51,9 @@ export function hostOf(url) {
  * @returns {boolean}
  */
 export function looksLikeHtml(text) {
-  return /<(html|body|p|div|h[1-6]|section|article|main)\b/i.test(String(text || ""));
+  return /<(html|body|p|div|h[1-6]|section|article|main)\b/i.test(
+    String(text || ""),
+  );
 }
 
 /**
@@ -63,7 +65,9 @@ export function looksLikeHtml(text) {
  */
 export function scorePolicyLink(href, text, pageHost) {
   if (!isHttpUrl(href)) return 0;
-  const label = String(text || "").replace(/\s+/g, " ").trim();
+  const label = String(text || "")
+    .replace(/\s+/g, " ")
+    .trim();
   let score = 0;
 
   if (/^privacy\s+(policy|notice|statement)$/i.test(label)) score += 12;
@@ -75,14 +79,27 @@ export function scorePolicyLink(href, text, pageHost) {
   if (/cookie/i.test(label) && !/privacy/i.test(label)) score -= 4;
 
   const host = hostOf(href);
-  if (host && pageHost && (host === pageHost || host.endsWith(`.${pageHost}`) || pageHost.endsWith(`.${host}`))) {
+  if (
+    host &&
+    pageHost &&
+    (host === pageHost ||
+      host.endsWith(`.${pageHost}`) ||
+      pageHost.endsWith(`.${host}`))
+  ) {
     score += 2;
   }
   return score;
 }
 
 /** Proxy error codes where the site itself answered, so linking visitors to it is useful. */
-const REACHABLE_ERROR_CODES = new Set(["blocked", "not_found", "upstream_error", "too_large", "not_html", "bad_redirect"]);
+const REACHABLE_ERROR_CODES = new Set([
+  "blocked",
+  "not_found",
+  "upstream_error",
+  "too_large",
+  "not_html",
+  "bad_redirect",
+]);
 
 /**
  * Visitor-facing wording for a proxy error `code` (see proxy/worker.js). Never includes HTTP status codes.
@@ -111,10 +128,12 @@ export function describeProxyError(code, targetUrl) {
       message = `${host} had a problem loading that page. Try again later, or paste the policy text below.`;
       break;
     case "too_large":
-      message = "That page is too large to analyze. Paste the policy text below instead.";
+      message =
+        "That page is too large to analyze. Paste the policy text below instead.";
       break;
     case "not_html":
-      message = "That address isn’t a web page we can read (it may be a PDF or a download). Try the site’s privacy policy page instead.";
+      message =
+        "That address isn’t a web page we can read (it may be a PDF or a download). Try the site’s privacy policy page instead.";
       break;
     case "bad_redirect":
       message = `${host} sent us somewhere we can’t follow. Open the site’s privacy policy and paste its text below.`;
@@ -124,7 +143,8 @@ export function describeProxyError(code, targetUrl) {
       message = "Enter a public website address like duckduckgo.com.";
       break;
     default:
-      message = "We couldn’t download that page right now. Try again, or paste the policy text below.";
+      message =
+        "We couldn’t download that page right now. Try again, or paste the policy text below.";
   }
   let siteUrl = null;
   if (code && REACHABLE_ERROR_CODES.has(code) && isHttpUrl(targetUrl)) {
@@ -139,6 +159,8 @@ export function describeProxyError(code, targetUrl) {
  * @param {number} [max]
  */
 export function compactCite(text, max = 140) {
-  const s = String(text || "").replace(/\s+/g, " ").trim();
+  const s = String(text || "")
+    .replace(/\s+/g, " ")
+    .trim();
   return s.length > max ? `${s.slice(0, max - 1)}…` : s;
 }

@@ -22,7 +22,7 @@
     "/about/privacy",
     "/company/privacy",
     "/en/privacy",
-    "/en-us/privacy"
+    "/en-us/privacy",
   ];
   const ACTION_RE =
     /do[- ]?not[- ]?sell|privacy[- ]?choices|opt[- ]?out|privacy|cookie[- ]?settings|data[- ]?request/i;
@@ -50,7 +50,7 @@
       candidates.push({
         href: url.href,
         text: (text || "").trim().slice(0, 120),
-        score
+        score,
       });
     } catch {
       /* ignore */
@@ -70,11 +70,16 @@
     else if (LINK_TEXT_RE.test(trimmed)) score += 5;
 
     if (HREF_RE.test(href)) score += 3;
-    if (/\/privacy([-_]?(policy|statement|notice))?\/?$/i.test(href)) score += 2;
+    if (/\/privacy([-_]?(policy|statement|notice))?\/?$/i.test(href))
+      score += 2;
 
     // Cookie-only links are weak privacy-policy candidates
     if (/cookie/i.test(trimmed) && !/privacy/i.test(trimmed)) score -= 4;
-    if (/cookie/i.test(href) && !/privacy/i.test(href) && !/privacy/i.test(trimmed)) {
+    if (
+      /cookie/i.test(href) &&
+      !/privacy/i.test(href) &&
+      !/privacy/i.test(trimmed)
+    ) {
       score -= 3;
     }
 
@@ -82,7 +87,9 @@
       const url = new URL(href, origin);
       const host = url.hostname.replace(/^www\./, "");
       const sameOrigin =
-        host === pageHost || host.endsWith("." + pageHost) || pageHost.endsWith("." + host);
+        host === pageHost ||
+        host.endsWith("." + pageHost) ||
+        pageHost.endsWith("." + host);
       if (sameOrigin) score += 3;
       else score -= 2; // prefer same-origin over off-site mirrors
       if (url.protocol === "https:") score += 1;
@@ -95,7 +102,6 @@
   }
 
   document.querySelectorAll("a[href]").forEach((a) => {
-    const href = a.getAttribute("href") || "";
     const text = (a.textContent || "").replace(/\s+/g, " ").trim();
     if (ACTION_RE.test(`${text} ${a.href}`)) {
       pageLinks.push({ href: a.href, text });
@@ -115,6 +121,6 @@
     candidates: candidates.slice(0, 12),
     pageLinks: pageLinks.slice(0, 40),
     origin,
-    pageUrl
+    pageUrl,
   };
 })();

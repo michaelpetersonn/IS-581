@@ -1,4 +1,8 @@
-import { htmlToPlainText, looksAnalyzablePolicy, looksLikePrivacyPolicy } from "./engine/clean.js";
+import {
+  htmlToPlainText,
+  looksAnalyzablePolicy,
+  looksLikePrivacyPolicy,
+} from "./engine/clean.js";
 import { buildAnalysisResult } from "./engine/result.js";
 import { PROXY_URL } from "./config.js";
 import {
@@ -9,7 +13,7 @@ import {
   isHttpUrl,
   looksLikeHtml,
   normalizeInputUrl,
-  scorePolicyLink
+  scorePolicyLink,
 } from "./web-helpers.js";
 
 /** Same short labels as the extension popup. */
@@ -18,7 +22,7 @@ const DISPLAY_LABELS = {
   used: "How the data is used",
   shared: "Who the data is shared with",
   advertising: "Mentions sale / sharing",
-  choices: "Access, opt-out, or deletion choices"
+  choices: "Access, opt-out, or deletion choices",
 };
 const ORDER = ["collected", "used", "shared", "advertising", "choices"];
 const MAX_CANDIDATES = 3;
@@ -39,7 +43,7 @@ const el = {
   findings: document.getElementById("result-findings"),
   guidance: document.getElementById("result-guidance"),
   actLabel: document.getElementById("result-act-label"),
-  acts: document.getElementById("result-acts")
+  acts: document.getElementById("result-acts"),
 };
 
 /** Ignore results from an older run if the user started a new one. */
@@ -58,7 +62,9 @@ async function loadSamples() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     const samples = Array.isArray(data.samples) ? data.samples : [];
-    const date = data.generatedAt ? new Date(data.generatedAt).toLocaleDateString() : "";
+    const date = data.generatedAt
+      ? new Date(data.generatedAt).toLocaleDateString()
+      : "";
 
     for (const sample of samples) {
       const btn = document.createElement("button");
@@ -72,9 +78,15 @@ async function loadSamples() {
       btn.append(name, count);
       btn.addEventListener("click", () => {
         runId++;
-        for (const b of el.samples.querySelectorAll("button")) b.setAttribute("aria-pressed", "false");
+        for (const b of el.samples.querySelectorAll("button"))
+          b.setAttribute("aria-pressed", "false");
         btn.setAttribute("aria-pressed", "true");
-        renderResult(sample.result, date ? `Saved snapshot from ${date} · same rules as the extension` : "Saved snapshot");
+        renderResult(
+          sample.result,
+          date
+            ? `Saved snapshot from ${date} · same rules as the extension`
+            : "Saved snapshot",
+        );
         revealResult();
       });
       el.samples.appendChild(btn);
@@ -82,10 +94,16 @@ async function loadSamples() {
     const first = samples[0];
     if (first) {
       el.samples.querySelector("button")?.setAttribute("aria-pressed", "true");
-      renderResult(first.result, date ? `Saved snapshot from ${date} · same rules as the extension` : "Saved snapshot");
+      renderResult(
+        first.result,
+        date
+          ? `Saved snapshot from ${date} · same rules as the extension`
+          : "Saved snapshot",
+      );
     }
   } catch {
-    el.sampleNote.textContent = "Samples could not load. Try pasting policy text instead.";
+    el.sampleNote.textContent =
+      "Samples could not load. Try pasting policy text instead.";
   }
 }
 
@@ -144,23 +162,29 @@ async function analyzeUrl(raw) {
         "Couldn’t find readable policy text on that site. Open the policy to read it, or paste its text below.",
         candidates[0]
           ? { href: candidates[0].href, label: "Open privacy policy" }
-          : { href: first.finalUrl, label: "Open site" }
+          : { href: first.finalUrl, label: "Open site" },
       );
       return;
     }
 
-    const pageLinks = [...collectLinks(firstDoc, first.finalUrl), ...collectLinks(picked.doc, picked.url)];
+    const pageLinks = [
+      ...collectLinks(firstDoc, first.finalUrl),
+      ...collectLinks(picked.doc, picked.url),
+    ];
     const result = buildAnalysisResult(picked.text, {
       domain: hostOf(target) || hostOf(picked.url),
       policyUrl: picked.url,
       pageUrl: target,
-      pageLinks: pageLinks.slice(0, MAX_PAGE_LINKS)
+      pageLinks: pageLinks.slice(0, MAX_PAGE_LINKS),
     });
     renderResult(result, "Rules matched language in this policy");
   } catch (err) {
     if (myRun !== runId) return;
     const { message, siteUrl } = describeProxyError(err?.code, target);
-    renderError(message, siteUrl ? { href: siteUrl, label: "Open site" } : null);
+    renderError(
+      message,
+      siteUrl ? { href: siteUrl, label: "Open site" } : null,
+    );
   } finally {
     if (myRun === runId) el.urlButton.disabled = false;
   }
@@ -176,7 +200,10 @@ async function pickPolicyFromCandidates(candidates, myRun) {
     try {
       const page = await proxyFetch(c.href);
       const text = htmlToPlainText(page.html);
-      if (looksLikePrivacyPolicy(text) || (c.score >= 5 && looksAnalyzablePolicy(text))) {
+      if (
+        looksLikePrivacyPolicy(text) ||
+        (c.score >= 5 && looksAnalyzablePolicy(text))
+      ) {
         return { text, url: page.finalUrl, doc: parseHtml(page.html) };
       }
     } catch {
@@ -206,7 +233,10 @@ async function proxyFetch(url) {
     err.code = typeof body.code === "string" ? body.code : null;
     throw err;
   }
-  return { html: await res.text(), finalUrl: res.headers.get("X-Final-Url") || url };
+  return {
+    html: await res.text(),
+    finalUrl: res.headers.get("X-Final-Url") || url,
+  };
 }
 
 /** DOMParser never runs page scripts, so third-party HTML stays inert. */
@@ -225,7 +255,10 @@ function collectLinks(doc, baseUrl) {
     try {
       const href = new URL(a.getAttribute("href"), baseUrl).href;
       if (!isHttpUrl(href)) continue;
-      links.push({ href, text: (a.textContent || "").replace(/\s+/g, " ").trim().slice(0, 120) });
+      links.push({
+        href,
+        text: (a.textContent || "").replace(/\s+/g, " ").trim().slice(0, 120),
+      });
     } catch {
       /* skip bad href */
     }
@@ -265,13 +298,20 @@ function analyzePastedText(raw) {
     revealResult();
     return;
   }
-  const text = looksLikeHtml(input) ? htmlToPlainText(input) : input.replace(/\r/g, "").trim();
+  const text = looksLikeHtml(input)
+    ? htmlToPlainText(input)
+    : input.replace(/\r/g, "").trim();
   if (!looksAnalyzablePolicy(text)) {
-    renderError("That doesn’t look like a privacy policy yet. Paste the full policy text (at least a few paragraphs).");
+    renderError(
+      "That doesn’t look like a privacy policy yet. Paste the full policy text (at least a few paragraphs).",
+    );
     revealResult();
     return;
   }
-  const result = buildAnalysisResult(text, { domain: "Pasted policy", policyUrl: null });
+  const result = buildAnalysisResult(text, {
+    domain: "Pasted policy",
+    policyUrl: null,
+  });
   renderResult(result, "Rules matched language in your pasted text");
   revealResult();
 }
@@ -286,7 +326,8 @@ function revealResult() {
 }
 
 function clearSampleSelection() {
-  for (const b of el.samples.querySelectorAll("button")) b.setAttribute("aria-pressed", "false");
+  for (const b of el.samples.querySelectorAll("button"))
+    b.setAttribute("aria-pressed", "false");
 }
 
 function setStatus(text, kind = "") {
@@ -295,7 +336,14 @@ function setStatus(text, kind = "") {
 }
 
 function hideResultParts() {
-  for (const part of [el.head, el.open, el.findings, el.guidance, el.actLabel, el.acts]) {
+  for (const part of [
+    el.head,
+    el.open,
+    el.findings,
+    el.guidance,
+    el.actLabel,
+    el.acts,
+  ]) {
     part.classList.add("hidden");
     part.replaceChildren();
   }
@@ -332,7 +380,8 @@ function renderResult(result, statusText) {
   if (result.policyUrl) domain.title = result.policyUrl;
   const alerts = document.createElement("span");
   alerts.className = "try-alerts";
-  alerts.textContent = result.alertCount === 1 ? "1 alert" : `${result.alertCount} alerts`;
+  alerts.textContent =
+    result.alertCount === 1 ? "1 alert" : `${result.alertCount} alerts`;
   el.head.append(domain, alerts);
   el.head.classList.remove("hidden");
 
@@ -375,9 +424,15 @@ function renderResult(result, statusText) {
 
   const acts = result.actions || {};
   el.acts.append(
-    acts.policyUrl && isHttpUrl(acts.policyUrl) ? linkButton(acts.policyUrl, "Open policy") : disabledButton("Open policy", "No policy link for pasted text."),
-    acts.optOutUrl && isHttpUrl(acts.optOutUrl) ? linkButton(acts.optOutUrl, "Opt out") : disabledButton("Opt out", "No opt-out link found."),
-    acts.contactEmail ? copyButton(acts.contactEmail) : disabledButton("Copy email", "No privacy contact email found.")
+    acts.policyUrl && isHttpUrl(acts.policyUrl)
+      ? linkButton(acts.policyUrl, "Open policy")
+      : disabledButton("Open policy", "No policy link for pasted text."),
+    acts.optOutUrl && isHttpUrl(acts.optOutUrl)
+      ? linkButton(acts.optOutUrl, "Opt out")
+      : disabledButton("Opt out", "No opt-out link found."),
+    acts.contactEmail
+      ? copyButton(acts.contactEmail)
+      : disabledButton("Copy email", "No privacy contact email found."),
   );
   el.actLabel.classList.remove("hidden");
   el.acts.classList.remove("hidden");

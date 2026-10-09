@@ -2,7 +2,11 @@
  * Offline verification of clean + rules against sample policy text.
  * Run: node scripts/verify-rules.mjs
  */
-import { htmlToPlainText, looksLikePrivacyPolicy, looksAnalyzablePolicy } from "../lib/clean.js";
+import {
+  htmlToPlainText,
+  looksLikePrivacyPolicy,
+  looksAnalyzablePolicy,
+} from "../lib/clean.js";
 import { analyzePolicy } from "../lib/rules.js";
 import { buildGuidance } from "../lib/templates.js";
 
@@ -25,9 +29,15 @@ const text = htmlToPlainText(sampleHtml);
 const { findings, actions, alertCount } = analyzePolicy(text, {
   policyUrl: "https://example.com/privacy",
   pageLinks: [
-    { href: "https://example.com/privacy-choices", text: "Your Privacy Choices" },
-    { href: "https://example.com/do-not-sell", text: "Do Not Sell My Personal Information" }
-  ]
+    {
+      href: "https://example.com/privacy-choices",
+      text: "Your Privacy Choices",
+    },
+    {
+      href: "https://example.com/do-not-sell",
+      text: "Do Not Sell My Personal Information",
+    },
+  ],
 });
 
 const required = ["collected", "used", "shared", "advertising", "choices"];
@@ -77,17 +87,20 @@ if (typeof alertCount !== "number" || alertCount !== 5) {
 
 // Placeholder email must be ignored
 const placeholderOnly = analyzePolicy(
-  "Contact us at you@domain.com for privacy questions. We collect personal information including email."
+  "Contact us at you@domain.com for privacy questions. We collect personal information including email.",
 );
 if (placeholderOnly.actions.contactEmail) {
-  console.error("EXPECTED no contactEmail for you@domain.com, got", placeholderOnly.actions.contactEmail);
+  console.error(
+    "EXPECTED no contactEmail for you@domain.com, got",
+    placeholderOnly.actions.contactEmail,
+  );
   failed++;
 } else {
   console.log("OK rejected you@domain.com");
 }
 
 const mixed = analyzePolicy(
-  "Email you@domain.com or privacy@acme.com. We collect personal information including email."
+  "Email you@domain.com or privacy@acme.com. We collect personal information including email.",
 );
 if (mixed.actions.contactEmail !== "privacy@acme.com") {
   console.error("EXPECTED privacy@acme.com, got", mixed.actions.contactEmail);
@@ -105,7 +118,9 @@ if (!guidance || guidance.length < 20) {
 }
 
 // Not specified path
-const empty = analyzePolicy("Welcome to our website. Contact support for help.");
+const empty = analyzePolicy(
+  "Welcome to our website. Contact support for help.",
+);
 for (const id of required) {
   if (empty.findings[id].found) {
     console.error("EXPECTED not specified for thin text:", id);
@@ -116,13 +131,20 @@ console.log("OK not-specified path for thin text");
 
 // Prefer verb sentences over short headings
 const headingBias = analyzePolicy(
-  "Information We Collect. We collect personal information including your email address and IP address when you use our services."
+  "Information We Collect. We collect personal information including your email address and IP address when you use our services.",
 );
 if (!headingBias.findings.collected.found) {
   console.error("EXPECTED collected hit");
   failed++;
-} else if (/^Information We Collect\.?$/i.test(headingBias.findings.collected.excerpt.trim())) {
-  console.error("EXPECTED verb sentence, got heading:", headingBias.findings.collected.excerpt);
+} else if (
+  /^Information We Collect\.?$/i.test(
+    headingBias.findings.collected.excerpt.trim(),
+  )
+) {
+  console.error(
+    "EXPECTED verb sentence, got heading:",
+    headingBias.findings.collected.excerpt,
+  );
   failed++;
 } else {
   console.log("OK excerpt prefers verb sentence over heading");
@@ -130,7 +152,7 @@ if (!headingBias.findings.collected.found) {
 
 // Skip markup leftovers
 const junk = analyzePolicy(
-  '{ "collect": true } <div class="x">nav</div> We may share your information with service providers and advertising partners.'
+  '{ "collect": true } <div class="x">nav</div> We may share your information with service providers and advertising partners.',
 );
 if (!junk.findings.shared.found) {
   console.error("EXPECTED shared despite junk nearby");
@@ -154,14 +176,23 @@ We use this information to provide our services, for analytics, and for marketin
 We may disclose information to other affiliates and service providers.
 You may opt-out of sale of personal information and request deletion of your data.
 `);
-if (!markdowny.findings.collected.found || /\|/.test(markdowny.findings.collected.excerpt || "")) {
-  console.error("EXPECTED clean collected excerpt without pipes", markdowny.findings.collected);
+if (
+  !markdowny.findings.collected.found ||
+  /\|/.test(markdowny.findings.collected.excerpt || "")
+) {
+  console.error(
+    "EXPECTED clean collected excerpt without pipes",
+    markdowny.findings.collected,
+  );
   failed++;
 } else {
   console.log("OK avoided markdown table excerpt");
 }
 if (!/Uses your data for:/i.test(markdowny.findings.used.summary || "")) {
-  console.error("EXPECTED used summary with purposes", markdowny.findings.used.summary);
+  console.error(
+    "EXPECTED used summary with purposes",
+    markdowny.findings.used.summary,
+  );
   failed++;
 } else {
   console.log("OK used one-look summary", markdowny.findings.used.summary);
@@ -169,36 +200,59 @@ if (!/Uses your data for:/i.test(markdowny.findings.used.summary || "")) {
 
 // “We do not sell” must never summarize as “may sell”, and is not a privacy choice by itself
 const noSell = analyzePolicy(
-  "We do not sell your personal information to anyone. We use targeted advertising based on search terms you enter."
+  "We do not sell your personal information to anyone. We use targeted advertising based on search terms you enter.",
 );
 if (!/^Says they do not sell/.test(noSell.findings.advertising.summary || "")) {
-  console.error("EXPECTED do-not-sell summary, got", noSell.findings.advertising.summary);
+  console.error(
+    "EXPECTED do-not-sell summary, got",
+    noSell.findings.advertising.summary,
+  );
   failed++;
 } else {
   console.log("OK negated sell →", noSell.findings.advertising.summary);
 }
 if (noSell.findings.choices.found) {
-  console.error("EXPECTED 'we do not sell' alone not to count as a choice", noSell.findings.choices);
+  console.error(
+    "EXPECTED 'we do not sell' alone not to count as a choice",
+    noSell.findings.choices,
+  );
   failed++;
 } else {
   console.log("OK 'we do not sell' is not a privacy choice");
 }
 
 const optOutLabel = analyzePolicy(
-  "Use the Do Not Sell or Share My Personal Information link to opt out of targeted advertising by partners."
+  "Use the Do Not Sell or Share My Personal Information link to opt out of targeted advertising by partners.",
 );
-if (!/^Offers a “Do Not Sell \/ Share” option/.test(optOutLabel.findings.advertising.summary || "")) {
-  console.error("EXPECTED opt-out label summary, got", optOutLabel.findings.advertising.summary);
+if (
+  !/^Offers a “Do Not Sell \/ Share” option/.test(
+    optOutLabel.findings.advertising.summary || "",
+  )
+) {
+  console.error(
+    "EXPECTED opt-out label summary, got",
+    optOutLabel.findings.advertising.summary,
+  );
   failed++;
 } else {
-  console.log("OK opt-out link label →", optOutLabel.findings.advertising.summary);
+  console.log(
+    "OK opt-out link label →",
+    optOutLabel.findings.advertising.summary,
+  );
 }
 
 const sells = analyzePolicy(
-  "We may sell your personal information to advertising partners for targeted advertising purposes."
+  "We may sell your personal information to advertising partners for targeted advertising purposes.",
 );
-if (!/^May sell personal information/.test(sells.findings.advertising.summary || "")) {
-  console.error("EXPECTED may-sell summary, got", sells.findings.advertising.summary);
+if (
+  !/^May sell personal information/.test(
+    sells.findings.advertising.summary || "",
+  )
+) {
+  console.error(
+    "EXPECTED may-sell summary, got",
+    sells.findings.advertising.summary,
+  );
   failed++;
 } else {
   console.log("OK affirmative sell →", sells.findings.advertising.summary);
@@ -206,16 +260,22 @@ if (!/^May sell personal information/.test(sells.findings.advertising.summary ||
 
 // “Sale of personal information” is not a business transfer
 if (/business transfers/.test(sells.findings.shared.summary || "")) {
-  console.error("EXPECTED no business transfers from sale-of-data wording", sells.findings.shared.summary);
+  console.error(
+    "EXPECTED no business transfers from sale-of-data wording",
+    sells.findings.shared.summary,
+  );
   failed++;
 } else {
   console.log("OK sale of data ≠ business transfer");
 }
 const merger = analyzePolicy(
-  "We may share your information with a buyer in connection with a merger or acquisition of our company."
+  "We may share your information with a buyer in connection with a merger or acquisition of our company.",
 );
 if (!/business transfers/.test(merger.findings.shared.summary || "")) {
-  console.error("EXPECTED business transfers for merger wording", merger.findings.shared.summary);
+  console.error(
+    "EXPECTED business transfers for merger wording",
+    merger.findings.shared.summary,
+  );
   failed++;
 } else {
   console.log("OK merger → business transfers");
@@ -271,13 +331,22 @@ if (/aflag|--fds-|\.foo\s*\{/i.test(cssLeak)) {
   console.error("EXPECTED style/script stripped, got", cssLeak.slice(0, 200));
   failed++;
 } else if (!looksLikePrivacyPolicy(cssLeak)) {
-  console.error("EXPECTED cleaned policy to pass looksLikePrivacyPolicy", cssLeak.length);
+  console.error(
+    "EXPECTED cleaned policy to pass looksLikePrivacyPolicy",
+    cssLeak.length,
+  );
   failed++;
 } else {
   console.log("OK stripped style/script contents");
 }
 
-if (!looksAnalyzablePolicy("We collect personal information. You may opt-out of sale. Privacy statement overview. ".repeat(20))) {
+if (
+  !looksAnalyzablePolicy(
+    "We collect personal information. You may opt-out of sale. Privacy statement overview. ".repeat(
+      20,
+    ),
+  )
+) {
   console.error("EXPECTED looksAnalyzablePolicy soft gate");
   failed++;
 } else {

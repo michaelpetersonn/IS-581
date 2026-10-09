@@ -9,27 +9,60 @@ const SIGNALS = {
     { re: /\be-?mail\b/i, label: "email" },
     { re: /\bphone|telephone|mobile number\b/i, label: "phone number" },
     { re: /\bip address(es)?\b/i, label: "IP address" },
-    { re: /\bdevice (id|identifier|identifiers|information)\b/i, label: "device IDs" },
+    {
+      re: /\bdevice (id|identifier|identifiers|information)\b/i,
+      label: "device IDs",
+    },
     { re: /\bcookies?\b/i, label: "cookies" },
-    { re: /\blocation (data|information)|precise location|geolocation\b/i, label: "location" },
-    { re: /\bpayment|credit card|debit card|financial\b/i, label: "payment info" },
+    {
+      re: /\blocation (data|information)|precise location|geolocation\b/i,
+      label: "location",
+    },
+    {
+      re: /\bpayment|credit card|debit card|financial\b/i,
+      label: "payment info",
+    },
     { re: /\bname\b/i, label: "name" },
-    { re: /\b(mailing|postal|street|home|billing)\s+address\b/i, label: "address" },
+    {
+      re: /\b(mailing|postal|street|home|billing)\s+address\b/i,
+      label: "address",
+    },
     { re: /\baccount (info|information|data)\b/i, label: "account details" },
     { re: /\bbiometric\b/i, label: "biometrics" },
-    { re: /\bpersonal (information|data)\b/i, label: "personal information" }
+    { re: /\bpersonal (information|data)\b/i, label: "personal information" },
   ],
   used: [
-    { re: /\b(provide|operate|deliver|maintain)\b.{0,40}\b(service|product|account|app)/i, label: "running the service" },
+    {
+      re: /\b(provide|operate|deliver|maintain)\b.{0,40}\b(service|product|account|app)/i,
+      label: "running the service",
+    },
     { re: /\bto provide\b/i, label: "running the service" },
     { re: /\banalytics|measure|statistics|usage data\b/i, label: "analytics" },
-    { re: /\bimprove|research|develop(ment)?\b/i, label: "product improvement" },
+    {
+      re: /\bimprove|research|develop(ment)?\b/i,
+      label: "product improvement",
+    },
     { re: /\bmarketing|promotional|newsletter\b/i, label: "marketing" },
-    { re: /\badvertis|personalized ads?|targeted ads?\b/i, label: "advertising" },
-    { re: /\bpersonalize|customise|customize|tailor\b/i, label: "personalization" },
-    { re: /\bsecurity|fraud|abuse|protect\b/i, label: "security & fraud prevention" },
-    { re: /\blegal|comply|law enforcement|regulation\b/i, label: "legal compliance" },
-    { re: /\bcustomer support|respond to (your )?requests?\b/i, label: "customer support" }
+    {
+      re: /\badvertis|personalized ads?|targeted ads?\b/i,
+      label: "advertising",
+    },
+    {
+      re: /\bpersonalize|customise|customize|tailor\b/i,
+      label: "personalization",
+    },
+    {
+      re: /\bsecurity|fraud|abuse|protect\b/i,
+      label: "security & fraud prevention",
+    },
+    {
+      re: /\blegal|comply|law enforcement|regulation\b/i,
+      label: "legal compliance",
+    },
+    {
+      re: /\bcustomer support|respond to (your )?requests?\b/i,
+      label: "customer support",
+    },
   ],
   shared: [
     { re: /\bservice providers?\b/i, label: "service providers" },
@@ -38,30 +71,46 @@ const SIGNALS = {
     { re: /\bbusiness partners?\b/i, label: "business partners" },
     { re: /\bthird[- ]part(y|ies)\b/i, label: "third parties" },
     { re: /\bvendors?\b/i, label: "vendors" },
-    { re: /\blaw enforcement|government\b/i, label: "law enforcement / government" },
+    {
+      re: /\blaw enforcement|government\b/i,
+      label: "law enforcement / government",
+    },
     {
       re: /\b(merger|acquisition|bankruptcy|sale of (all or (a )?part of )?(our |the )?(company|business|assets))\b/i,
-      label: "business transfers"
-    }
+      label: "business transfers",
+    },
   ],
   // Sell / do-not-sell stance is decided by sellStance(), which understands negation.
   advertising: [
-    { re: /\bshare.{0,40}(for )?(cross[- ]context|advertising)\b/i, label: "sharing for advertising" },
-    { re: /\btargeted advertising|interest[- ]based|behavioral advertising|personalized ads?\b/i, label: "targeted / personalized ads" },
-    { re: /\badvertising partners?\b/i, label: "advertising partners" }
+    {
+      re: /\bshare.{0,40}(for )?(cross[- ]context|advertising)\b/i,
+      label: "sharing for advertising",
+    },
+    {
+      re: /\btargeted advertising|interest[- ]based|behavioral advertising|personalized ads?\b/i,
+      label: "targeted / personalized ads",
+    },
+    { re: /\badvertising partners?\b/i, label: "advertising partners" },
   ],
   choices: [
     { re: /\bopt[- ]out\b/i, label: "opt out" },
-    { re: /\b(request )?deletion|right to (delete|erasure)|delete (your )?(account|data)\b/i, label: "request deletion" },
+    {
+      re: /\b(request )?deletion|right to (delete|erasure)|delete (your )?(account|data)\b/i,
+      label: "request deletion",
+    },
     { re: /\b(request )?access|right to access\b/i, label: "access your data" },
     { re: /\bcorrect|rectif(y|ication)\b/i, label: "correct your data" },
-    { re: /\byour privacy choices\b|\bdo not sell (or share )?my\b/i, label: "privacy choices / do-not-sell" },
-    { re: /\bcookie (settings|preferences)\b/i, label: "cookie settings" }
-  ]
+    {
+      re: /\byour privacy choices\b|\bdo not sell (or share )?my\b/i,
+      label: "privacy choices / do-not-sell",
+    },
+    { re: /\bcookie (settings|preferences)\b/i, label: "cookie settings" },
+  ],
 };
 
 const SELL_RE = /\b(sell|sells|selling|sold)\b[^.]{0,40}\bpersonal\b/gi;
-const NEGATION_BEFORE_RE = /\b(not|never|don't|doesn't|won't|neither|nor)\b[^.]{0,20}$/i;
+const NEGATION_BEFORE_RE =
+  /\b(not|never|don't|doesn't|won't|neither|nor)\b[^.]{0,20}$/i;
 /** “Do Not Sell (or Share) My Personal Information” is a link label, not a statement either way. */
 const OPT_OUT_LABEL_BEFORE_RE = /\bdo not\s*$/i;
 const OPT_OUT_LABEL_AFTER_RE = /^\s*(or share\s+)?my\b/i;
@@ -76,8 +125,14 @@ export function sellStance(hay) {
   const text = String(hay || "");
   for (const match of text.matchAll(SELL_RE)) {
     const before = text.slice(Math.max(0, match.index - 30), match.index);
-    const after = text.slice(match.index + match[1].length, match.index + match[1].length + 20);
-    if (OPT_OUT_LABEL_BEFORE_RE.test(before) && OPT_OUT_LABEL_AFTER_RE.test(after)) {
+    const after = text.slice(
+      match.index + match[1].length,
+      match.index + match[1].length + 20,
+    );
+    if (
+      OPT_OUT_LABEL_BEFORE_RE.test(before) &&
+      OPT_OUT_LABEL_AFTER_RE.test(after)
+    ) {
       stance.hasOptOutLabel = true;
     } else if (NEGATION_BEFORE_RE.test(before)) {
       stance.deniesSelling = true;
@@ -98,11 +153,14 @@ function advertisingSummary(hay, adLabels) {
   const tail = also.length ? `; also mentions ${also.join(", ")}` : "";
 
   if (sells) {
-    const optOut = hasOptOutLabel ? ", with a “Do Not Sell / Share” option" : "";
+    const optOut = hasOptOutLabel
+      ? ", with a “Do Not Sell / Share” option"
+      : "";
     return `May sell personal information${optOut}${tail}.`;
   }
   if (hasOptOutLabel) return `Offers a “Do Not Sell / Share” option${tail}.`;
-  if (deniesSelling) return `Says they do not sell personal information${tail}.`;
+  if (deniesSelling)
+    return `Says they do not sell personal information${tail}.`;
   return also.length ? `Sale / ads: ${also.join("; ")}.` : "";
 }
 
@@ -111,7 +169,7 @@ const PREFIX = {
   used: "Uses your data for",
   shared: "May share with",
   advertising: "Sale / ads",
-  choices: "You can"
+  choices: "You can",
 };
 
 /**
@@ -122,7 +180,12 @@ const PREFIX = {
  * @param {string} [fallbackExplanation]
  * @returns {string}
  */
-export function buildSummary(categoryId, excerpt, fullText = "", fallbackExplanation = "") {
+export function buildSummary(
+  categoryId,
+  excerpt,
+  fullText = "",
+  fallbackExplanation = "",
+) {
   const signals = SIGNALS[categoryId];
   if (!signals) return fallbackExplanation || "Not clearly specified";
 
@@ -145,7 +208,10 @@ export function buildSummary(categoryId, excerpt, fullText = "", fallbackExplana
   }
 
   if (!labels.length) {
-    return fallbackExplanation || "Mentioned in the policy, but details are unclear in one look.";
+    return (
+      fallbackExplanation ||
+      "Mentioned in the policy, but details are unclear in one look."
+    );
   }
 
   const prefix = PREFIX[categoryId] || "Policy mentions";

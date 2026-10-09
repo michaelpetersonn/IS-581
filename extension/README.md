@@ -43,11 +43,11 @@ See [`STORE.md`](STORE.md) for the publish checklist, permission justifications,
 
 ## Permissions
 
-| Permission | Why |
-| --- | --- |
-| `activeTab` | Access the current tab only when you open the popup. Same-site policy pages are downloaded from inside that tab. |
-| `scripting` | Run the bundled discover script (and the policy download) in that tab. |
-| `storage` | Session cache of analysis results (domain + structured findings only, ~30 minutes). |
+| Permission                             | Why                                                                                                                                                                     |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `activeTab`                            | Access the current tab only when you open the popup. Same-site policy pages are downloaded from inside that tab.                                                        |
+| `scripting`                            | Run the bundled discover script (and the policy download) in that tab.                                                                                                  |
+| `storage`                              | Session cache of analysis results (domain + structured findings only, ~30 minutes).                                                                                     |
 | Optional host access (`http(s)://*/*`) | Not granted at install. When a policy lives on another host (e.g. `policies.google.com`), the popup shows **Allow c3nsor to read …** and Chrome asks for that one host. |
 
 Policy download logic lives in [`lib/policy-access.js`](lib/policy-access.js) and is covered by `scripts/verify-access.mjs` (including a check that the manifest never requests every site at install).

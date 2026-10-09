@@ -15,7 +15,7 @@ const RULES = {
     /ip address/i,
     /email address/i,
     /cookies? (and|to) /i,
-    /location (data|information)/i
+    /location (data|information)/i,
   ],
   used: [
     /we use (your |this |the )?(information|data|personal)/i,
@@ -23,7 +23,7 @@ const RULES = {
     /purposes? of (processing|collection|use)/i,
     /to (provide|improve|personalize|operate)/i,
     /for (marketing|analytics|advertising|research)/i,
-    /how we use/i
+    /how we use/i,
   ],
   shared: [
     /we (may )?share/i,
@@ -33,7 +33,7 @@ const RULES = {
     /disclose(s|d)? (your |personal )?(information|data)/i,
     /affiliates?/i,
     /business partners?/i,
-    /with our partners/i
+    /with our partners/i,
   ],
   advertising: [
     /targeted advertising/i,
@@ -45,7 +45,7 @@ const RULES = {
     /share.*for (cross[- ]context|advertising)/i,
     /advertising partners?/i,
     /behavioral advertising/i,
-    /we (do not|don't) (rent or )?sell/i
+    /we (do not|don't) (rent or )?sell/i,
   ],
   choices: [
     /opt[- ]out/i,
@@ -57,8 +57,8 @@ const RULES = {
     /right to (access|delete|erasure|opt)/i,
     /privacy@/i,
     /contact us.*(privacy|data)/i,
-    /ccpa|gdpr|cpra/i
-  ]
+    /ccpa|gdpr|cpra/i,
+  ],
 };
 
 const ACTION_URL_PATTERNS = [
@@ -69,12 +69,13 @@ const ACTION_URL_PATTERNS = [
   /data[- ]?request/i,
   /dsar/i,
   /privacy[- ]?request/i,
-  /cookie[- ]?settings/i
+  /cookie[- ]?settings/i,
 ];
 
 const EMAIL_RE = /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/gi;
 
-const PLACEHOLDER_LOCAL = /^(you|your|email|name|user|example|test|me|someone|username|firstname|lastname)$/i;
+const PLACEHOLDER_LOCAL =
+  /^(you|your|email|name|user|example|test|me|someone|username|firstname|lastname)$/i;
 const PLACEHOLDER_DOMAIN =
   /^(domain\.com|email\.com|test\.com|localhost|example\.org|example\.net)$/i;
 const PREFERRED_LOCAL = /^(privacy|dpo|legal|data|compliance|gdpr)/i;
@@ -123,7 +124,8 @@ function isJunkExcerpt(sentence) {
   if (/<\/?[a-z][\w:-]*\b/i.test(s) && !hasVerbSignal(s)) return true;
   if (/^\s*[\w.-]+\s*:\s*["'[{]/.test(s) && !hasVerbSignal(s)) return true;
   // Short title-case headings without a verb ("Information We Collect")
-  if (s.length < 48 && !/[.!?]/.test(s) && /^[A-Z][\w\s,'/-]+$/.test(s)) return true;
+  if (s.length < 48 && !/[.!?]/.test(s) && /^[A-Z][\w\s,'/-]+$/.test(s))
+    return true;
   return false;
 }
 
@@ -134,10 +136,10 @@ function isJunkExcerpt(sentence) {
 function hasVerbSignal(sentence) {
   return (
     /\b(we|you|our|they|company|site|service|services|providers?)\s+(collect|use|share|disclose|sell|may|do|don't|does|will|process|transfer|obtain)/i.test(
-      sentence
+      sentence,
     ) ||
     /\b(is|are|may be|will be|can be)\s+(collected|used|shared|sold|disclosed|processed)/i.test(
-      sentence
+      sentence,
     )
   );
 }
@@ -222,7 +224,7 @@ export function analyzePolicy(text, extras = {}) {
         category.id,
         excerpt,
         text,
-        category.explanation
+        category.explanation,
       );
       findings[category.id] = {
         found: true,
@@ -230,7 +232,7 @@ export function analyzePolicy(text, extras = {}) {
         explanation: category.explanation,
         summary,
         excerpt,
-        status: "found"
+        status: "found",
       };
     } else {
       findings[category.id] = {
@@ -239,7 +241,7 @@ export function analyzePolicy(text, extras = {}) {
         explanation: NOT_SPECIFIED,
         summary: NOT_SPECIFIED,
         excerpt: null,
-        status: "not_specified"
+        status: "not_specified",
       };
     }
   }
@@ -258,7 +260,7 @@ function extractActions(text, extras) {
   const actions = {
     policyUrl: extras.policyUrl || null,
     optOutUrl: null,
-    contactEmail: null
+    contactEmail: null,
   };
 
   const links = extras.pageLinks || [];

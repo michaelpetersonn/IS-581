@@ -6,32 +6,32 @@ export const CATEGORIES = [
     id: "collected",
     label: "What data is collected",
     explanation:
-      "This policy appears to describe personal or device information the site may collect about you."
+      "This policy appears to describe personal or device information the site may collect about you.",
   },
   {
     id: "used",
     label: "How the data is used",
     explanation:
-      "This policy appears to describe purposes for using information it collects (for example accounts, analytics, or advertising)."
+      "This policy appears to describe purposes for using information it collects (for example accounts, analytics, or advertising).",
   },
   {
     id: "shared",
     label: "Who the data is shared with",
     explanation:
-      "This policy appears to describe sharing information with partners, vendors, or other third parties."
+      "This policy appears to describe sharing information with partners, vendors, or other third parties.",
   },
   {
     id: "advertising",
     label: "Mentions sale/sharing (including “we do not sell”)",
     explanation:
-      "This policy appears to mention advertising, targeted ads, or selling/sharing personal information — including statements that the company does not sell data."
+      "This policy appears to mention advertising, targeted ads, or selling/sharing personal information — including statements that the company does not sell data.",
   },
   {
     id: "choices",
     label: "Access, opt-out, or deletion choices",
     explanation:
-      "This policy appears to describe ways to access, correct, opt out of, or delete your information."
-  }
+      "This policy appears to describe ways to access, correct, opt out of, or delete your information.",
+  },
 ];
 
 export const NOT_SPECIFIED = "Not clearly specified";
@@ -48,22 +48,22 @@ export function buildGuidance(findings) {
 
   if (findings.advertising?.found && !onlyDeniesSelling) {
     tips.push(
-      "Consider using any “Do Not Sell / Share” or “Your Privacy Choices” link before creating an account."
+      "Consider using any “Do Not Sell / Share” or “Your Privacy Choices” link before creating an account.",
     );
   }
   if (findings.shared?.found) {
     tips.push(
-      "Review who receives your data if you plan to sign up or submit personal details."
+      "Review who receives your data if you plan to sign up or submit personal details.",
     );
   }
   if (findings.choices?.found) {
     tips.push(
-      "You may have access, opt-out, or deletion options — open the links below when available."
+      "You may have access, opt-out, or deletion options — open the links below when available.",
     );
   }
   if (findings.collected?.found && !findings.choices?.found) {
     tips.push(
-      "The policy describes collection but may not clearly explain how to control it — read carefully before you agree."
+      "The policy describes collection but may not clearly explain how to control it — read carefully before you agree.",
     );
   }
 

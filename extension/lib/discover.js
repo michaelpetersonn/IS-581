@@ -21,7 +21,7 @@ const COMMON_PATHS = [
   "/company/privacy",
   "/en/privacy",
   "/en-us/privacy",
-  "/privacy/index.html"
+  "/privacy/index.html",
 ];
 
 /**
@@ -48,7 +48,11 @@ export function discoverPrivacyLinks() {
       const key = url.href.split("#")[0];
       if (seen.has(key)) return;
       seen.add(key);
-      candidates.push({ href: url.href, text: (text || "").trim().slice(0, 120), score });
+      candidates.push({
+        href: url.href,
+        text: (text || "").trim().slice(0, 120),
+        score,
+      });
     } catch {
       /* ignore bad URLs */
     }
@@ -67,7 +71,11 @@ export function discoverPrivacyLinks() {
     if (/\/privacy([-_]?policy)?\/?$/i.test(href)) score += 2;
 
     if (/cookie/i.test(trimmed) && !/privacy/i.test(trimmed)) score -= 4;
-    if (/cookie/i.test(href) && !/privacy/i.test(href) && !/privacy/i.test(trimmed)) {
+    if (
+      /cookie/i.test(href) &&
+      !/privacy/i.test(href) &&
+      !/privacy/i.test(trimmed)
+    ) {
       score -= 3;
     }
 
@@ -75,7 +83,9 @@ export function discoverPrivacyLinks() {
       const url = new URL(href, origin);
       const host = url.hostname.replace(/^www\./, "");
       const sameOrigin =
-        host === pageHost || host.endsWith("." + pageHost) || pageHost.endsWith("." + host);
+        host === pageHost ||
+        host.endsWith("." + pageHost) ||
+        pageHost.endsWith("." + host);
       if (sameOrigin) score += 3;
       else score -= 2;
       if (url.protocol === "https:") score += 1;
@@ -88,7 +98,6 @@ export function discoverPrivacyLinks() {
   }
 
   document.querySelectorAll("a[href]").forEach((a) => {
-    const href = a.getAttribute("href") || "";
     const text = (a.textContent || "").replace(/\s+/g, " ").trim();
     pageLinks.push({ href: a.href, text });
 
@@ -106,14 +115,14 @@ export function discoverPrivacyLinks() {
     candidates: candidates.slice(0, 12),
     pageLinks: pageLinks.filter((l) => ACTION_LIKE(l)).slice(0, 40),
     origin,
-    pageUrl
+    pageUrl,
   };
 }
 
 function ACTION_LIKE(link) {
   const hay = `${link.text} ${link.href}`;
   return /do[- ]?not[- ]?sell|privacy[- ]?choices|opt[- ]?out|privacy|cookie[- ]?settings|data[- ]?request/i.test(
-    hay
+    hay,
   );
 }
 

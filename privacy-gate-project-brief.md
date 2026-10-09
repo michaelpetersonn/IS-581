@@ -90,11 +90,11 @@ Documentation: <https://developer.chrome.com/docs/extensions/reference/api/decla
 
 Use an established, maintained filter list such as EasyPrivacy for the first version. Do not attempt to create a comprehensive tracker database from scratch.
 
-| Mode | Behavior |
-| --- | --- |
-| Standard | Block known advertising and cross-site trackers. |
-| Strict | Block most third-party scripts and cookies. |
-| Custom | Let users select categories and create site exceptions. |
+| Mode     | Behavior                                                |
+| -------- | ------------------------------------------------------- |
+| Standard | Block known advertising and cross-site trackers.        |
+| Strict   | Block most third-party scripts and cookies.             |
+| Custom   | Let users select categories and create site exceptions. |
 
 The extension should show the number and categories of requests blocked without storing the user's browsing history.
 
@@ -179,17 +179,17 @@ Do not automatically submit legally significant requests in the MVP. Let the use
 
 The Public APIs repository does not contain one complete privacy-policy API. The product may combine several resources.
 
-| API or resource | Potential use |
-| --- | --- |
-| Google Safe Browsing | Check whether a site is known to be unsafe. |
-| VirusTotal | Examine domain and URL reputation. |
-| URLScan.io | Inspect services contacted by a website. |
-| AbuseIPDB | Check suspicious IP infrastructure. |
-| IP geolocation | Suggest potentially relevant privacy jurisdictions. |
-| Text-analysis or LLM API | Classify and summarize policy clauses. |
-| Screenshot API | Preserve evidence of privacy and opt-out pages. |
-| Email-validation API | Check the format or availability of a privacy contact. |
-| EasyPrivacy or similar lists | Identify and block known trackers. |
+| API or resource              | Potential use                                          |
+| ---------------------------- | ------------------------------------------------------ |
+| Google Safe Browsing         | Check whether a site is known to be unsafe.            |
+| VirusTotal                   | Examine domain and URL reputation.                     |
+| URLScan.io                   | Inspect services contacted by a website.               |
+| AbuseIPDB                    | Check suspicious IP infrastructure.                    |
+| IP geolocation               | Suggest potentially relevant privacy jurisdictions.    |
+| Text-analysis or LLM API     | Classify and summarize policy clauses.                 |
+| Screenshot API               | Preserve evidence of privacy and opt-out pages.        |
+| Email-validation API         | Check the format or availability of a privacy contact. |
+| EasyPrivacy or similar lists | Identify and block known trackers.                     |
 
 Public APIs repository: <https://github.com/public-apis/public-apis>
 

@@ -12,7 +12,7 @@ export const MAX_BYTES = 1_500_000;
  */
 export async function fetchPolicyHtml(
   url,
-  limits = { maxBytes: MAX_BYTES, timeoutMs: FETCH_TIMEOUT_MS }
+  limits = { maxBytes: MAX_BYTES, timeoutMs: FETCH_TIMEOUT_MS },
 ) {
   let parsed;
   try {
@@ -33,13 +33,13 @@ export async function fetchPolicyHtml(
       redirect: "follow",
       credentials: "omit",
       signal: controller.signal,
-      headers: { Accept: "text/html,application/xhtml+xml;q=0.9,*/*;q=0.8" }
+      headers: { Accept: "text/html,application/xhtml+xml;q=0.9,*/*;q=0.8" },
     });
 
     if (!response.ok) {
       return {
         ok: false,
-        error: `Could not download the policy (HTTP ${response.status}).`
+        error: `Could not download the policy (HTTP ${response.status}).`,
       };
     }
 
@@ -47,7 +47,7 @@ export async function fetchPolicyHtml(
     if (buffer.byteLength > limits.maxBytes) {
       return {
         ok: false,
-        error: "The privacy policy page is too large to process safely."
+        error: "The privacy policy page is too large to process safely.",
       };
     }
 
@@ -59,11 +59,15 @@ export async function fetchPolicyHtml(
     return { ok: true, html, finalUrl: response.url || parsed.href };
   } catch (err) {
     if (err?.name === "AbortError") {
-      return { ok: false, error: "Timed out while downloading the privacy policy." };
+      return {
+        ok: false,
+        error: "Timed out while downloading the privacy policy.",
+      };
     }
     return {
       ok: false,
-      error: "Could not fetch the privacy policy (blocked network, CORS, or offline)."
+      error:
+        "Could not fetch the privacy policy (blocked network, CORS, or offline).",
     };
   } finally {
     clearTimeout(timer);

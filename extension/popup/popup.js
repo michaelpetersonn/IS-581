@@ -7,7 +7,7 @@ import {
   el,
   hostOf,
   isHttpUrl,
-  shortUrl
+  shortUrl,
 } from "./render.js";
 
 const PENDING_KEY = "c3nsor:pendingPolicyUrl";
@@ -28,7 +28,7 @@ const DISPLAY_LABELS = {
   used: "How the data is used",
   shared: "Who the data is shared with",
   advertising: "Mentions sale / sharing",
-  choices: "Access, opt-out, or deletion choices"
+  choices: "Access, opt-out, or deletion choices",
 };
 
 document.getElementById("refresh-btn").addEventListener("click", () => {
@@ -46,17 +46,21 @@ document.getElementById("analyze-url-btn").addEventListener("click", () => {
   analyzeUrl(url);
 });
 
-document.getElementById("clear-cache-btn").addEventListener("click", async () => {
-  await chrome.runtime.sendMessage({ type: "CLEAR_CACHE" });
-  statusEl.textContent = "Cache cleared. Refresh to re-analyze.";
-  statusEl.className = "ext-kicker status";
-  alternativesEl.classList.add("hidden");
-});
+document
+  .getElementById("clear-cache-btn")
+  .addEventListener("click", async () => {
+    await chrome.runtime.sendMessage({ type: "CLEAR_CACHE" });
+    statusEl.textContent = "Cache cleared. Refresh to re-analyze.";
+    statusEl.className = "ext-kicker status";
+    alternativesEl.classList.add("hidden");
+  });
 
 start();
 
 async function start() {
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true }).catch(() => []);
+  const [tab] = await chrome.tabs
+    .query({ active: true, currentWindow: true })
+    .catch(() => []);
   pageUrl = tab?.url || "";
   const pending = await takePendingPolicyUrl();
   if (pending) {
@@ -82,7 +86,7 @@ async function analyzeUrl(url) {
     if (!granted) {
       showError(
         `c3nsor can only read ${hostOf(url)} if you allow it. You can still open the policy and read it yourself.`,
-        { openPolicyUrl: url }
+        { openPolicyUrl: url },
       );
       return;
     }
@@ -93,10 +97,14 @@ async function analyzeUrl(url) {
 /** @param {string} url */
 async function requestHostAccess(url) {
   // Chrome's prompt can close the popup; the next open resumes this URL.
-  chrome.storage.session.set({ [PENDING_KEY]: { url, pageUrl, at: Date.now() } }).catch(() => {});
-  let granted = false;
+  chrome.storage.session
+    .set({ [PENDING_KEY]: { url, pageUrl, at: Date.now() } })
+    .catch(() => {});
+  let granted;
   try {
-    granted = await chrome.permissions.request({ origins: [originPattern(url)] });
+    granted = await chrome.permissions.request({
+      origins: [originPattern(url)],
+    });
   } catch {
     granted = false;
   }
@@ -110,7 +118,9 @@ async function takePendingPolicyUrl() {
   if (!pending) return null;
   await chrome.storage.session.remove(PENDING_KEY).catch(() => {});
   const fresh = Date.now() - (pending.at || 0) < PENDING_TTL_MS;
-  return fresh && pending.pageUrl === pageUrl && isHttpUrl(pending.url) ? pending.url : null;
+  return fresh && pending.pageUrl === pageUrl && isHttpUrl(pending.url)
+    ? pending.url
+    : null;
 }
 
 /**
@@ -122,7 +132,7 @@ async function runAnalyze(opts) {
     const result = await chrome.runtime.sendMessage({
       type: "ANALYZE_TAB",
       force: Boolean(opts.force),
-      policyUrl: opts.policyUrl || null
+      policyUrl: opts.policyUrl || null,
     });
     if (!result?.ok) {
       showError(result?.error || "Analysis failed.", result);
@@ -130,7 +140,9 @@ async function runAnalyze(opts) {
     }
     renderResult(result);
   } catch (err) {
-    showError(err?.message || "Could not reach the extension background script.");
+    showError(
+      err?.message || "Could not reach the extension background script.",
+    );
   }
 }
 
@@ -171,7 +183,8 @@ function showError(message, detail) {
  */
 function renderAlternatives(candidates, detail) {
   const top = (candidates || []).slice(0, 4);
-  const openFallback = detail?.openPolicyUrl || detail?.policyUrl || top[0]?.href || null;
+  const openFallback =
+    detail?.openPolicyUrl || detail?.policyUrl || top[0]?.href || null;
   const access = detail?.needsPermission;
 
   if (!top.length && !openFallback && !access) {
@@ -202,7 +215,14 @@ function renderAlternatives(candidates, detail) {
     alternativesEl.appendChild(allowRow);
   }
 
-  const openBtn = openFallback && buildLink(document, openFallback, "Open privacy policy", "alt-open-primary");
+  const openBtn =
+    openFallback &&
+    buildLink(
+      document,
+      openFallback,
+      "Open privacy policy",
+      "alt-open-primary",
+    );
   if (openBtn) {
     const openRow = document.createElement("div");
     openRow.className = "alt-open-row";
@@ -230,7 +250,9 @@ function renderAlternatives(candidates, detail) {
     analyzeBtn.type = "button";
     analyzeBtn.className = "alt-btn";
     const label =
-      c.text && !c.text.startsWith("/") ? `${c.text} — ${shortUrl(c.href)}` : shortUrl(c.href);
+      c.text && !c.text.startsWith("/")
+        ? `${c.text} — ${shortUrl(c.href)}`
+        : shortUrl(c.href);
     analyzeBtn.textContent = label;
     analyzeBtn.title = `Analyze ${c.href}`;
     analyzeBtn.addEventListener("click", () => {
@@ -271,7 +293,11 @@ function renderResult(result) {
 
   metaEl.classList.remove("hidden");
   metaEl.replaceChildren(
-    ...buildMeta(document, { domain: result.domain, policyUrl: result.policyUrl, alertCount })
+    ...buildMeta(document, {
+      domain: result.domain,
+      policyUrl: result.policyUrl,
+      alertCount,
+    }),
   );
 
   findingsEl.classList.remove("hidden");
@@ -281,7 +307,9 @@ function renderResult(result) {
   for (const id of order) {
     const item = result.findings?.[id];
     if (!item) continue;
-    findingsEl.appendChild(buildFinding(document, DISPLAY_LABELS[id] || item.label, item));
+    findingsEl.appendChild(
+      buildFinding(document, DISPLAY_LABELS[id] || item.label, item),
+    );
   }
 
   if (result.guidance) {
@@ -298,7 +326,8 @@ function renderResult(result) {
   const acts = result.actions || {};
 
   actionsEl.appendChild(
-    buildLink(document, acts.policyUrl, "Open policy") || buildDisabledAction(document, "Open policy")
+    buildLink(document, acts.policyUrl, "Open policy") ||
+      buildDisabledAction(document, "Open policy"),
   );
 
   const openOptOut = buildLink(document, acts.optOutUrl, "Opt out");

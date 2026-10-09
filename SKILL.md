@@ -98,31 +98,39 @@ Use this structure for the final ready-to-paste prompt:
 
 ```markdown
 ## Context
+
 [Primary user, one job, stack, deployment target, and existing project conventions]
 
 ## Goal for this session
+
 [One complete vertical slice]
 
 ## Constraints
+
 - [Required convention, dependency, or integration]
 - [Files or behavior that must remain unchanged]
 
 ## Non-goals
+
 - [Explicitly excluded feature]
 
 ## Plan first
+
 Before writing code, propose a step-by-step plan. State assumptions, identify risks, and ask only the questions whose answers would materially change the implementation.
 
 ## Security
+
 - Keep secrets in environment variables.
 - Use validated input, safe data access, and explicit authorization checks where relevant.
 - Explain the authentication and permissions logic.
 
 ## Performance
+
 - Add pagination, indexing, or caching where the slice requires them.
 - Check for N+1 queries and unbounded work.
 
 ## Done when
+
 - [Observable acceptance criterion]
 - [Failure or authorization criterion]
 - [Verification or test criterion]

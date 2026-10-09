@@ -10,7 +10,7 @@ import {
   validateTargetUrl,
   MAX_BYTES,
   MAX_URL_LENGTH,
-  SECURITY_HEADERS
+  SECURITY_HEADERS,
 } from "./worker.js";
 
 const ORIGIN = "https://michael-peterson.com";
@@ -24,10 +24,13 @@ function proxyRequest(target, opts = {}) {
   const headers = {};
   const origin = opts.origin === undefined ? ORIGIN : opts.origin;
   if (origin) headers.Origin = origin;
-  return new Request(`https://proxy.example.workers.dev/?url=${encodeURIComponent(target)}`, {
-    method: opts.method || "GET",
-    headers
-  });
+  return new Request(
+    `https://proxy.example.workers.dev/?url=${encodeURIComponent(target)}`,
+    {
+      method: opts.method || "GET",
+      headers,
+    },
+  );
 }
 
 /** @param {Record<string, Response | (() => Response)>} routes */
@@ -44,11 +47,20 @@ function mockFetch(routes) {
 }
 
 const html = (body) =>
-  new Response(body, { status: 200, headers: { "Content-Type": "text/html; charset=utf-8" } });
+  new Response(body, {
+    status: 200,
+    headers: { "Content-Type": "text/html; charset=utf-8" },
+  });
 
 test("returns page HTML as plain text with CORS + final URL", async () => {
-  const fetchImpl = mockFetch({ "https://example.com/privacy": html("<h1>Privacy Policy</h1>") });
-  const res = await handleRequest(proxyRequest("https://example.com/privacy"), env, fetchImpl);
+  const fetchImpl = mockFetch({
+    "https://example.com/privacy": html("<h1>Privacy Policy</h1>"),
+  });
+  const res = await handleRequest(
+    proxyRequest("https://example.com/privacy"),
+    env,
+    fetchImpl,
+  );
   assert.equal(res.status, 200);
   assert.equal(await res.text(), "<h1>Privacy Policy</h1>");
   assert.equal(res.headers.get("Access-Control-Allow-Origin"), ORIGIN);
@@ -59,13 +71,19 @@ test("returns page HTML as plain text with CORS + final URL", async () => {
 test("rejects requests from other origins or with no origin", async () => {
   const fetchImpl = mockFetch({});
   const other = await handleRequest(
-    proxyRequest("https://example.com/privacy", { origin: "https://evil.example" }),
+    proxyRequest("https://example.com/privacy", {
+      origin: "https://evil.example",
+    }),
     env,
-    fetchImpl
+    fetchImpl,
   );
   assert.equal(other.status, 403);
   assert.equal(other.headers.get("Access-Control-Allow-Origin"), null);
-  const none = await handleRequest(proxyRequest("https://example.com/privacy", { origin: null }), env, fetchImpl);
+  const none = await handleRequest(
+    proxyRequest("https://example.com/privacy", { origin: null }),
+    env,
+    fetchImpl,
+  );
   assert.equal(none.status, 403);
   assert.equal(fetchImpl.calls.length, 0);
 });
@@ -82,21 +100,28 @@ test("blocks internal, IP-literal, credentialed, and non-default-port targets", 
     "https://user:pass@example.com/",
     "https://example.com:8443/privacy",
     "file:///etc/passwd",
-    "javascript:alert(1)"
+    "javascript:alert(1)",
   ]) {
     assert.throws(() => validateTargetUrl(bad), undefined, bad);
   }
-  assert.equal(validateTargetUrl("https://example.com/privacy#top").href, "https://example.com/privacy");
+  assert.equal(
+    validateTargetUrl("https://example.com/privacy#top").href,
+    "https://example.com/privacy",
+  );
 });
 
 test("re-validates every redirect hop", async () => {
   const fetchImpl = mockFetch({
     "https://example.com/privacy": new Response(null, {
       status: 302,
-      headers: { Location: "http://127.0.0.1/admin" }
-    })
+      headers: { Location: "http://127.0.0.1/admin" },
+    }),
   });
-  const res = await handleRequest(proxyRequest("https://example.com/privacy"), env, fetchImpl);
+  const res = await handleRequest(
+    proxyRequest("https://example.com/privacy"),
+    env,
+    fetchImpl,
+  );
   assert.equal(res.status, 400);
   assert.equal((await res.json()).code, "bad_redirect");
   assert.deepEqual(fetchImpl.calls, ["https://example.com/privacy"]);
@@ -104,10 +129,18 @@ test("re-validates every redirect hop", async () => {
 
 test("blocked targets return a machine-readable code", async () => {
   const fetchImpl = mockFetch({});
-  const host = await handleRequest(proxyRequest("http://127.0.0.1/"), env, fetchImpl);
+  const host = await handleRequest(
+    proxyRequest("http://127.0.0.1/"),
+    env,
+    fetchImpl,
+  );
   assert.equal(host.status, 400);
   assert.equal((await host.json()).code, "blocked_host");
-  const port = await handleRequest(proxyRequest("https://example.com:8443/"), env, fetchImpl);
+  const port = await handleRequest(
+    proxyRequest("https://example.com:8443/"),
+    env,
+    fetchImpl,
+  );
   assert.equal(port.status, 400);
   assert.equal((await port.json()).code, "invalid_url");
   assert.equal(fetchImpl.calls.length, 0);
@@ -117,34 +150,53 @@ test("follows safe redirects and reports the final URL", async () => {
   const fetchImpl = mockFetch({
     "https://example.com/privacy": new Response(null, {
       status: 301,
-      headers: { Location: "/legal/privacy-policy" }
+      headers: { Location: "/legal/privacy-policy" },
     }),
-    "https://example.com/legal/privacy-policy": html("policy")
+    "https://example.com/legal/privacy-policy": html("policy"),
   });
-  const res = await handleRequest(proxyRequest("https://example.com/privacy"), env, fetchImpl);
+  const res = await handleRequest(
+    proxyRequest("https://example.com/privacy"),
+    env,
+    fetchImpl,
+  );
   assert.equal(res.status, 200);
-  assert.equal(res.headers.get("X-Final-Url"), "https://example.com/legal/privacy-policy");
+  assert.equal(
+    res.headers.get("X-Final-Url"),
+    "https://example.com/legal/privacy-policy",
+  );
 });
 
 test("rejects non-HTML content and oversized pages", async () => {
   const fetchImpl = mockFetch({
     "https://example.com/file.pdf": new Response("%PDF", {
       status: 200,
-      headers: { "Content-Type": "application/pdf" }
+      headers: { "Content-Type": "application/pdf" },
     }),
-    "https://example.com/huge": () => html("x".repeat(MAX_BYTES + 1))
+    "https://example.com/huge": () => html("x".repeat(MAX_BYTES + 1)),
   });
-  const pdf = await handleRequest(proxyRequest("https://example.com/file.pdf"), env, fetchImpl);
+  const pdf = await handleRequest(
+    proxyRequest("https://example.com/file.pdf"),
+    env,
+    fetchImpl,
+  );
   assert.equal(pdf.status, 415);
   assert.equal((await pdf.json()).code, "not_html");
-  const huge = await handleRequest(proxyRequest("https://example.com/huge"), env, fetchImpl);
+  const huge = await handleRequest(
+    proxyRequest("https://example.com/huge"),
+    env,
+    fetchImpl,
+  );
   assert.equal(huge.status, 413);
   assert.equal((await huge.json()).code, "too_large");
 });
 
 test("upstream 404 becomes 502 not_found with the original status as data", async () => {
   const fetchImpl = mockFetch({});
-  const res = await handleRequest(proxyRequest("https://example.com/missing"), env, fetchImpl);
+  const res = await handleRequest(
+    proxyRequest("https://example.com/missing"),
+    env,
+    fetchImpl,
+  );
   assert.equal(res.status, 502);
   assert.equal(res.headers.get("Access-Control-Allow-Origin"), ORIGIN);
   const body = await res.json();
@@ -155,13 +207,23 @@ test("upstream 404 becomes 502 not_found with the original status as data", asyn
 
 test("Cloudflare DNS/origin errors (530, 52x) become unreachable or timeout, never passed through", async () => {
   const fetchImpl = mockFetch({
-    "https://no-such-site.example/": new Response("error code: 1016", { status: 530 }),
-    "https://slow.example/": new Response("", { status: 522 })
+    "https://no-such-site.example/": new Response("error code: 1016", {
+      status: 530,
+    }),
+    "https://slow.example/": new Response("", { status: 522 }),
   });
-  const dns = await handleRequest(proxyRequest("https://no-such-site.example/"), env, fetchImpl);
+  const dns = await handleRequest(
+    proxyRequest("https://no-such-site.example/"),
+    env,
+    fetchImpl,
+  );
   assert.equal(dns.status, 502);
   assert.equal((await dns.json()).code, "unreachable");
-  const slow = await handleRequest(proxyRequest("https://slow.example/"), env, fetchImpl);
+  const slow = await handleRequest(
+    proxyRequest("https://slow.example/"),
+    env,
+    fetchImpl,
+  );
   assert.equal(slow.status, 504);
   assert.equal((await slow.json()).code, "timeout");
 });
@@ -173,19 +235,28 @@ test("upstreamStatusError classifies site responses", () => {
   assert.equal(upstreamStatusError(503).code, "upstream_error");
   assert.equal(upstreamStatusError(524).code, "timeout");
   assert.equal(upstreamStatusError(521).code, "unreachable");
-  for (const s of [403, 404, 503, 530]) assert.equal(upstreamStatusError(s).status, 502);
+  for (const s of [403, 404, 503, 530])
+    assert.equal(upstreamStatusError(s).status, 502);
 });
 
 test("network failures and timeouts map to unreachable (502) and timeout (504)", async () => {
-  const refused = await handleRequest(proxyRequest("https://example.com/"), env, async () => {
-    throw new TypeError("Network connection lost.");
-  });
+  const refused = await handleRequest(
+    proxyRequest("https://example.com/"),
+    env,
+    async () => {
+      throw new TypeError("Network connection lost.");
+    },
+  );
   assert.equal(refused.status, 502);
   assert.equal((await refused.json()).code, "unreachable");
 
-  const timedOut = await handleRequest(proxyRequest("https://example.com/"), env, async () => {
-    throw new DOMException("The operation was aborted.", "AbortError");
-  });
+  const timedOut = await handleRequest(
+    proxyRequest("https://example.com/"),
+    env,
+    async () => {
+      throw new DOMException("The operation was aborted.", "AbortError");
+    },
+  );
   assert.equal(timedOut.status, 504);
   assert.equal((await timedOut.json()).code, "timeout");
 });
@@ -193,14 +264,18 @@ test("network failures and timeouts map to unreachable (502) and timeout (504)",
 test("only GET and OPTIONS are allowed", async () => {
   const fetchImpl = mockFetch({});
   for (const method of ["POST", "PUT", "PATCH", "DELETE", "HEAD"]) {
-    const res = await handleRequest(proxyRequest("https://example.com/privacy", { method }), env, fetchImpl);
+    const res = await handleRequest(
+      proxyRequest("https://example.com/privacy", { method }),
+      env,
+      fetchImpl,
+    );
     assert.equal(res.status, 405, method);
     assert.equal(res.headers.get("Allow"), "GET, OPTIONS", method);
   }
   const preflight = await handleRequest(
     proxyRequest("https://example.com/privacy", { method: "OPTIONS" }),
     env,
-    fetchImpl
+    fetchImpl,
   );
   assert.equal(preflight.status, 204);
   assert.equal(fetchImpl.calls.length, 0);
@@ -209,7 +284,11 @@ test("only GET and OPTIONS are allowed", async () => {
 /** @param {Response} res */
 function assertSecurityHeaders(res, label) {
   assert.equal(res.headers.get("X-Content-Type-Options"), "nosniff", label);
-  assert.equal(res.headers.get("Content-Security-Policy"), "default-src 'none'; frame-ancestors 'none'", label);
+  assert.equal(
+    res.headers.get("Content-Security-Policy"),
+    "default-src 'none'; frame-ancestors 'none'",
+    label,
+  );
   assert.equal(res.headers.get("Referrer-Policy"), "no-referrer", label);
 }
 
@@ -217,25 +296,51 @@ test("security headers are on every response, and errors are never cached", asyn
   assert.deepEqual(Object.keys(SECURITY_HEADERS).sort(), [
     "Content-Security-Policy",
     "Referrer-Policy",
-    "X-Content-Type-Options"
+    "X-Content-Type-Options",
   ]);
-  const fetchImpl = mockFetch({ "https://example.com/privacy": html("<script>alert(1)</script>") });
-  const ok = await handleRequest(proxyRequest("https://example.com/privacy"), env, fetchImpl);
+  const fetchImpl = mockFetch({
+    "https://example.com/privacy": html("<script>alert(1)</script>"),
+  });
+  const ok = await handleRequest(
+    proxyRequest("https://example.com/privacy"),
+    env,
+    fetchImpl,
+  );
   assertSecurityHeaders(ok, "200");
   assert.equal(ok.headers.get("Cache-Control"), "public, max-age=3600");
 
   const responses = {
-    forbidden: await handleRequest(proxyRequest("https://example.com/", { origin: "https://evil.example" }), env, fetchImpl),
-    badUrl: await handleRequest(proxyRequest("http://127.0.0.1/"), env, fetchImpl),
-    upstream: await handleRequest(proxyRequest("https://example.com/missing"), env, fetchImpl),
-    method: await handleRequest(proxyRequest("https://example.com/", { method: "POST" }), env, fetchImpl)
+    forbidden: await handleRequest(
+      proxyRequest("https://example.com/", { origin: "https://evil.example" }),
+      env,
+      fetchImpl,
+    ),
+    badUrl: await handleRequest(
+      proxyRequest("http://127.0.0.1/"),
+      env,
+      fetchImpl,
+    ),
+    upstream: await handleRequest(
+      proxyRequest("https://example.com/missing"),
+      env,
+      fetchImpl,
+    ),
+    method: await handleRequest(
+      proxyRequest("https://example.com/", { method: "POST" }),
+      env,
+      fetchImpl,
+    ),
   };
   for (const [label, res] of Object.entries(responses)) {
     assertSecurityHeaders(res, label);
     assert.equal(res.headers.get("Cache-Control"), "no-store", label);
     assert.match(res.headers.get("Content-Type"), /^application\/json/, label);
   }
-  const preflight = await handleRequest(proxyRequest("https://example.com/", { method: "OPTIONS" }), env, fetchImpl);
+  const preflight = await handleRequest(
+    proxyRequest("https://example.com/", { method: "OPTIONS" }),
+    env,
+    fetchImpl,
+  );
   assertSecurityHeaders(preflight, "204");
 });
 
@@ -254,7 +359,13 @@ test("caps the url parameter length", async () => {
 
 test("rejects non-http(s) schemes and a missing url before fetching", async () => {
   const fetchImpl = mockFetch({});
-  for (const bad of ["javascript:alert(1)", "data:text/html,<script>alert(1)</script>", "ftp://example.com/", "file:///etc/passwd", ""]) {
+  for (const bad of [
+    "javascript:alert(1)",
+    "data:text/html,<script>alert(1)</script>",
+    "ftp://example.com/",
+    "file:///etc/passwd",
+    "",
+  ]) {
     const res = await handleRequest(proxyRequest(bad), env, fetchImpl);
     assert.equal(res.status, 400, bad);
     assert.equal((await res.json()).code, "invalid_url", bad);
@@ -266,10 +377,16 @@ test("redirects to overly long URLs are blocked", async () => {
   const fetchImpl = mockFetch({
     "https://example.com/privacy": new Response(null, {
       status: 302,
-      headers: { Location: `https://example.com/${"b".repeat(MAX_URL_LENGTH)}` }
-    })
+      headers: {
+        Location: `https://example.com/${"b".repeat(MAX_URL_LENGTH)}`,
+      },
+    }),
   });
-  const res = await handleRequest(proxyRequest("https://example.com/privacy"), env, fetchImpl);
+  const res = await handleRequest(
+    proxyRequest("https://example.com/privacy"),
+    env,
+    fetchImpl,
+  );
   assert.equal(res.status, 400);
   assert.equal((await res.json()).code, "bad_redirect");
   assert.equal(fetchImpl.calls.length, 1);

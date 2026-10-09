@@ -63,7 +63,7 @@ export function createPolicyFetcher(deps) {
       origin: pattern,
       host,
       url,
-      error: `This site’s privacy policy is on ${host}. Allow c3nsor to read it.`
+      error: `This site’s privacy policy is on ${host}. Allow c3nsor to read it.`,
     };
   };
 }

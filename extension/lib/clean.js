@@ -16,7 +16,10 @@ export function htmlToPlainText(html) {
     .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
     .replace(/<noscript\b[^>]*>[\s\S]*?<\/noscript>/gi, " ")
     .replace(/<svg\b[^>]*>[\s\S]*?<\/svg>/gi, " ")
-    .replace(/<(nav|header|footer|aside|form|iframe)\b[^>]*>[\s\S]*?<\/\1>/gi, " ")
+    .replace(
+      /<(nav|header|footer|aside|form|iframe)\b[^>]*>[\s\S]*?<\/\1>/gi,
+      " ",
+    )
     .replace(/<br\s*\/?>/gi, "\n")
     .replace(/<\/(p|div|li|h[1-6]|tr|section|article)>/gi, "\n")
     .replace(/<[^>]+>/g, " ")
@@ -87,7 +90,7 @@ const LEGAL_SIGNALS = [
   /\bhow we use\b/i,
   /\bdata\s+protection\b/i,
   /\bprivacy\s+(policy|notice|statement|center)\b/i,
-  /\b(disclose|share)\s+(your |personal )?(information|data)\b/i
+  /\b(disclose|share)\s+(your |personal )?(information|data)\b/i,
 ];
 
 /**
@@ -113,8 +116,10 @@ export function looksLikePrivacyPolicy(text) {
   if (t.length < 280) return false;
 
   // SPA shells / CSS dumps (e.g. Meta privacy center HTML)
-  if ((t.match(/--[a-z0-9-]+:|#\d{3,}|:root/gi) || []).length > 40) return false;
-  if (/__fb-light-mode|--fds-/i.test(t) && !/we collect personal/i.test(t)) return false;
+  if ((t.match(/--[a-z0-9-]+:|#\d{3,}|:root/gi) || []).length > 40)
+    return false;
+  if (/__fb-light-mode|--fds-/i.test(t) && !/we collect personal/i.test(t))
+    return false;
 
   const marketingHits = [
     /\bget access\b/i,
@@ -122,7 +127,7 @@ export function looksLikePrivacyPolicy(text) {
     /\btake control\b/i,
     /\bearly[- ]access\b/i,
     /\bwaitlist\b/i,
-    /\bhow it works\b/i
+    /\bhow it works\b/i,
   ].filter((re) => re.test(t)).length;
 
   const hasPolicyTitle =
@@ -133,7 +138,13 @@ export function looksLikePrivacyPolicy(text) {
   const legalHits = countLegalSignals(t);
 
   if (hasPolicyTitle && legalHits >= 3 && t.length >= 280) return true;
-  if (hasPolicyTitle && legalHits >= 2 && marketingHits <= 2 && t.length >= 1500) return true;
+  if (
+    hasPolicyTitle &&
+    legalHits >= 2 &&
+    marketingHits <= 2 &&
+    t.length >= 1500
+  )
+    return true;
   if (legalHits >= 4 && marketingHits <= 1 && t.length >= 400) return true;
   if (legalHits >= 5 && marketingHits <= 2 && t.length >= 400) return true;
   return false;
@@ -149,6 +160,7 @@ export function looksAnalyzablePolicy(text) {
   if (looksLikePrivacyPolicy(text)) return true;
   const t = String(text || "").trim();
   if (t.length < 500) return false;
-  if ((t.match(/--[a-z0-9-]+:|#\d{3,}|:root/gi) || []).length > 40) return false;
+  if ((t.match(/--[a-z0-9-]+:|#\d{3,}|:root/gi) || []).length > 40)
+    return false;
   return countLegalSignals(t) >= 2;
 }
