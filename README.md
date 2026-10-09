@@ -2,11 +2,20 @@
 
 Website and Chrome extension for **c3nsor**, which shows people what a site’s privacy policy says about their data before they sign up.
 
-| Folder | What it is |
-| --- | --- |
-| [`docs/`](docs/) | GitHub Pages site: home, Extension page, **Try it** web demo, privacy policy |
+| Folder                     | What it is                                                                                |
+| -------------------------- | ----------------------------------------------------------------------------------------- |
+| [`docs/`](docs/)           | GitHub Pages site: home, Extension page, **Try it** web demo, privacy policy              |
 | [`extension/`](extension/) | Chrome MV3 extension (rules-based, local analysis). See its [README](extension/README.md) |
-| [`proxy/`](proxy/) | Cloudflare Worker that lets the web demo download policy pages for live URL analysis |
+| [`proxy/`](proxy/)         | Cloudflare Worker that lets the web demo download policy pages for live URL analysis      |
+| [`testing/`](testing/)     | User-testing kit for the MVP (metrics, session script, survey, report template)           |
+
+## Development
+
+New developers start with the [Tech Employee Playbook](https://michael-peterson.com/c3nsor-playbook/). In short:
+
+- **Environment:** open the repo in VS Code and run **Dev Containers: Reopen in Container** ([`.devcontainer/devcontainer.json`](.devcontainer/devcontainer.json) pins Node 22.21.0 and installs ESLint, Prettier, and Claude Code). Without a container, use Node from [`.nvmrc`](.nvmrc) and run `npm ci && npm --prefix proxy ci`.
+- **Checks:** `npm run ci` runs ESLint, the Prettier check, all tests (`npm test`: extension rules plus 41 extension tests and 16 proxy tests), and `npm audit` at the high level. CI runs the same job, named `checks`, on every pull request and push to `main`.
+- **Workflow:** GitHub Flow with squash merges into a protected `main`; work is tracked on the [Trello board](https://trello.com/b/SpwkYnNw/c3nsor). Claude Code guidance and permissions live in [`CLAUDE.md`](CLAUDE.md) and [`.claude/settings.json`](.claude/settings.json).
 
 ## Sharing with testers
 
@@ -14,11 +23,16 @@ Website and Chrome extension for **c3nsor**, which shows people what a site’s 
 - **Download:** the Extension page links `downloads/c3nsor-extension.zip` plus 2-minute install steps.
 - **Chrome Web Store (unlisted):** checklist and paste-ready listing in [`extension/STORE.md`](extension/STORE.md).
 
+## User testing
+
+[`testing/`](testing/README.md) has the moderated user-testing kit for the MVP: readiness checklist, key metrics, recruiting, session script, survey, results log, and the learnings-and-tweaks report template. Testers use the Try it page by default; the extension is an optional track. Metrics come from sessions and a survey only; c3nsor has no telemetry.
+
 ## GitHub Pages
 
 The site deploys with GitHub Actions ([`.github/workflows/pages.yml`](.github/workflows/pages.yml)) on every push to `main`. In repo **Settings → Pages**, Source must be **GitHub Actions**.
 
-The workflow runs the analyzer checks, then `npm run build:web` in `extension/`, which:
+The `checks` job (lint, format check, tests, audit) runs first; on `main` only, the `deploy` job then runs `npm run build:web` in `extension/`, which:
+
 - copies the browser-safe analyzer modules into `docs/try/engine/`
 - builds `docs/downloads/c3nsor-extension.zip`
 
@@ -39,9 +53,10 @@ The proxy is deployed at `https://c3nsor-policy-proxy.petersonmichaelc.workers.d
 
 ```bash
 cd proxy
-npm test              # unit tests, no network
-npx wrangler login    # once per machine
-npx wrangler deploy
+npm ci               # installs the pinned Wrangler version
+npm test             # unit tests, no network
+npx wrangler login   # once per machine
+npm run deploy
 ```
 
 To use your own Cloudflare account instead, deploy the same way (the account needs a workers.dev subdomain) and put the printed `https://c3nsor-policy-proxy.<you>.workers.dev` URL in `config.js`. Set `PROXY_URL` to `""` to switch live URL analysis off.

@@ -1,21 +1,60 @@
-name: Deploy GitHub Pages
+name: CI and Pages deploy
 
 on:
   push:
+    branches: [main]
+  pull_request:
     branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: false
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  checks:
+    name: checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node (pinned in .nvmrc)
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            proxy/package-lock.json
+
+      - name: Install from lockfiles
+        run: |
+          npm ci
+          npm --prefix proxy ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Tests
+        run: npm test
+
+      - name: Dependency audit (high and critical block)
+        run: npm run audit
+
   deploy:
+    name: deploy
+    needs: checks
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -27,14 +66,10 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      - name: Setup Node
+      - name: Setup Node (pinned in .nvmrc)
         uses: actions/setup-node@v4
         with:
-          node-version: 22
-
-      - name: Verify analyzer rules
-        working-directory: extension
-        run: npm run verify
+          node-version-file: .nvmrc
 
       - name: Build web demo engine + extension zip
         working-directory: extension
