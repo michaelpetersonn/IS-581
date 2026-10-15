@@ -23,13 +23,16 @@ export default [
     },
   },
   {
-    files: ["extension/**/*.js"],
+    files: ["extension/**/*.js", "instagram-blocker/**/*.js"],
     languageOptions: {
       globals: { ...globals.browser, ...globals.webextensions },
     },
   },
   {
-    files: ["extension/background/**/*.js"],
+    files: [
+      "extension/background/**/*.js",
+      "instagram-blocker/background/**/*.js",
+    ],
     languageOptions: {
       globals: { ...globals.serviceworker, ...globals.webextensions },
     },

@@ -1,0 +1,59 @@
+:root {
+  --bg: #0e222b;
+  --ink: #f4f7f8;
+  --muted: #a8c0c9;
+  --accent: #e85d4c;
+  font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  color: var(--ink);
+  background:
+    radial-gradient(
+      90% 70% at 80% 10%,
+      rgba(232, 93, 76, 0.2),
+      transparent 50%
+    ),
+    linear-gradient(165deg, #122b36, #0e222b 60%, #183746);
+}
+
+.panel {
+  width: min(34rem, calc(100% - 2rem));
+  display: grid;
+  gap: 0.75rem;
+}
+
+.brand {
+  margin: 0;
+  color: var(--accent);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  line-height: 1.15;
+}
+
+.message {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1.05rem;
+  line-height: 1.45;
+}
+
+.hint {
+  margin: 0.5rem 0 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.4;
+}

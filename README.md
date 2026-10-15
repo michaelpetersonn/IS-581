@@ -2,19 +2,20 @@
 
 Website and Chrome extension for **c3nsor**, which shows people what a site’s privacy policy says about their data before they sign up.
 
-| Folder                     | What it is                                                                                |
-| -------------------------- | ----------------------------------------------------------------------------------------- |
-| [`docs/`](docs/)           | GitHub Pages site: home, Extension page, **Try it** web demo, privacy policy              |
-| [`extension/`](extension/) | Chrome MV3 extension (rules-based, local analysis). See its [README](extension/README.md) |
-| [`proxy/`](proxy/)         | Cloudflare Worker that lets the web demo download policy pages for live URL analysis      |
-| [`testing/`](testing/)     | User-testing kit for the MVP (metrics, session script, survey, report template)           |
+| Folder                                     | What it is                                                                                |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| [`docs/`](docs/)                           | GitHub Pages site: home, Extension page, **Try it** web demo, privacy policy              |
+| [`extension/`](extension/)                 | Chrome MV3 extension (rules-based, local analysis). See its [README](extension/README.md) |
+| [`instagram-blocker/`](instagram-blocker/) | Optional Chrome MV3 extension that blocks Instagram for 30 days (password early unlock)   |
+| [`proxy/`](proxy/)                         | Cloudflare Worker that lets the web demo download policy pages for live URL analysis      |
+| [`testing/`](testing/)                     | User-testing kit for the MVP (metrics, session script, survey, report template)           |
 
 ## Development
 
 New developers start with the [Tech Employee Playbook](https://michael-peterson.com/c3nsor-playbook/). In short:
 
 - **Environment:** open the repo in VS Code and run **Dev Containers: Reopen in Container** ([`.devcontainer/devcontainer.json`](.devcontainer/devcontainer.json) pins Node 22.21.0 and installs ESLint, Prettier, and Claude Code). Without a container, use Node from [`.nvmrc`](.nvmrc) and run `npm ci && npm --prefix proxy ci`.
-- **Checks:** `npm run ci` runs ESLint, the Prettier check, all tests (`npm test`: extension rules plus 41 extension tests and 16 proxy tests), and `npm audit` at the high level. CI runs the same job, named `checks`, on every pull request and push to `main`.
+- **Checks:** `npm run ci` runs ESLint, the Prettier check, all tests (`npm test`: extension rules plus extension tests, proxy tests, and Instagram blocker tests), and `npm audit` at the high level. CI runs the same job, named `checks`, on every pull request and push to `main`.
 - **Workflow:** GitHub Flow with squash merges into a protected `main`; work is tracked on the [Trello board](https://trello.com/b/SpwkYnNw/c3nsor). Claude Code guidance and permissions live in [`CLAUDE.md`](CLAUDE.md) and [`.claude/settings.json`](.claude/settings.json).
 
 ## Sharing with testers

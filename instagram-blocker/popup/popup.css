@@ -1,0 +1,130 @@
+:root {
+  --bg: #122b36;
+  --bg-2: #1a3a4a;
+  --ink: #f4f7f8;
+  --muted: #a8c0c9;
+  --accent: #e85d4c;
+  --accent-ink: #fff8f6;
+  --line: rgba(244, 247, 248, 0.14);
+  --ok: #7dcea0;
+  --err: #ff8b7a;
+  font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  color: var(--ink);
+  background:
+    radial-gradient(
+      120% 80% at 0% 0%,
+      rgba(232, 93, 76, 0.22),
+      transparent 55%
+    ),
+    linear-gradient(160deg, var(--bg), var(--bg-2));
+}
+
+.shell {
+  padding: 16px 16px 18px;
+  display: grid;
+  gap: 12px;
+}
+
+.brand {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.subtitle {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.copy {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.view {
+  display: grid;
+  gap: 10px;
+}
+
+.view[hidden] {
+  display: none;
+}
+
+form {
+  display: grid;
+  gap: 10px;
+}
+
+label {
+  display: grid;
+  gap: 4px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+input {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 9px 10px;
+  background: rgba(0, 0, 0, 0.22);
+  color: var(--ink);
+  font: inherit;
+}
+
+input:focus {
+  outline: 2px solid rgba(232, 93, 76, 0.55);
+  outline-offset: 1px;
+}
+
+button {
+  border: 0;
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button:hover {
+  filter: brightness(1.05);
+}
+
+button.danger {
+  background: #b43c30;
+}
+
+.countdown {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.status {
+  margin: 0;
+  min-height: 1.2em;
+  font-size: 0.85rem;
+}
+
+.status.error {
+  color: var(--err);
+}
+
+.status.ok {
+  color: var(--ok);
+}

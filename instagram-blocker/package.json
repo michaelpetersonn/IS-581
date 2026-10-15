@@ -1,0 +1,11 @@
+{
+  "name": "instagram-blocker",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Chrome extension that blocks Instagram for 30 days with password early unlock.",
+  "scripts": {
+    "test": "node --test scripts/verify-lock.mjs",
+    "pack": "rm -f instagram-blocker.zip && zip -r instagram-blocker.zip manifest.json background lib popup blocked icons README.md -x \"*.DS_Store\""
+  }
+}

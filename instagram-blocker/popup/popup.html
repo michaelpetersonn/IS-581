@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Instagram 30-Day Lock</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header>
+        <p class="brand">Instagram 30-Day Lock</p>
+        <p id="subtitle" class="subtitle">Loading…</p>
+      </header>
+
+      <section id="setup-view" class="view" hidden>
+        <p class="copy">
+          Set a recovery password, then start a hard 30-day block. Instagram
+          stays blocked until the timer ends or you unlock with this password.
+        </p>
+        <form id="setup-form" autocomplete="off">
+          <label>
+            Recovery password
+            <input
+              id="setup-password"
+              name="password"
+              type="password"
+              minlength="8"
+              required
+              autocomplete="new-password"
+            />
+          </label>
+          <label>
+            Confirm password
+            <input
+              id="setup-confirm"
+              name="confirm"
+              type="password"
+              minlength="8"
+              required
+              autocomplete="new-password"
+            />
+          </label>
+          <button type="submit">Start 30-day lock</button>
+        </form>
+      </section>
+
+      <section id="locked-view" class="view" hidden>
+        <p id="countdown" class="countdown"></p>
+        <p class="copy">
+          Instagram is blocked. End early only with your recovery password.
+        </p>
+        <form id="unlock-form" autocomplete="off">
+          <label>
+            Recovery password
+            <input
+              id="unlock-password"
+              name="password"
+              type="password"
+              required
+              autocomplete="current-password"
+            />
+          </label>
+          <button type="submit" class="danger">End lock early</button>
+        </form>
+      </section>
+
+      <section id="idle-view" class="view" hidden>
+        <p class="copy">No active lock. Instagram is not blocked.</p>
+        <button id="show-setup" type="button">Set up a new lock</button>
+      </section>
+
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+    </main>
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>
