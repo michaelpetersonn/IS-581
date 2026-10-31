@@ -7,7 +7,7 @@ One moderator runs the session and takes notes. A second teammate can take notes
 ## Tracks
 
 - **Try it track (default, every tester):** the tester uses the Try it page at https://michael-peterson.com/IS-581/try.html. No install, and it works on a phone or a laptop. They type any website into **Paste a site or policy URL** and get the same rules engine, five checkpoints, and Open policy / Opt out / Copy email actions as the extension.
-- **Extension track (optional add-on):** for testers on Chrome on a laptop or desktop who are willing to install. It covers what only the extension shows: the toolbar badge, finding the policy for the page you're already on, the **Allow c3nsor to read <host>** prompt, and the unprompted sign-up observation for the automatic-alert hypothesis (H1). Install from the zip at https://michael-peterson.com/IS-581/extension.html#install, or use the Chrome Web Store link once the unlisted listing is approved.
+- **Extension track (optional add-on):** for testers on Chrome on a laptop or desktop who are willing to install. It covers what only the extension shows: **Turn on red alerts**, the **red toolbar badge** that updates while browsing, finding the policy for the page you're already on, host Allow prompts, and noticing the badge without being coached (H1 quiet-badge). Install from the zip at https://michael-peterson.com/IS-581/extension.html#install, or use the Chrome Web Store link once the unlisted listing is approved.
 
 Decide before the session whether to offer the extension track. Run it only if there's time and the tester agrees; never let it cut into the Try it tasks.
 
@@ -105,15 +105,16 @@ Extension-track testers skip this task and go to the optional extension track no
 
 Only for testers on Chrome on a laptop or desktop who agree to install. Skip to the wrap-up otherwise.
 
-### Task E1. Install and first result (up to 5 min)
+### Task E1. Install, red alerts, and first result (up to 5 min)
 
-> "c3nsor also comes as a Chrome extension. Here's the link. Please install it, then open mozilla.org and use it."
+> "c3nsor also comes as a Chrome extension. Here's the link. Please install it, open the popup, turn on red alerts if you see that button, then open mozilla.org."
 
 - Start the stopwatch when the install page (or the Chrome Web Store page) opens. Stop when the five checkpoints appear in the popup on mozilla.org. This is **install-to-result** (M2). Mozilla is used because the tester hasn't analyzed it yet.
 - Press lap when they click the toolbar icon on mozilla.org. Lap to stop is **click-to-result** (M2).
-- Watch for: unzipping, Developer mode, choosing the right folder in Load unpacked, pinning the icon.
+- Watch for: unzipping, Developer mode, choosing the right folder in Load unpacked, pinning the icon, clicking **Turn on red alerts** and approving site access.
+- After red alerts are on, ask them to navigate to another known-good site (for example duckduckgo.com) **without** opening the popup first. Record whether a **red number** appears on the icon (`badge_seen_without_click_Y_N`).
 - At 5 minutes, help them finish and mark Assisted.
-- Ask: "What does the number on the c3nsor icon mean to you?" (badge)
+- Ask: "What does the red number on the c3nsor icon mean to you?" and "Was it clear / annoying?" (1–5)
 
 ### Task E2. Wikipedia and the Allow prompt (1 min)
 

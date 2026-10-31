@@ -13,6 +13,16 @@ import {
   validateMessage,
 } from "../lib/messages.js";
 
+/** Accent red for toolbar alert counts (matches product accent). */
+const BADGE_RED = "#b42318";
+const BACKGROUND_ORIGINS = ["http://*/*", "https://*/*"];
+const SCAN_DEBOUNCE_MS = 450;
+
+/** @type {Map<number, ReturnType<typeof setTimeout>>} */
+const scanTimers = new Map();
+/** @type {Set<number>} */
+const inflightScans = new Set();
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (!isTrustedSender(sender, chrome.runtime.id, chrome.runtime.getURL(""))) {
     return false;
@@ -28,6 +38,22 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   return true;
 });
 
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.status !== "complete") return;
+  scheduleBackgroundScan(tabId, tab?.url);
+});
+
+chrome.tabs.onActivated.addListener(({ tabId }) => {
+  chrome.tabs
+    .get(tabId)
+    .then((tab) => scheduleBackgroundScan(tabId, tab?.url))
+    .catch(() => {});
+});
+
+chrome.permissions.onRemoved.addListener(() => {
+  // If background access is revoked, clear badges on the next scan attempt.
+});
+
 async function handleMessage(raw) {
   const checked = validateMessage(raw);
   if (!checked.ok) return checked;
@@ -40,10 +66,73 @@ async function handleMessage(raw) {
     return { ok: true };
   }
 
+  if (message.type === "GET_BACKGROUND_STATUS") {
+    const enabled = await hasBackgroundAccess();
+    return { ok: true, enabled };
+  }
+
+  if (message.type === "BACKGROUND_READY") {
+    const enabled = await hasBackgroundAccess();
+    if (!enabled) {
+      return {
+        ok: false,
+        error: "Background site access is not enabled yet.",
+        enabled: false,
+      };
+    }
+    const tab = await getActiveTab();
+    if (tab?.id) await runBackgroundScan(tab.id);
+    return { ok: true, enabled: true };
+  }
+
   return analyzeActiveTab({
     force: message.force,
     policyUrlOverride: message.policyUrl,
   });
+}
+
+function scheduleBackgroundScan(tabId, url) {
+  if (!tabId || !isHttpUrl(url)) return;
+  const existing = scanTimers.get(tabId);
+  if (existing) clearTimeout(existing);
+  const timer = setTimeout(() => {
+    scanTimers.delete(tabId);
+    runBackgroundScan(tabId).catch(() => {});
+  }, SCAN_DEBOUNCE_MS);
+  scanTimers.set(tabId, timer);
+}
+
+async function runBackgroundScan(tabId) {
+  if (inflightScans.has(tabId)) return;
+  if (!(await hasBackgroundAccess())) return;
+
+  let tab;
+  try {
+    tab = await chrome.tabs.get(tabId);
+  } catch {
+    return;
+  }
+  if (!tab?.id || !isHttpUrl(tab.url)) {
+    if (tab?.id) await clearAlertBadge(tab.id);
+    return;
+  }
+
+  inflightScans.add(tabId);
+  try {
+    await analyzeTab(tab, { force: false, quiet: true });
+  } catch {
+    await clearAlertBadge(tabId).catch(() => {});
+  } finally {
+    inflightScans.delete(tabId);
+  }
+}
+
+async function hasBackgroundAccess() {
+  try {
+    return await chrome.permissions.contains({ origins: BACKGROUND_ORIGINS });
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -54,11 +143,24 @@ async function analyzeActiveTab(opts) {
   if (!tab?.id || !tab.url) {
     return { ok: false, error: "No active tab found." };
   }
+  return analyzeTab(tab, opts);
+}
+
+/**
+ * @param {chrome.tabs.Tab} tab
+ * @param {{ force?: boolean, policyUrlOverride?: string|null, quiet?: boolean }} opts
+ */
+async function analyzeTab(tab, opts) {
+  const quiet = Boolean(opts.quiet);
 
   let tabUrl;
   try {
     tabUrl = new URL(tab.url);
   } catch {
+    if (quiet) {
+      await clearAlertBadge(tab.id);
+      return { ok: false, error: "This page cannot be analyzed." };
+    }
     return { ok: false, error: "This page cannot be analyzed." };
   }
 
@@ -100,7 +202,6 @@ async function analyzeActiveTab(opts) {
       discovery = sanitizeDiscovery(injected[0].result, discovery);
     }
   } catch {
-    // Restricted pages or injection failure — still try common paths / pasted URL
     discovery.candidates = defaultCandidates(tabUrl.origin);
   }
 
@@ -133,6 +234,7 @@ async function analyzeActiveTab(opts) {
     fetched = await fetchPolicy(policyUrl);
     if (!fetched.ok) {
       await clearAlertBadge(tab.id);
+      if (quiet) return { ok: false, error: fetched.error };
       return {
         ok: false,
         error: fetched.error,
@@ -145,9 +247,9 @@ async function analyzeActiveTab(opts) {
       };
     }
     text = htmlToPlainText(fetched.html);
-    // User / candidate picked this URL — use a softer readability gate
     if (!looksAnalyzablePolicy(text)) {
       await clearAlertBadge(tab.id);
+      if (quiet) return { ok: false, error: "Not enough policy text." };
       return {
         ok: false,
         error:
@@ -167,6 +269,7 @@ async function analyzeActiveTab(opts) {
     );
     if (!picked.fetched) {
       await clearAlertBadge(tab.id);
+      if (quiet) return { ok: false, error: "No privacy policy found." };
       if (picked.blocked) {
         return {
           ok: false,
@@ -196,6 +299,7 @@ async function analyzeActiveTab(opts) {
 
   if (!text || text.length < 80) {
     await clearAlertBadge(tab.id);
+    if (quiet) return { ok: false, error: "Policy text too short." };
     return {
       ok: false,
       error:
@@ -230,13 +334,9 @@ function normalizeUrlKey(url) {
 }
 
 /**
- * Fetch candidates until one looks like a real privacy policy.
- * Prefer linked policies over the current page URL (avoids marketing-page false positives).
- * Returns the first candidate that needs a host permission when nothing readable was found.
  * @param {{ href: string, score?: number }[]} candidates
  * @param {string} pageUrl
  * @param {(url: string) => Promise<any>} fetchPolicy
- * @returns {Promise<{ fetched?: { html: string, finalUrl: string }, text?: string, blocked?: any }>}
  */
 async function pickReadablePolicy(candidates, pageUrl, fetchPolicy) {
   const pageKey = normalizeUrlKey(pageUrl);
@@ -249,7 +349,6 @@ async function pickReadablePolicy(candidates, pageUrl, fetchPolicy) {
 
   let blocked = null;
   for (const c of list.slice(0, 8)) {
-    // Skip analyzing the current marketing page unless it strongly looks like a policy URL
     if (normalizeUrlKey(c.href) === pageKey && (c.score || 0) < 8) {
       continue;
     }
@@ -268,14 +367,12 @@ async function pickReadablePolicy(candidates, pageUrl, fetchPolicy) {
   return { blocked };
 }
 
-/** Only the fields the popup needs to ask for one host’s permission. */
 function permissionRequest(result) {
   if (!result?.needsPermission) return undefined;
   return { origin: result.origin, host: result.host, url: result.url };
 }
 
 /**
- * Download a same-origin policy page from inside the tab, using the activeTab grant.
  * @param {number} tabId
  * @param {string} url
  */
@@ -304,12 +401,12 @@ function countAlerts(findings) {
 
 async function setAlertBadge(tabId, count) {
   const n = Number(count) || 0;
-  await chrome.action.setBadgeBackgroundColor({ color: "#101010", tabId });
+  await chrome.action.setBadgeBackgroundColor({ color: BADGE_RED, tabId });
   await chrome.action
     .setBadgeTextColor({ color: "#ffffff", tabId })
     .catch(() => {});
   await chrome.action.setBadgeText({
-    text: n > 0 ? String(n) : "",
+    text: n > 0 ? String(Math.min(n, 9)) : "",
     tabId,
   });
 }
@@ -321,6 +418,16 @@ async function clearAlertBadge(tabId) {
 async function getActiveTab() {
   const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
   return tabs[0] || null;
+}
+
+function isHttpUrl(url) {
+  if (!url || typeof url !== "string") return false;
+  try {
+    const u = new URL(url);
+    return u.protocol === "http:" || u.protocol === "https:";
+  } catch {
+    return false;
+  }
 }
 
 function defaultCandidates(origin) {

@@ -8,7 +8,12 @@ export const MAX_LINK_TEXT = 120;
 export const MAX_CANDIDATES = 12;
 export const MAX_PAGE_LINKS = 40;
 
-const MESSAGE_TYPES = new Set(["ANALYZE_TAB", "CLEAR_CACHE"]);
+const MESSAGE_TYPES = new Set([
+  "ANALYZE_TAB",
+  "CLEAR_CACHE",
+  "GET_BACKGROUND_STATUS",
+  "BACKGROUND_READY",
+]);
 
 /**
  * Only extension pages (the popup) may talk to the service worker — not content scripts or web pages.
@@ -44,7 +49,7 @@ export function safeHttpUrl(value) {
 
 /**
  * @param {unknown} message
- * @returns {{ ok: true, message: { type: "CLEAR_CACHE" } | { type: "ANALYZE_TAB", force: boolean, policyUrl: string|null } } | { ok: false, error: string }}
+ * @returns {{ ok: true, message: object } | { ok: false, error: string }}
  */
 export function validateMessage(message) {
   if (!message || typeof message !== "object" || Array.isArray(message)) {
@@ -55,6 +60,8 @@ export function validateMessage(message) {
     return { ok: false, error: "Unknown message type." };
   }
   if (type === "CLEAR_CACHE") return { ok: true, message: { type } };
+  if (type === "GET_BACKGROUND_STATUS") return { ok: true, message: { type } };
+  if (type === "BACKGROUND_READY") return { ok: true, message: { type } };
 
   const { force, policyUrl } =
     /** @type {{ force?: unknown, policyUrl?: unknown }} */ (message);

@@ -101,7 +101,7 @@ Candidate tweaks found before testing are listed in [`mvp-readiness.md`](mvp-rea
 
 ## Hypothesis H1: No-click-needed alerts on sign-up and consent pages
 
-**Status: not built.** This is a candidate tweak the team suggested before testing ("you don't have to click on extension", "random pop ups"). This round only checks whether the problem is real and which alert style people would accept; nothing in the extension changes.
+**Status: quiet red badge shipped (VL2).** Option 2 is in the extension (v0.1.3): after the user turns on red alerts (optional host access), navigation triggers a background policy check and a **red toolbar badge count** when checkpoints match. In-page / every-site popup panels (options 3–4) are still not built. This round validates whether testers notice the red badge and whether it is enough without a panel.
 
 - **Problem:** c3nsor only helps if people remember to click the icon before they sign up. At that moment they're focused on finishing the form or closing the cookie banner, not on checking a policy.
 - **Hypothesis:** If c3nsor analyzed the site automatically and showed a small alert only at meaningful moments (sign-up, create-account, or cookie-consent pages), more people would see the findings before agreeing, without the annoyance of pop-ups on every site.

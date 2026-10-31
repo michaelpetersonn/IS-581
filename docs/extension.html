@@ -46,9 +46,9 @@
         <p class="hero-brand">c<span class="brand-digit">3</span>nsor</p>
         <h1>See what the policy<br />actually says.</h1>
         <p class="ext-lead">
-          Open any site, click c3nsor, and get five plain-English findings with
-          verbatim citations — plus links to opt out or contact privacy.
-          Analysis runs on your device with rules, not AI.
+          Browse normally with red toolbar alerts on, or open c3nsor for five
+          plain-English findings with citations — plus links to opt out or
+          contact privacy. Analysis runs on your device with rules, not AI.
         </p>
         <div class="ext-cta-row">
           <a class="button button-accent button-cta" href="try.html"
@@ -97,17 +97,19 @@
         <div class="ext-feature-grid">
           <article>
             <i>01</i>
-            <h3>Find the policy</h3>
+            <h3>Red badge while you browse</h3>
             <p>
-              Scans the page for privacy links, or lets you paste a policy URL.
+              After you turn on red alerts, c3nsor checks the site in the
+              background and shows a red number on the icon when checkpoints
+              match — no click required to see the count.
             </p>
           </article>
           <article>
             <i>02</i>
             <h3>Five checkpoints</h3>
             <p>
-              Collection, use, sharing, advertising/sale language, and your
-              choices — each with a citation.
+              Click the icon for collection, use, sharing, advertising/sale
+              language, and your choices — each with a citation.
             </p>
           </article>
           <article>
@@ -130,21 +132,43 @@
       </section>
 
       <section class="ext-install" id="install">
-        <p class="kicker">INSTALL (ABOUT 2 MINUTES)</p>
-        <h2>Load it<br />in Chrome.</h2>
+        <p class="kicker">HOW TO USE</p>
+        <h2>Load it,<br />then watch the badge.</h2>
         <ol class="ext-steps">
           <li>
-            Download <code>c3nsor-extension.zip</code> below and unzip it.
+            Download <code>c3nsor-extension.zip</code> below and unzip it. You
+            should get a folder named <code>c3nsor-extension</code>.
           </li>
           <li>
             Open <code>chrome://extensions</code> and turn on
             <strong>Developer mode</strong> (top right).
           </li>
           <li>
-            Click <strong>Load unpacked</strong> and choose the unzipped folder.
+            If an old c3nsor is installed, click <strong>Remove</strong> first.
           </li>
-          <li>Pin c3nsor, open a normal https site, and click the icon.</li>
+          <li>
+            Click <strong>Load unpacked</strong> and choose the
+            <code>c3nsor-extension</code> folder — the one that
+            <strong>directly contains</strong> <code>manifest.json</code> (not
+            the <code>popup</code> folder inside it, and not the .zip file).
+          </li>
+          <li>
+            Pin c3nsor, open the popup, and click
+            <strong>Turn on red alerts</strong> (allow site access when Chrome
+            asks).
+          </li>
+          <li>
+            Browse a normal https site — a <strong>red number</strong> on the
+            icon means risk checkpoints matched. Click the icon for details.
+          </li>
         </ol>
+        <p class="ext-install-note">
+          If you see <strong>ERR_FILE_NOT_FOUND</strong> / “Your file couldn’t
+          be accessed,” Chrome is pointed at the wrong folder. Remove the
+          extension, Load unpacked again, and select the folder that contains
+          <code>manifest.json</code> next to <code>popup/</code>,
+          <code>background/</code>, and <code>icons/</code>.
+        </p>
         <div class="ext-cta-row ext-install-cta">
           <a
             class="button button-accent button-cta"

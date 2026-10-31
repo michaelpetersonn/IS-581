@@ -21,6 +21,11 @@ const guidanceEl = document.getElementById("guidance");
 const actLabelEl = document.getElementById("act-label");
 const actionsEl = document.getElementById("actions");
 const policyInput = document.getElementById("policy-url");
+const backgroundBanner = document.getElementById("background-banner");
+const backgroundOn = document.getElementById("background-on");
+const enableBackgroundBtn = document.getElementById("enable-background-btn");
+
+const BACKGROUND_ORIGINS = ["http://*/*", "https://*/*"];
 
 /** Shorter labels aligned with the docs extension mockup. */
 const DISPLAY_LABELS = {
@@ -55,6 +60,8 @@ document
     alternativesEl.classList.add("hidden");
   });
 
+enableBackgroundBtn?.addEventListener("click", enableBackgroundAlerts);
+
 start();
 
 async function start() {
@@ -62,12 +69,49 @@ async function start() {
     .query({ active: true, currentWindow: true })
     .catch(() => []);
   pageUrl = tab?.url || "";
+  await refreshBackgroundStatus();
   const pending = await takePendingPolicyUrl();
   if (pending) {
     policyInput.value = pending;
     runAnalyze({ force: true, policyUrl: pending });
     return;
   }
+  runAnalyze({ force: false });
+}
+
+async function refreshBackgroundStatus() {
+  try {
+    const status = await chrome.runtime.sendMessage({
+      type: "GET_BACKGROUND_STATUS",
+    });
+    const enabled = Boolean(status?.enabled);
+    backgroundBanner?.classList.toggle("hidden", enabled);
+    backgroundOn?.classList.toggle("hidden", !enabled);
+  } catch {
+    backgroundBanner?.classList.remove("hidden");
+    backgroundOn?.classList.add("hidden");
+  }
+}
+
+async function enableBackgroundAlerts() {
+  let granted;
+  try {
+    granted = await chrome.permissions.request({
+      origins: BACKGROUND_ORIGINS,
+    });
+  } catch {
+    granted = false;
+  }
+  if (!granted) {
+    showError(
+      "Allow access to websites so c3nsor can show a red badge while you browse.",
+    );
+    return;
+  }
+  await chrome.runtime
+    .sendMessage({ type: "BACKGROUND_READY" })
+    .catch(() => {});
+  await refreshBackgroundStatus();
   runAnalyze({ force: false });
 }
 
