@@ -136,15 +136,21 @@
         <h2>Load it,<br />then watch the badge.</h2>
         <ol class="ext-steps">
           <li>
-            Download <code>c3nsor-extension.zip</code> below and unzip it.
+            Download <code>c3nsor-extension.zip</code> below and unzip it. You
+            should get a folder named <code>c3nsor-extension</code>.
           </li>
           <li>
             Open <code>chrome://extensions</code> and turn on
             <strong>Developer mode</strong> (top right).
           </li>
           <li>
-            Click <strong>Load unpacked</strong> and choose the unzipped folder
-            (the one that contains <code>manifest.json</code>).
+            If an old c3nsor is installed, click <strong>Remove</strong> first.
+          </li>
+          <li>
+            Click <strong>Load unpacked</strong> and choose the
+            <code>c3nsor-extension</code> folder — the one that
+            <strong>directly contains</strong> <code>manifest.json</code> (not
+            the <code>popup</code> folder inside it, and not the .zip file).
           </li>
           <li>
             Pin c3nsor, open the popup, and click
@@ -156,6 +162,13 @@
             icon means risk checkpoints matched. Click the icon for details.
           </li>
         </ol>
+        <p class="ext-install-note">
+          If you see <strong>ERR_FILE_NOT_FOUND</strong> / “Your file couldn’t
+          be accessed,” Chrome is pointed at the wrong folder. Remove the
+          extension, Load unpacked again, and select the folder that contains
+          <code>manifest.json</code> next to <code>popup/</code>,
+          <code>background/</code>, and <code>icons/</code>.
+        </p>
         <div class="ext-cta-row ext-install-cta">
           <a
             class="button button-accent button-cta"

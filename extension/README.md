@@ -28,10 +28,15 @@ Rules-based privacy checkpoint: find the current site’s privacy policy, show f
 
 1. Open `chrome://extensions`.
 2. Enable **Developer mode**.
-3. Click **Load unpacked**.
-4. Select this folder: `extension/` (the folder that contains `manifest.json`), or the unzipped `c3nsor-extension` folder.
-5. Open the popup and click **Turn on red alerts** (allow websites when Chrome prompts).
-6. Browse any `https://` site — watch for a **red number** on the icon; click the icon for the five checkpoints.
+3. Remove any old c3nsor entry if present.
+4. Click **Load unpacked**.
+5. Select the folder that **directly contains** `manifest.json` (repo: `extension/`, or unzipped `c3nsor-extension/`). Do **not** select the `popup/` subfolder or the `.zip` file.
+6. Open the popup and click **Turn on red alerts** (allow websites when Chrome prompts).
+7. Browse any `https://` site — watch for a **red number** on the icon; click the icon for the five checkpoints.
+
+### ERR_FILE_NOT_FOUND / “Your file couldn’t be accessed”
+
+That means Chrome’s Load unpacked root is wrong (often the parent of the real folder, or `popup/` instead of the extension root). Remove the extension, unzip again if needed, and Load unpacked on the folder that contains `manifest.json` beside `popup/`, `background/`, `lib/`, and `icons/`.
 
 If automatic discovery fails, paste a policy URL in the popup and click **Analyze**. Suggested policy links also include **Open** so you can read the live page when a site is too script-heavy to extract excerpts.
 

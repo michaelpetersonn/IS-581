@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "c3nsor",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Find a site’s privacy policy and see what it says about your data in plain English, with citations. Local rules, not AI. Optional red badge alerts while you browse.",
   "action": {
     "default_title": "c3nsor — privacy checkpoint",
