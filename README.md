@@ -27,6 +27,10 @@ New developers start with the [Tech Employee Playbook](https://michael-peterson.
 
 [`testing/`](testing/README.md) has the moderated user-testing kit for the MVP: readiness checklist, key metrics, recruiting, session script, survey, results log, and the learnings-and-tweaks report template. Testers use the Try it page by default; the extension is an optional track. Metrics come from sessions and a survey only; c3nsor has no telemetry.
 
+## Style guide
+
+Colors, fonts, and usage rules: [`STYLE_GUIDE.md`](STYLE_GUIDE.md). Visual swatches: [`docs/style-guide.html`](docs/style-guide.html).
+
 ## GitHub Pages
 
 The site deploys with GitHub Actions ([`.github/workflows/pages.yml`](.github/workflows/pages.yml)) on every push to `main`. In repo **Settings → Pages**, Source must be **GitHub Actions**.
