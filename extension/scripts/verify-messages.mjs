@@ -75,6 +75,17 @@ test("validateMessage normalizes valid messages and drops extra fields", () => {
     },
   );
   assert.deepEqual(
+    validateMessage({ type: "GET_BACKGROUND_STATUS", extra: 1 }),
+    {
+      ok: true,
+      message: { type: "GET_BACKGROUND_STATUS" },
+    },
+  );
+  assert.deepEqual(validateMessage({ type: "BACKGROUND_READY" }), {
+    ok: true,
+    message: { type: "BACKGROUND_READY" },
+  });
+  assert.deepEqual(
     validateMessage({ type: "ANALYZE_TAB", force: true, policyUrl: null }),
     {
       ok: true,

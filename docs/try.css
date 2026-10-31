@@ -229,12 +229,23 @@
 }
 .try-alerts {
   flex-shrink: 0;
-  padding: 4px 8px;
+  padding: 5px 10px;
   border-radius: 4px;
-  background: #fde8e6;
-  color: #b42318;
+  background: #b42318;
+  color: #ffffff;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  box-shadow: 0 0 0 1px #8f1b13;
+}
+.try-howto {
+  margin-top: 18px;
+  max-width: 540px;
+  color: #a6a6a6;
+  font-size: 15px;
+}
+.try-howto a {
+  color: #fff;
 }
 
 .try-findings {

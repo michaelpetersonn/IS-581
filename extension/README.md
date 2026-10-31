@@ -15,8 +15,9 @@ Rules-based privacy checkpoint: find the current site’s privacy policy, show f
    - Mentions sale/sharing (including “we do not sell”)
    - Access, opt-out, or deletion choices
 6. Shows a plain-English summary and a **verbatim excerpt** for each hit (or “Not clearly specified”).
-7. Shows an **Alerts** count (how many categories matched) in the popup and on the toolbar badge.
-8. Suggests what you should do and links to the policy / opt-out page when found; can copy a real privacy contact email (placeholder addresses like `you@domain.com` are ignored).
+7. Shows an **Alerts** count (how many categories matched) in the popup and as a **red number on the toolbar badge**.
+8. Optional **background red alerts:** after you allow site access once, c3nsor re-checks when you navigate and updates the red badge without opening the popup.
+9. Suggests what you should do and links to the policy / opt-out page when found; can copy a real privacy contact email (placeholder addresses like `you@domain.com` are ignored).
 
 ## Sharing with testers
 
@@ -29,7 +30,8 @@ Rules-based privacy checkpoint: find the current site’s privacy policy, show f
 2. Enable **Developer mode**.
 3. Click **Load unpacked**.
 4. Select this folder: `extension/` (the folder that contains `manifest.json`), or the unzipped `c3nsor-extension` folder.
-5. Open any `https://` site, click the c3nsor icon.
+5. Open the popup and click **Turn on red alerts** (allow websites when Chrome prompts).
+6. Browse any `https://` site — watch for a **red number** on the icon; click the icon for the five checkpoints.
 
 If automatic discovery fails, paste a policy URL in the popup and click **Analyze**. Suggested policy links also include **Open** so you can read the live page when a site is too script-heavy to extract excerpts.
 
