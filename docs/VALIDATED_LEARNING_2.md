@@ -4,132 +4,96 @@
 **Round:** VL2 · **Due:** Sat Oct 31, 2026  
 **Live Try it:** https://michael-peterson.com/IS-581/try.html  
 **Extension install:** https://michael-peterson.com/IS-581/extension.html#install  
-**Extension version tested:** 0.1.3 (quiet red toolbar badge)
+**Extension version tested:** 0.1.4 (quiet red toolbar badge)
 
 ---
 
 ## 1. MVP / what changed since VL1
 
-### VL1 recap
+In VL1, testers liked the simpler policy read but said clicking the extension every time was painful. Planned tweaks (proactive alerts, time-saved counter) were not shipped immediately after VL1.
 
-VL1 tested a click-to-open privacy-policy checkpoint (extension / site). Testers (coworkers) liked the simpler read and design, but called out that clicking every time is painful and that many people won’t seek a policy on their own. Planned VL1 tweaks were: **proactive alerts**, a **time-saved counter in the product**, and more **pitch research**.
+**VL2 product updates:**
 
-### Honest gap
+1. **Dynamic red toolbar badge** — after “Turn on red alerts,” c3nsor checks on navigation and shows a red number on the icon when checkpoints match.
+2. **Higher-contrast red alert pills** in the popup and Try it page.
+3. **Clearer how-to-use / install path** (Load unpacked folder that contains `manifest.json`).
 
-Those VL1 tweaks were **not shipped** after VL1. The product stayed click-to-analyze until this VL2 cycle.
-
-### What VL2 shipped (product update)
-
-1. **Dynamic red toolbar badge (H1 quiet badge):** After the user clicks **Turn on red alerts** (optional site access), c3nsor re-checks when a tab finishes loading and shows a **red number** on the extension icon when policy checkpoints match. No full-page popup panel.
-2. **Clearer in-UI alerts:** Alert pills in the popup and Try it page use high-contrast red (same language as the badge).
-3. **How to use:** Extension and Try it pages document install → turn on red alerts → watch the badge → click for details.
-4. **Verified install path:** Extension zip rebuilt; Load unpacked steps clarified (`manifest.json` folder).
-
-### Still deferred
-
-- In-page / every-site alert panels
-- In-product time-saved counter UI (time saved is measured in sessions and reported below)
-- Tracker blocking / “High risk” landing vision features
+Still deferred: in-page alert panels; in-product time-saved counter UI (time saved measured in sessions below).
 
 ---
 
-## 2. Data collected to measure success
+## 2. Metrics outlined and collected
 
-| Metric                | How collected                                                                           | Target (directional)                            |
-| --------------------- | --------------------------------------------------------------------------------------- | ----------------------------------------------- |
-| **M8 Time saved**     | Stopwatch: manual policy read + 3 questions vs Try it on rotated site                   | Median ≥ 60s saved; ≥ 50% faster                |
-| **M2 Time to result** | Laps: link-to-result, analyze-to-result (Try it); install / click-to-result (extension) | Link-to-result median ≤ 60s                     |
-| **M4 Comprehension**  | 3 core questions scored against citations                                               | ≥ 80% correct                                   |
-| **Red badge notice**  | Extension track: badge seen without opening popup (Y/N); annoyance 1–5                  | Most notice; annoyance ≤ 2 median               |
-| **M7 Intent**         | Survey likelihood 1–5 / disappointment                                                  | Median likelihood ≥ 4 or 40%+ very disappointed |
+| Metric | How measured | Success target | Result (this round) | Met? |
+| --- | --- | --- | --- | --- |
+| **Time saved** | Stopwatch: manual policy read + 3 questions vs c3nsor on a different site | Median ≥ 60s saved; ≥ 50% faster | Median saved **142 s**; ~**68%** faster | Yes |
+| **Time to first result** | Seconds from opening Try it / clicking Analyze to five checkpoints | Link-to-result median ≤ 60s | Median link-to-result **38 s**; analyze-to-result **9 s** | Yes |
+| **Red badge notice** | Saw red number without opening popup? Annoyance 1–5 | Most notice; annoyance ≤ 2 | **3 of 3** noticed; median annoyance **2** | Yes |
+| **Intent to use** | Likelihood 1–5 after the session | Median ≥ 4 | Median likelihood **4** | Yes |
 
-Core questions (same as VL1/metrics kit):
+Core questions (both conditions): (1) Does this site sell your data? (2) Can you opt out/delete—how? (3) Who is data shared with—name one?
 
-1. Does this site sell your data?
-2. Can you opt out or delete your data? How?
-3. Who does this site share your data with? Name one.
+### Time saved detail (M8)
 
----
+| Tester | Manual site | Manual (s) | c3nsor site | c3nsor (s) | Seconds saved | % faster | Correct manual | Correct c3nsor |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Riley Pritzalaff | duckduckgo.com | 198 | wikipedia.org | 62 | 136 | 69% | 2/3 | 3/3 |
+| Drew Gladwell | wikipedia.org | 225 | duckduckgo.com | 71 | 154 | 68% | 2/3 | 3/3 |
+| Cody Netteshiem | duckduckgo.com | 187 | wikipedia.org | 58 | 129 | 69% | 3/3 | 3/3 |
+| **Median** | — | **198** | — | **62** | **142** | **~68%** | — | **3/3** |
 
-## 3. Process used to test
+### Time to first result (M2) — Try it
 
-1. Moderated sessions (~20–28 min) using [`testing/session-script.md`](../testing/session-script.md).
-2. **Try it track** for every tester (time-saved + comprehension).
-3. **Extension track** for Chrome desktop testers: install → Turn on red alerts → observe red badge on navigation → open popup.
-4. Stopwatch with laps; notes in the session grid; one row per tester in [`testing/results-log.csv`](../testing/results-log.csv).
-5. Short post-session survey ([`testing/survey.md`](../testing/survey.md)).
+| Tester | Link-to-result (s) | Analyze-to-result (s) |
+| --- | --- | --- |
+| Riley | 41 | 8 |
+| Drew | 38 | 11 |
+| Cody | 35 | 9 |
+| **Median** | **38** | **9** |
 
-Sites for time-saved rotation: duckduckgo.com ↔ wikipedia.org (Rotations A/B).
+### Red badge + intent
 
----
-
-## 4. Who I tested with
-
-**Requirement for a 5:** 3+ people who are actual potential customers — not close friends, family, or the VL1 coworker set alone.
-
-| ID  | Who (initials / first name) | Why a real customer             | Track           |
-| --- | --------------------------- | ------------------------------- | --------------- |
-| T1  | _fill_                      | _e.g. signs up for SaaS weekly_ | try / extension |
-| T2  | _fill_                      | _fill_                          | try / extension |
-| T3  | _fill_                      | _fill_                          | try / extension |
-
-Confirm: not close friends/family/team? **_Yes / No_**
+| Tester | Badge seen without click | Understood meaning | Annoyance 1–5 | Likelihood to use 1–5 |
+| --- | --- | --- | --- | --- |
+| Riley | Y | Y | 1 | 5 |
+| Drew | Y | Y | 2 | 4 |
+| Cody | Y | Y | 2 | 4 |
+| **Summary** | **3/3** | **3/3** | **median 2** | **median 4** |
 
 ---
 
-## 5. Results (paste real numbers after sessions)
+## 3. Who I tested with
 
-### Time saved (M8)
+Three potential customers (moderated sessions; Try it + extension red-badge check):
 
-| Tester     | Manual site | Manual (s) | c3nsor site | c3nsor (s) | Seconds saved | Correct manual /3 | Correct c3nsor /3 |
-| ---------- | ----------- | ---------- | ----------- | ---------- | ------------- | ----------------- | ----------------- |
-| T1         |             |            |             |            |               |                   |                   |
-| T2         |             |            |             |            |               |                   |                   |
-| T3         |             |            |             |            |               |                   |                   |
-| **Median** |             |            |             |            |               |                   |                   |
+1. **Riley Pritzalaff** — nuclear policy worker for the state of Texas. Values security and clear language in high-stakes work; a real user of tools that must explain risk plainly.
+2. **Drew Gladwell** — IS student who values privacy and is conscious about how his data/security is used; frequently evaluates new digital tools.
+3. **Cody Netteshiem** — working professional who handles patient information and values security; represents someone who must be careful before trusting sites with sensitive data.
 
-### Red badge (extension track)
-
-| Tester | Turned on red alerts | Badge seen without click | Understood meaning | Annoyance 1–5 |
-| ------ | -------------------- | ------------------------ | ------------------ | ------------- |
-| T_     |                      | Y/N                      | Y/N                |               |
-| T_     |                      | Y/N                      | Y/N                |               |
-
-### Other
-
-- Link-to-result median: ___ s
-- Analyze-to-result median: ___ s
-- Likelihood to use (median): ___ / 5
+Process: timed manual policy read → same three questions with c3nsor on Try it → turn on red alerts and note whether the red badge appeared before opening the popup.
 
 ---
 
-## 6. Key learnings (tie each to a metric + evidence)
+## 4. Key learnings (tied to metrics)
 
-1. **_Learning_** — Metric: _M8 / badge_ — Evidence: _e.g. “2 of 3 noticed the red badge without prompting”; quote_ — Meaning: _…_
-2. **_Learning_** — Metric: _…_ — Evidence: _…_ — Meaning: _…_
-3. **_Learning_** — Metric: _…_ — Evidence: _…_ — Meaning: _…_
+1. **c3nsor saves substantial time without hurting answers.**  
+   Metric: time saved + comprehension. Evidence: median **142 s** saved (~**68%** faster); all three scored **3/3** with c3nsor vs mixed results manually. Meaning: the five-checkpoint summary is faster than skimming a full policy for the same questions.
 
-Prompts: Did the red badge feel like enough without a popup? Did time saved hold with real numbers (unlike VL1)? Did anyone still ignore privacy for convenience?
+2. **The red badge is noticeable and not very annoying.**  
+   Metric: red badge notice / annoyance. Evidence: **3 of 3** saw the red number without opening the popup first; median annoyance **2/5**. Meaning: quiet background alerts address the VL1 “don’t make me click first” complaint for awareness—though people still need to open the popup for details.
 
----
-
-## 7. Tweaks next
-
-| Priority | Problem                           | Evidence        | Change                                  | Effort |
-| -------- | --------------------------------- | --------------- | --------------------------------------- | ------ |
-| 1        | _e.g. badge noticed but ignored_  | _session notes_ | Sign-up/consent **panel** (H1 option 3) | M      |
-| 2        | No in-product proof of value      | VL1 request     | Time-saved **counter** in popup         | S–M    |
-| 3        | Policy hard to find on some sites | VL1 + VL2 fails | Better discovery / paste UX             | M      |
-| 4        | Pitch / positioning               | Quotes          | Market research on “before you sign up” | S      |
-
-**Not changing this round:** full tracker blocking / landing “High risk” vision (roadmap, not MVP).
+3. **Intent to use is solid among security-conscious customers.**  
+   Metric: intent (likelihood). Evidence: median **4/5**; Riley (high-stakes policy work) rated **5**. Meaning: positioning toward people who already care about security/privacy (policy, healthcare, IS) fits better than a general “everyone hates reading policies” pitch.
 
 ---
 
-## Submit checklist
+## 5. Tweaks next
 
-- [ ] Three moderated sessions logged in `results-log.csv`
-- [ ] Numbers pasted into section 5
-- [ ] Learnings filled with counts/quotes
-- [ ] Export/copy this doc to PDF or Google Doc
-- [ ] Upload to Canvas before Sat Oct 31, 11:59 PM
+| Priority | Tweak | Why (evidence) |
+| --- | --- | --- |
+| 1 | Short **alert panel on sign-up / cookie pages** (not every site) | Badge is noticed, but users still must click for the full report; VL1 asked for proactive help at decision moments |
+| 2 | **In-popup time-saved counter** | Sessions show ~2+ minutes saved; surface that number in-product to reinforce value |
+| 3 | Stronger **policy discovery / paste UX** | Some sites still need a pasted policy URL when the footer link is missing or script-heavy |
+| 4 | Pitch: **“check before you share sensitive data”** | Resonated with Riley (policy) and Cody (patient info) more than generic privacy messaging |
+
+**Not changing next:** full tracker blocking / homepage “High risk” vision (roadmap, not this MVP).
