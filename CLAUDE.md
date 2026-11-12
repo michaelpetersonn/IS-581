@@ -6,15 +6,19 @@ c3nsor is a Chrome extension and website that reads a site's privacy policy and 
 
 - `extension/`: Chrome Manifest V3 extension, plain JavaScript ES modules. The analyzer lives in `extension/lib/` and is the source of truth.
 - `docs/`: static website on GitHub Pages (https://michael-peterson.com/IS-581/). `docs/try/engine/` is generated from `extension/lib/` by `npm --prefix extension run build:web`; never edit it by hand.
-- `proxy/`: Cloudflare Worker that fetches policies for the Try it page. Keep its URL validation, private-address blocking, redirect checks, 1.5 MB cap, and 12 s timeout.
+- `proxy/`: Cloudflare Worker that fetches policies for the Try it page. Keep its URL validation, private-address blocking, redirect checks, 1.5 MB cap, and 12 s timeout. Its log lines record host names only; never log full URLs, query strings, visitor IPs, or page content.
 - No frameworks, no TypeScript, no database. Ask before adding a dependency.
 
 ## Commands
 
-- `npm run ci`: lint, format check, all tests, and dependency audit. Run before every commit.
-- `npm test`: extension rules check plus 41 extension tests and 16 proxy tests.
+- `npm run ci`: lint, format check, unit tests, dependency audit, and Playwright browser tests. Run before every commit.
+- `npm test`: extension rules check plus 42 extension, 19 proxy, and 10 script unit tests.
+- `npm run test:e2e`: Playwright tests for the Try it page and the extension popup (`tests/e2e/`); fixtures live in `tests/e2e/fixtures/`.
 - `npm run lint` / `npm run format`.
+- `npm run serve`: serve `docs/` and test fixtures at http://localhost:8765.
+- `npm run monitor`: check the live site and proxy (the same checks the scheduled monitor runs).
 - `npm --prefix proxy run dev`: run the Worker locally with Wrangler.
+- `npm --prefix proxy run deploy:staging` / `deploy`: guarded deploys with a smoke check. Production deploys need a clean, up-to-date `main` and always require asking first.
 
 ## Workflow
 
