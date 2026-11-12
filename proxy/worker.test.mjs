@@ -5,7 +5,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
-  handleRequest,
+  handleRequest as handleWithLog,
   upstreamStatusError,
   validateTargetUrl,
   MAX_BYTES,
@@ -15,6 +15,10 @@ import {
 
 const ORIGIN = "https://michael-peterson.com";
 const env = { ALLOWED_ORIGINS: `${ORIGIN},http://localhost:8000` };
+
+/** Same as the worker's handler, with logging silenced unless a test passes its own logger. */
+const handleRequest = (request, environment, fetchImpl, log = () => {}) =>
+  handleWithLog(request, environment, fetchImpl, log);
 
 /**
  * @param {string} target
@@ -390,4 +394,125 @@ test("redirects to overly long URLs are blocked", async () => {
   assert.equal(res.status, 400);
   assert.equal((await res.json()).code, "bad_redirect");
   assert.equal(fetchImpl.calls.length, 1);
+});
+
+test("/health reports version and environment without an origin or upstream fetch", async () => {
+  const fetchImpl = mockFetch({});
+  const res = await handleRequest(
+    new Request("https://proxy.example.workers.dev/health"),
+    { ...env, VERSION: "abc1234", ENVIRONMENT: "staging" },
+    fetchImpl,
+  );
+  assert.equal(res.status, 200);
+  assert.deepEqual(await res.json(), {
+    ok: true,
+    version: "abc1234",
+    env: "staging",
+  });
+  assert.equal(res.headers.get("Cache-Control"), "no-store");
+  assert.equal(res.headers.get("X-C3nsor-Version"), "abc1234");
+  assertSecurityHeaders(res, "health");
+  assert.equal(fetchImpl.calls.length, 0);
+
+  const defaults = await handleRequest(
+    new Request("https://proxy.example.workers.dev/health"),
+    env,
+    fetchImpl,
+  );
+  assert.deepEqual(await defaults.json(), {
+    ok: true,
+    version: "dev",
+    env: "production",
+  });
+
+  const post = await handleRequest(
+    new Request("https://proxy.example.workers.dev/health", { method: "POST" }),
+    env,
+    fetchImpl,
+  );
+  assert.equal(post.status, 405);
+});
+
+test("every response carries a request ID and version, and errors repeat the ID", async () => {
+  const fetchImpl = mockFetch({
+    "https://example.com/privacy": html("policy"),
+  });
+  const ok = await handleRequest(
+    proxyRequest("https://example.com/privacy"),
+    { ...env, VERSION: "abc1234" },
+    fetchImpl,
+  );
+  assert.match(ok.headers.get("X-Request-Id"), /^[0-9a-f-]{36}$/);
+  assert.equal(ok.headers.get("X-C3nsor-Version"), "abc1234");
+  assert.match(ok.headers.get("Access-Control-Expose-Headers"), /X-Request-Id/);
+
+  const withRay = new Request(
+    `https://proxy.example.workers.dev/?url=${encodeURIComponent("http://127.0.0.1/")}`,
+    { headers: { Origin: ORIGIN, "cf-ray": "8f1c2a3b4d5e6f70-DEN" } },
+  );
+  const blocked = await handleRequest(withRay, env, fetchImpl);
+  assert.equal(blocked.headers.get("X-Request-Id"), "8f1c2a3b4d5e6f70-DEN");
+  const body = await blocked.json();
+  assert.equal(body.requestId, "8f1c2a3b4d5e6f70-DEN");
+  assert.equal(body.code, "blocked_host");
+
+  const forbidden = await handleRequest(
+    proxyRequest("https://example.com/", { origin: "https://evil.example" }),
+    env,
+    fetchImpl,
+  );
+  assert.ok((await forbidden.json()).requestId);
+});
+
+test("writes one structured log line per request with host names only", async () => {
+  const entries = [];
+  const log = (entry) => entries.push(entry);
+  const fetchImpl = mockFetch({
+    "https://example.com/privacy?session=secret123": new Response(null, {
+      status: 301,
+      headers: { Location: "https://legal.example.com/policy?token=xyz" },
+    }),
+    "https://legal.example.com/policy?token=xyz": html("policy text"),
+  });
+  const res = await handleRequest(
+    proxyRequest("https://example.com/privacy?session=secret123"),
+    { ...env, VERSION: "abc1234" },
+    fetchImpl,
+    log,
+  );
+  assert.equal(res.status, 200);
+  assert.equal(entries.length, 1);
+  const [entry] = entries;
+  assert.deepEqual(Object.keys(entry).sort(), [
+    "bytes",
+    "code",
+    "durationMs",
+    "env",
+    "event",
+    "finalHost",
+    "method",
+    "path",
+    "requestId",
+    "status",
+    "targetHost",
+    "version",
+  ]);
+  assert.equal(entry.event, "proxy_request");
+  assert.equal(entry.status, 200);
+  assert.equal(entry.code, "ok");
+  assert.equal(entry.targetHost, "example.com");
+  assert.equal(entry.finalHost, "legal.example.com");
+  assert.equal(entry.bytes, "policy text".length);
+  assert.equal(entry.path, "/");
+  assert.equal(entry.requestId, res.headers.get("X-Request-Id"));
+  assert.ok(Number.isInteger(entry.durationMs) && entry.durationMs >= 0);
+  const serialized = JSON.stringify(entry);
+  for (const leak of ["secret123", "token=xyz", "/privacy", "/policy", "?"]) {
+    assert.equal(serialized.includes(leak), false, leak);
+  }
+
+  await handleRequest(proxyRequest("http://127.0.0.1/"), env, fetchImpl, log);
+  assert.equal(entries[1].status, 400);
+  assert.equal(entries[1].code, "blocked_host");
+  assert.equal(entries[1].targetHost, null);
 });

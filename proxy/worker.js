@@ -2,7 +2,9 @@
  * c3nsor policy proxy (Cloudflare Worker).
  * Lets the static web demo download a public privacy-policy page that browsers would block cross-origin.
  * GET /?url=https://example.com/privacy  →  page HTML as text/plain
- * Errors are JSON: { error, code, upstreamStatus? }. The web demo turns `code` into visitor-facing wording.
+ * GET /health  →  { ok, version, env } for uptime checks (no upstream fetch, no origin check)
+ * Errors are JSON: { error, code, requestId, upstreamStatus? }. The web demo turns `code` into visitor-facing wording.
+ * Every response carries X-Request-Id and X-C3nsor-Version, and every request writes one JSON log line.
  */
 
 export const MAX_BYTES = 1_500_000;
@@ -153,18 +155,47 @@ function corsHeaders(origin) {
   return {
     "Access-Control-Allow-Origin": origin,
     "Access-Control-Allow-Methods": "GET, OPTIONS",
-    "Access-Control-Expose-Headers": "X-Final-Url",
+    "Access-Control-Expose-Headers":
+      "X-Final-Url, X-Request-Id, X-C3nsor-Version",
     "Access-Control-Max-Age": "86400",
     Vary: "Origin",
   };
 }
 
 /**
+ * @typedef {{ requestId: string, version: string, env: string, code: string, targetHost: string|null, finalHost: string|null, bytes: number }} RequestContext
+ */
+
+/** @param {Record<string, string|undefined>} env */
+function deployInfo(env) {
+  return {
+    version: String(env?.VERSION || "dev"),
+    env: String(env?.ENVIRONMENT || "production"),
+  };
+}
+
+/**
+ * Cloudflare's Ray ID when present, so a log line can be matched to Cloudflare's own request records.
+ * @param {Request} request
+ */
+function requestIdFor(request) {
+  const ray = request.headers.get("cf-ray") || "";
+  return /^[\w-]{8,64}$/.test(ray) ? ray : crypto.randomUUID();
+}
+
+/** @param {Record<string, unknown>} entry */
+function consoleLog(entry) {
+  console.log(JSON.stringify(entry));
+}
+
+/**
  * @param {ProxyError} err
+ * @param {RequestContext} ctx
  * @param {Record<string, string>} [headers]
  */
-function jsonError(err, headers = {}) {
-  const body = { error: err.message, code: err.code };
+function jsonError(err, ctx, headers = {}) {
+  ctx.code = err.code;
+  const body = { error: err.message, code: err.code, requestId: ctx.requestId };
   if (err.upstreamStatus) body.upstreamStatus = err.upstreamStatus;
   return new Response(JSON.stringify(body), {
     status: err.status,
@@ -267,21 +298,88 @@ async function readCappedText(response, maxBytes) {
 }
 
 /**
+ * Logs host names only: never the full URL, query string, visitor IP, or page content.
  * @param {Request} request
  * @param {Record<string, string|undefined>} env
  * @param {typeof fetch} fetchImpl
+ * @param {(entry: Record<string, unknown>) => void} [log]
  * @returns {Promise<Response>}
  */
-export async function handleRequest(request, env, fetchImpl) {
+export async function handleRequest(request, env, fetchImpl, log = consoleLog) {
+  const started = Date.now();
+  const info = deployInfo(env);
+  /** @type {RequestContext} */
+  const ctx = {
+    requestId: requestIdFor(request),
+    ...info,
+    code: "ok",
+    targetHost: null,
+    finalHost: null,
+    bytes: 0,
+  };
+  const path = new URL(request.url).pathname;
+  const response = await routeRequest(request, env, fetchImpl, ctx, path);
+  response.headers.set("X-Request-Id", ctx.requestId);
+  response.headers.set("X-C3nsor-Version", ctx.version);
+  log({
+    event: "proxy_request",
+    requestId: ctx.requestId,
+    method: request.method,
+    path,
+    status: response.status,
+    code: ctx.code,
+    targetHost: ctx.targetHost,
+    finalHost: ctx.finalHost,
+    bytes: ctx.bytes,
+    durationMs: Date.now() - started,
+    version: ctx.version,
+    env: ctx.env,
+  });
+  return response;
+}
+
+/**
+ * @param {Request} request
+ * @param {Record<string, string|undefined>} env
+ * @param {typeof fetch} fetchImpl
+ * @param {RequestContext} ctx
+ * @param {string} path
+ * @returns {Promise<Response>}
+ */
+async function routeRequest(request, env, fetchImpl, ctx, path) {
+  if (path === "/health") {
+    if (request.method !== "GET") {
+      return jsonError(
+        new ProxyError(405, "method_not_allowed", "Only GET is supported."),
+        ctx,
+        { Allow: "GET" },
+      );
+    }
+    ctx.code = "health";
+    return new Response(
+      JSON.stringify({ ok: true, version: ctx.version, env: ctx.env }),
+      {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          "Cache-Control": "no-store",
+          ...SECURITY_HEADERS,
+        },
+      },
+    );
+  }
+
   const origin = request.headers.get("Origin") || "";
   if (!allowedOrigins(env).includes(origin)) {
     return jsonError(
       new ProxyError(403, "origin_not_allowed", "Origin not allowed."),
+      ctx,
     );
   }
   const cors = corsHeaders(origin);
 
   if (request.method === "OPTIONS") {
+    ctx.code = "preflight";
     return new Response(null, {
       status: 204,
       headers: { ...cors, ...SECURITY_HEADERS },
@@ -290,6 +388,7 @@ export async function handleRequest(request, env, fetchImpl) {
   if (request.method !== "GET") {
     return jsonError(
       new ProxyError(405, "method_not_allowed", "Only GET is supported."),
+      ctx,
       {
         ...cors,
         Allow: "GET, OPTIONS",
@@ -303,17 +402,20 @@ export async function handleRequest(request, env, fetchImpl) {
     const target = validateTargetUrl(
       new URL(request.url).searchParams.get("url"),
     );
+    ctx.targetHost = target.hostname;
     const { response, finalUrl } = await fetchFollowingSafeRedirects(
       target,
       fetchImpl,
       controller.signal,
     );
+    ctx.finalHost = new URL(finalUrl).hostname;
     if (!response.ok) throw upstreamStatusError(response.status);
     const type = response.headers.get("Content-Type") || "";
     if (type && !ALLOWED_TYPE_RE.test(type)) {
       throw new ProxyError(415, "not_html", "That URL is not an HTML page.");
     }
     const body = await readCappedText(response, MAX_BYTES);
+    ctx.bytes = body.length;
     return new Response(body, {
       status: 200,
       headers: {
@@ -326,15 +428,17 @@ export async function handleRequest(request, env, fetchImpl) {
       },
     });
   } catch (err) {
-    if (err instanceof ProxyError) return jsonError(err, cors);
+    if (err instanceof ProxyError) return jsonError(err, ctx, cors);
     if (err?.name === "AbortError") {
       return jsonError(
         new ProxyError(504, "timeout", "Timed out downloading that page."),
+        ctx,
         cors,
       );
     }
     return jsonError(
       new ProxyError(502, "unreachable", "Could not download that page."),
+      ctx,
       cors,
     );
   } finally {

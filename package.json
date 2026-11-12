@@ -10,7 +10,9 @@
     "lint": "eslint . --max-warnings=0",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
-    "test": "npm --prefix extension run verify && npm --prefix proxy test",
+    "test": "npm --prefix extension run verify && npm --prefix proxy test && npm run test:unit",
+    "test:unit": "node --test \"tests/unit/*.test.mjs\"",
+    "monitor": "node scripts/monitor.mjs",
     "audit": "npm audit --include=dev --audit-level=high && npm --prefix proxy audit --include=dev --audit-level=high",
     "ci": "npm run lint && npm run format:check && npm test && npm run audit"
   },

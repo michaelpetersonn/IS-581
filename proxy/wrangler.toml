@@ -5,3 +5,9 @@ compatibility_date = "2026-09-01"
 [vars]
 # Comma-separated origins allowed to call the proxy (the site hosting docs/try.html).
 ALLOWED_ORIGINS = "https://michael-peterson.com,https://michaelpetersonn.github.io"
+ENVIRONMENT = "production"
+
+# Workers Logs: keeps the worker's JSON log lines searchable in the Cloudflare dashboard.
+[observability]
+enabled = true
+head_sampling_rate = 1

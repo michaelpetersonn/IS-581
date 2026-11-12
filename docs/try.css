@@ -212,6 +212,13 @@
   font-size: 12px;
   line-height: 1.45;
 }
+.try-ref {
+  margin: 6px 0 0;
+  color: #65676b;
+  font-family: "DM Mono", monospace;
+  font-size: 10px;
+  overflow-wrap: anywhere;
+}
 
 .try-head {
   display: flex;
