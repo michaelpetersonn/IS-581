@@ -11,3 +11,16 @@ ENVIRONMENT = "production"
 [observability]
 enabled = true
 head_sampling_rate = 1
+
+# Staging copy for trying a change before production: npm run deploy:staging
+# https://c3nsor-policy-proxy-staging.petersonmichaelc.workers.dev
+[env.staging]
+name = "c3nsor-policy-proxy-staging"
+
+[env.staging.vars]
+ALLOWED_ORIGINS = "https://michael-peterson.com,https://michaelpetersonn.github.io,http://localhost:8765,http://127.0.0.1:8765"
+ENVIRONMENT = "staging"
+
+[env.staging.observability]
+enabled = true
+head_sampling_rate = 1
