@@ -14,3 +14,6 @@ extension/*.zip
 
 package-lock.json
 proxy/package-lock.json
+
+playwright-report/
+test-results/

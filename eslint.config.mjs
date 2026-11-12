@@ -46,5 +46,19 @@ export default [
     files: ["**/*.mjs"],
     languageOptions: { globals: globals.node },
   },
+  {
+    // Playwright tests also pass callbacks that run inside the page or the extension.
+    files: ["tests/e2e/**/*.mjs"],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        ...globals.browser,
+        ...globals.webextensions,
+      },
+    },
+  },
+  {
+    ignores: ["playwright-report/", "test-results/"],
+  },
   prettier,
 ];
