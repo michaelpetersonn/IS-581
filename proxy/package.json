@@ -6,7 +6,10 @@
   "scripts": {
     "test": "node --test worker.test.mjs",
     "dev": "wrangler dev",
-    "deploy": "wrangler deploy"
+    "deploy": "node scripts/deploy.mjs --env production",
+    "deploy:staging": "node scripts/deploy.mjs --env staging",
+    "health": "node ../scripts/monitor.mjs --proxy-only",
+    "health:staging": "node ../scripts/monitor.mjs --proxy-only --proxy-url https://c3nsor-policy-proxy-staging.petersonmichaelc.workers.dev"
   },
   "devDependencies": {
     "wrangler": "4.156.0"

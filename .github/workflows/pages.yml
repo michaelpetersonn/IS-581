@@ -106,6 +106,9 @@ jobs:
         working-directory: extension
         run: npm run build:web
 
+      - name: Stamp the deployed version (docs/version.json)
+        run: node scripts/write-version.mjs
+
       - name: Upload docs site
         uses: actions/upload-pages-artifact@v3
         with:
@@ -114,3 +117,20 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  verify-deploy:
+    name: verify-deploy
+    needs: deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node (pinned in .nvmrc)
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Wait for this commit to be live, then smoke-check the site
+        run: node scripts/monitor.mjs --site-only --expect-commit ${{ github.sha }} --wait 600
