@@ -8,9 +8,13 @@ ALLOWED_ORIGINS = "https://michael-peterson.com,https://michaelpetersonn.github.
 ENVIRONMENT = "production"
 
 # Workers Logs: keeps the worker's JSON log lines searchable in the Cloudflare dashboard.
+# Invocation logs are off because Cloudflare's automatic request record includes the full URL and query string.
 [observability]
 enabled = true
 head_sampling_rate = 1
+
+[observability.logs]
+invocation_logs = false
 
 # Staging copy for trying a change before production: npm run deploy:staging
 # https://c3nsor-policy-proxy-staging.petersonmichaelc.workers.dev
@@ -24,3 +28,6 @@ ENVIRONMENT = "staging"
 [env.staging.observability]
 enabled = true
 head_sampling_rate = 1
+
+[env.staging.observability.logs]
+invocation_logs = false
