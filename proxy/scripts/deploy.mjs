@@ -17,7 +17,7 @@ const repoRoot = join(proxyDir, "..");
 
 export const TARGETS = {
   production: {
-    wranglerArgs: [],
+    wranglerArgs: ["--env", ""],
     url: "https://c3nsor-policy-proxy.petersonmichaelc.workers.dev",
   },
   staging: {
