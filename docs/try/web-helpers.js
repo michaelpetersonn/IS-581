@@ -154,6 +154,18 @@ export function describeProxyError(code, targetUrl) {
 }
 
 /**
+ * Visitor-facing reference for a failed proxy request, matching the proxy's X-Request-Id and log line.
+ * Returns "" for anything that is not a plain request ID, so the page never echoes arbitrary text.
+ * @param {unknown} requestId
+ */
+export function referenceLine(requestId) {
+  if (typeof requestId !== "string" || !/^[\w-]{8,64}$/.test(requestId)) {
+    return "";
+  }
+  return `Reference: ${requestId}`;
+}
+
+/**
  * Keep citations short and readable under the one-look summary.
  * @param {string} text
  * @param {number} [max]

@@ -1,0 +1,67 @@
+name: Uptime monitor
+
+# Checks the live website and policy proxy every 15 minutes. A failure fails the run (GitHub emails
+# the workflow owner) and opens one "outage" issue; the next passing run closes it.
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+    inputs:
+      simulate_failure:
+        description: "Add a failing check to test alerting (the site and proxy are not touched)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: uptime-monitor
+  cancel-in-progress: false
+
+jobs:
+  monitor:
+    name: monitor
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node (pinned in .nvmrc)
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Check website and proxy
+        id: checks
+        continue-on-error: true
+        run: node scripts/monitor.mjs --report monitor-report.md ${{ inputs.simulate_failure && '--simulate-failure' || '' }}
+
+      - name: Open an outage issue
+        if: steps.checks.outcome == 'failure'
+        run: |
+          gh label create outage --color B42318 --description "Opened by the uptime monitor" --force
+          open=$(gh issue list --label outage --state open --json number --jq '.[0].number')
+          if [ -z "$open" ]; then
+            gh issue create --title "Outage: c3nsor uptime monitor is failing" --label outage --body-file monitor-report.md
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            gh issue comment "$open" --body-file monitor-report.md
+          else
+            echo "Outage issue #$open is already open; not commenting again."
+          fi
+
+      - name: Close the outage issue after recovery
+        if: steps.checks.outcome == 'success'
+        run: |
+          for n in $(gh issue list --label outage --state open --json number --jq '.[].number'); do
+            gh issue close "$n" --comment "$(printf 'Recovered: all checks passed.\n\n'; cat monitor-report.md)"
+          done
+
+      - name: Fail the run so GitHub sends the failure email
+        if: steps.checks.outcome == 'failure'
+        run: exit 1

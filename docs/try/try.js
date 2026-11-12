@@ -13,6 +13,7 @@ import {
   isHttpUrl,
   looksLikeHtml,
   normalizeInputUrl,
+  referenceLine,
   scorePolicyLink,
 } from "./web-helpers.js";
 
@@ -38,6 +39,7 @@ const el = {
   textForm: document.getElementById("text-form"),
   textInput: document.getElementById("text-input"),
   status: document.getElementById("result-status"),
+  ref: document.getElementById("result-ref"),
   head: document.getElementById("result-head"),
   open: document.getElementById("result-open"),
   findings: document.getElementById("result-findings"),
@@ -184,6 +186,7 @@ async function analyzeUrl(raw) {
     renderError(
       message,
       siteUrl ? { href: siteUrl, label: "Open site" } : null,
+      referenceLine(err?.requestId),
     );
   } finally {
     if (myRun === runId) el.urlButton.disabled = false;
@@ -231,6 +234,10 @@ async function proxyFetch(url) {
     }
     const err = new Error(body.error || "Proxy request failed.");
     err.code = typeof body.code === "string" ? body.code : null;
+    err.requestId =
+      typeof body.requestId === "string"
+        ? body.requestId
+        : res.headers.get("X-Request-Id");
     throw err;
   }
   return {
@@ -337,6 +344,7 @@ function setStatus(text, kind = "") {
 
 function hideResultParts() {
   for (const part of [
+    el.ref,
     el.head,
     el.open,
     el.findings,
@@ -357,10 +365,15 @@ function renderLoading(message) {
 /**
  * @param {string} message
  * @param {{ href: string, label: string }|null} [link] only for a site we actually reached
+ * @param {string} [reference] from referenceLine(), so a visitor's report can be matched to the proxy log
  */
-function renderError(message, link = null) {
+function renderError(message, link = null, reference = "") {
   hideResultParts();
   setStatus(message, "error");
+  if (reference) {
+    el.ref.textContent = reference;
+    el.ref.classList.remove("hidden");
+  }
   if (link && isHttpUrl(link.href)) {
     el.open.append(linkButton(link.href, link.label, "try-open-primary"));
     el.open.classList.remove("hidden");

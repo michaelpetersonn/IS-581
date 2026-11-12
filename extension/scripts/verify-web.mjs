@@ -11,8 +11,32 @@ import {
   isHttpUrl,
   looksLikeHtml,
   normalizeInputUrl,
+  referenceLine,
   scorePolicyLink,
 } from "../../docs/try/web-helpers.js";
+
+test("referenceLine shows only well-formed proxy request IDs", () => {
+  assert.equal(
+    referenceLine("8f1c2a3b4d5e6f70-DEN"),
+    "Reference: 8f1c2a3b4d5e6f70-DEN",
+  );
+  assert.equal(
+    referenceLine("3b241101-e2bb-4255-8caf-4136c566a962"),
+    "Reference: 3b241101-e2bb-4255-8caf-4136c566a962",
+  );
+  for (const bad of [
+    undefined,
+    null,
+    42,
+    "",
+    "short",
+    "<img src=x onerror=alert(1)>",
+    "a".repeat(65),
+    "id with spaces here",
+  ]) {
+    assert.equal(referenceLine(bad), "", String(bad));
+  }
+});
 
 test("normalizeInputUrl accepts bare domains and full URLs", () => {
   assert.equal(normalizeInputUrl("duckduckgo.com"), "https://duckduckgo.com/");
