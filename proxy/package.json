@@ -12,6 +12,6 @@
     "health:staging": "node ../scripts/monitor.mjs --proxy-only --proxy-url https://c3nsor-policy-proxy-staging.petersonmichaelc.workers.dev"
   },
   "devDependencies": {
-    "wrangler": "4.156.0"
+    "wrangler": "4.160.0"
   }
 }
